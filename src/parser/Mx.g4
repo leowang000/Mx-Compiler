@@ -20,7 +20,7 @@ suite : LeftBrace statement* RightBrace;
 statement
     : suite #suiteStmt
     | varDef Semicolon #varDefStmt
-    | If LeftParentheses expression RightParentheses thenStmt = statement (elseStmt = statement)? #ifStmt
+    | If LeftParentheses expression RightParentheses thenStmt = statement (Else elseStmt = statement)? #ifStmt
     | While LeftParentheses expression RightParentheses statement #whileStmt
     | For LeftParentheses initStmt = statement condExpr = expression Semicolon stepExpr = expression RightParentheses statement #forStmt
     | Return expression? Semicolon #returnStmt
