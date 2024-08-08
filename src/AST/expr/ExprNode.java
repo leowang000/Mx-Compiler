@@ -1,6 +1,7 @@
 package AST.expr;
 
 import AST.ASTNode;
+import AST.ASTVisitor;
 import util.Position;
 import util.Type;
 
@@ -13,4 +14,7 @@ public abstract class ExprNode extends ASTNode {
         type_ = type;
         isLeftValue_ = isLeftValue;
     }
+
+    @Override
+    abstract public void accept(ASTVisitor visitor);
 }

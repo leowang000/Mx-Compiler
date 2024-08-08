@@ -22,7 +22,7 @@ statement
     | varDef Semicolon #varDefStmt
     | If LeftParentheses expression RightParentheses thenStmt = statement (Else elseStmt = statement)? #ifStmt
     | While LeftParentheses expression RightParentheses statement #whileStmt
-    | For LeftParentheses initStmt = statement condExpr = expression Semicolon stepExpr = expression RightParentheses statement #forStmt
+    | For LeftParentheses initStmt = statement condExpr = expression? Semicolon stepExpr = expression? RightParentheses statement #forStmt
     | Return expression? Semicolon #returnStmt
     | Break Semicolon #breakStmt
     | Continue Semicolon #continueStmt

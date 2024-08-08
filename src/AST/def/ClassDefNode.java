@@ -1,8 +1,10 @@
-package AST;
+package AST.def;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import AST.ASTNode;
+import AST.ASTVisitor;
 import util.Position;
 
 public class ClassDefNode extends ASTNode {
