@@ -1,5 +1,6 @@
 package AST;
 
+import AST.def.*;
 import AST.stmt.*;
 import AST.expr.*;
 import AST.expr.atom.*;
@@ -14,7 +15,6 @@ public interface ASTVisitor {
 
     void visit(BreakStmtNode node);
     void visit(ContinueStmtNode node);
-    void visit(EmptyStmtNode node);
     void visit(ExprStmtNode node);
     void visit(ForStmtNode node);
     void visit(IfStmtNode node);

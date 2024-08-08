@@ -1,7 +1,7 @@
 package AST.expr;
 
 import AST.ASTVisitor;
-import AST.ClassDefNode;
+import AST.def.ClassDefNode;
 import util.Position;
 
 // If member_ is a member function of class_, then the type of MemberExpr is the return type of member_.
