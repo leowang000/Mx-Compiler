@@ -4,8 +4,8 @@ grammar Mx;
 
 program : (funcDef | (classDef Semicolon) | (varDef Semicolon))* EOF;
 
-basetypeName : Bool | Int | String;
-typeName : basetypeName | Identifier;
+baseTypeName : Bool | Int | String;
+typeName : baseTypeName | Identifier;
 type : typeName (LeftBracket RightBracket)*;
 varDef : type Identifier (Assign expression)? (Comma Identifier (Assign expression)?)*;
 
@@ -32,8 +32,8 @@ statement
 
 expression
     : LeftParentheses expression RightParentheses #parenthesesExpr
-    | New typeName (LeftParentheses RightParentheses)? #newVarExpr
     | New typeName (LeftBracket expression? RightBracket)+ arrayLiteral? #newArrayExpr
+    | New typeName (LeftParentheses RightParentheses)? #newVarExpr
     | expression op = (Increment | Decrement) #unaryExpr
     | expression LeftParentheses (expression (Comma expression)*)? RightParentheses #funcCallExpr
     | expression LeftBracket expression RightBracket #arrayExpr

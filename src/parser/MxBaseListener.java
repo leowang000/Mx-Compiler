@@ -29,13 +29,13 @@ public class MxBaseListener implements MxListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterBasetypeName(MxParser.BasetypeNameContext ctx) { }
+	@Override public void enterBaseTypeName(MxParser.BaseTypeNameContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitBasetypeName(MxParser.BasetypeNameContext ctx) { }
+	@Override public void exitBaseTypeName(MxParser.BaseTypeNameContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
