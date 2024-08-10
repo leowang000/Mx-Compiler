@@ -2,7 +2,6 @@ package AST.expr;
 
 import AST.ASTVisitor;
 import util.Position;
-import util.Type;
 
 public class ConditionalExprNode extends ExprNode {
     public ExprNode cond_, lhs_, rhs_;

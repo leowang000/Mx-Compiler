@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import AST.ASTVisitor;
 import util.Position;
-import util.Type;
 
 public class FuncCallExprNode extends ExprNode {
     public ExprNode funcName_;

@@ -2,7 +2,7 @@ package AST.expr;
 
 import AST.ASTVisitor;
 import util.Position;
-import util.Type;
+import util.type.Type;
 
 public class NewVarExprNode extends ExprNode {
     public NewVarExprNode(Position pos, String name) {

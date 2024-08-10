@@ -7,7 +7,7 @@ import AST.ASTVisitor;
 import AST.expr.*;
 import util.Pair;
 import util.Position;
-import util.Type;
+import util.type.Type;
 
 public class VarDefNode extends ASTNode {
     public Type type_;

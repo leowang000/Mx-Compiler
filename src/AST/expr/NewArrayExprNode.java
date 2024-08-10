@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import AST.ASTVisitor;
 import AST.expr.atom.ArrayLiteralNode;
 import util.Position;
-import util.Type;
+import util.type.Type;
 
 public class NewArrayExprNode extends ExprNode {
     public ArrayList<Integer> fixedSizeList_;

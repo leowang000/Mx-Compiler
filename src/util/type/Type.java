@@ -1,4 +1,4 @@
-package util;
+package util.type;
 
 public class Type {
     public final String name_;
@@ -41,6 +41,11 @@ public class Type {
             return true;
         }
         return name_.equals(((Type) other).name_) && dim_ == ((Type) other).dim_;
+    }
+
+    @Override
+    public String toString() {
+        return name_ + "[]".repeat(dim_);
     }
 
     private static boolean isIdentifier(String name) {

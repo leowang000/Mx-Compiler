@@ -11,7 +11,8 @@ public class MemberExprNode extends ExprNode {
     public boolean isFunc_;
 
     public MemberExprNode(Position pos, ClassDefNode clas, String member, boolean isFunc) {
-        super(pos, isFunc ? clas.funcDefMap_.get(member).type_ : clas.varDefMap_.get(member).type_, !isFunc);
+        super(pos, isFunc ? clas.funcDefMap_.get(member).returnType_ : clas.varDefMap_.get(member).type_,
+              !isFunc);
         class_ = clas;
         member_ = member;
         isFunc_ = isFunc;
