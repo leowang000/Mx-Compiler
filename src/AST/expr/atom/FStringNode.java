@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import AST.ASTVisitor;
 import AST.expr.ExprNode;
 import util.Position;
-import util.Type;
+import util.type.Type;
 
 public class FStringNode extends AtomExprNode {
     public ArrayList<String> strList_;

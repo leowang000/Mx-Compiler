@@ -2,7 +2,7 @@ package AST.expr;
 
 import AST.ASTVisitor;
 import util.Position;
-import util.Type;
+import util.type.Type;
 
 public class PreUnaryExprNode extends ExprNode {
     public String op_;

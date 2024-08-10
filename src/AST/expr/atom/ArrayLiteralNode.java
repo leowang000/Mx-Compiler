@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import AST.ASTVisitor;
 import util.Position;
-import util.Type;
+import util.type.Type;
 
 public class ArrayLiteralNode extends AtomExprNode {
     public ArrayList<AtomExprNode> elemList_;

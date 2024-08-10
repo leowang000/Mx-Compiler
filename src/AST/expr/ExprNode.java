@@ -3,7 +3,7 @@ package AST.expr;
 import AST.ASTNode;
 import AST.ASTVisitor;
 import util.Position;
-import util.Type;
+import util.type.Type;
 
 public abstract class ExprNode extends ASTNode {
     public Type type_;

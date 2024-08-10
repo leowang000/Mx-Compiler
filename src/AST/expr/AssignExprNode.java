@@ -2,7 +2,6 @@ package AST.expr;
 
 import AST.ASTVisitor;
 import util.Position;
-import util.Type;
 
 public class AssignExprNode extends ExprNode {
     public ExprNode lhs_, rhs_;

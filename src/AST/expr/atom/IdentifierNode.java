@@ -2,7 +2,7 @@ package AST.expr.atom;
 
 import AST.ASTVisitor;
 import util.Position;
-import util.Type;
+import util.type.Type;
 
 public class IdentifierNode extends AtomExprNode {
     public String name_;
