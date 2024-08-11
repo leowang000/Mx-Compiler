@@ -20,17 +20,14 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         for (var funcDef : ctx.funcDef()) {
             FuncDefNode funcDefNode = (FuncDefNode) visit(funcDef);
             program.funcDefList_.add(funcDefNode);
-            program.funcDefMap_.put(funcDef.Identifier(0).getText(), funcDefNode);
         }
         for (var varDef : ctx.varDef()) {
             VarDefNode varDefNode = (VarDefNode) visit(varDef);
             program.varDefList_.add(varDefNode);
-            program.varDefMap_.put(varDef.Identifier(0).getText(), varDefNode);
         }
         for (var classDef : ctx.classDef()) {
             ClassDefNode classDefNode = (ClassDefNode) visit(classDef);
             program.classDefList_.add(classDefNode);
-            program.classDefMap_.put(classDef.Identifier().getText(), classDefNode);
         }
         return program;
     }
@@ -45,12 +42,10 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
                 (ctx.constructorDef().isEmpty() ? null : (ConstructorDefNode) visit(ctx.constructorDef(0)));
         ClassDefNode classDef = new ClassDefNode(new Position(ctx), ctx.Identifier().getText(), constructor);
         for (var varDef : ctx.varDef()) {
-            VarDefNode varDefNode = (VarDefNode) visit(varDef);
-            classDef.varDefList_.add(varDefNode);
-            for (int i = 0; i < varDefNode.varList_.size(); i++) {
-                classDef.varDefMap_.put(varDefNode.varList_.get(i).first_,
-                                        new Pair<>(new Type(varDef.type()), varDefNode.varList_.get(i).second_));
-            }
+            classDef.varDefList_.add((VarDefNode) visit(varDef));
+        }
+        for (var funcDef : ctx.funcDef()) {
+            classDef.funcDefList_.add((FuncDefNode) visit(funcDef));
         }
         return classDef;
     }

@@ -5,17 +5,43 @@ import AST.def.*;
 import AST.expr.*;
 import AST.expr.atom.*;
 import AST.stmt.*;
+import util.scope.GlobalScope;
+import util.type.*;
 
 public class SymbolCollector implements ASTVisitor {
+    private GlobalScope gScope_;
+
+    public SymbolCollector(GlobalScope globalScope) {
+        gScope_ = globalScope;
+    }
 
     @Override
-    public void visit(ProgramNode node) {}
+    public void visit(ProgramNode node) {
+        for (var funcDef : node.funcDefList_) {
+            funcDef.accept(this);
+        }
+        for (var classDef : node.classDefList_) {
+            classDef.accept(this);
+        }
+    }
 
     @Override
-    public void visit(ClassDefNode node) {}
+    public void visit(ClassDefNode node) {
+        gScope_.addClass(node.name_, new ClassType(node), node.pos_);
+        for (var funcDef : node.funcDefList_) {
+            node.scope_.addFunc(funcDef.name_, new FuncType(funcDef), node.pos_);
+        }
+        for (var varDef : node.varDefList_) {
+            for (var varDefUnit : varDef.varList_) {
+                node.scope_.addVar(varDefUnit.first_, new Type(varDef.type_), node.pos_);
+            }
+        }
+    }
 
     @Override
-    public void visit(FuncDefNode node) {}
+    public void visit(FuncDefNode node) {
+        gScope_.addFunc(node.name_, new FuncType(node), node.pos_);
+    }
 
     @Override
     public void visit(VarDefNode node) {}
