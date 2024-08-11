@@ -6,14 +6,15 @@ import util.Position;
 import util.type.Type;
 
 public abstract class ExprNode extends ASTNode {
-    public Type type_;
+    public Type type_ = null;
     public boolean isLeftValue_;
 
-    public ExprNode(Position pos, Type type, boolean isLeftValue) {
+    public ExprNode(Position pos, boolean isLeftValue) {
         super(pos);
-        type_ = type;
         isLeftValue_ = isLeftValue;
     }
+
+    public void checkAndInferType() {}
 
     @Override
     abstract public void accept(ASTVisitor visitor);

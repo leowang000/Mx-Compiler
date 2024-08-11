@@ -9,9 +9,9 @@ public interface ASTVisitor {
     void visit(ProgramNode node);
 
     void visit(ClassDefNode node);
+    void visit(ConstructorDefNode node);
     void visit(FuncDefNode node);
     void visit(VarDefNode node);
-    void visit(ConstructorDefNode node);
 
     void visit(BreakStmtNode node);
     void visit(ContinueStmtNode node);

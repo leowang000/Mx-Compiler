@@ -121,7 +121,7 @@ Quote
 Comma
 IntegerLiteral
 StringLiteral
-Fstring
+FString
 FStringFront
 FStringMid
 FStringBack
@@ -189,7 +189,7 @@ Escape
 Char
 StringLiteral
 FStringChar
-Fstring
+FString
 FStringFront
 FStringMid
 FStringBack

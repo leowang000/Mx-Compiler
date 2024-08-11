@@ -25,7 +25,7 @@ public class MxLexer extends Lexer {
 		Xor=37, Not=38, Assign=39, Increment=40, Decrement=41, Member=42, LeftParentheses=43, 
 		RightParentheses=44, LeftBracket=45, RightBracket=46, LeftBrace=47, RightBrace=48, 
 		Question=49, Colon=50, Semicolon=51, Quote=52, Comma=53, IntegerLiteral=54, 
-		StringLiteral=55, Fstring=56, FStringFront=57, FStringMid=58, FStringBack=59, 
+		StringLiteral=55, FString=56, FStringFront=57, FStringMid=58, FStringBack=59, 
 		LineComment=60, BlockComment=61, WhiteSpace=62, NewLine=63;
 	public static String[] channelNames = {
 		"DEFAULT_TOKEN_CHANNEL", "HIDDEN"
@@ -45,7 +45,7 @@ public class MxLexer extends Lexer {
 			"Increment", "Decrement", "Member", "LeftParentheses", "RightParentheses", 
 			"LeftBracket", "RightBracket", "LeftBrace", "RightBrace", "Question", 
 			"Colon", "Semicolon", "Quote", "Comma", "IntegerLiteral", "Escape", "Char", 
-			"StringLiteral", "FStringChar", "Fstring", "FStringFront", "FStringMid", 
+			"StringLiteral", "FStringChar", "FString", "FStringFront", "FStringMid", 
 			"FStringBack", "LineComment", "BlockComment", "WhiteSpace", "NewLine"
 		};
 	}
@@ -73,7 +73,7 @@ public class MxLexer extends Lexer {
 			"Increment", "Decrement", "Member", "LeftParentheses", "RightParentheses", 
 			"LeftBracket", "RightBracket", "LeftBrace", "RightBrace", "Question", 
 			"Colon", "Semicolon", "Quote", "Comma", "IntegerLiteral", "StringLiteral", 
-			"Fstring", "FStringFront", "FStringMid", "FStringBack", "LineComment", 
+			"FString", "FStringFront", "FStringMid", "FStringBack", "LineComment", 
 			"BlockComment", "WhiteSpace", "NewLine"
 		};
 	}

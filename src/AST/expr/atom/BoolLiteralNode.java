@@ -8,7 +8,8 @@ public class BoolLiteralNode extends AtomExprNode {
     public boolean value_;
 
     public BoolLiteralNode(Position pos, boolean value) {
-        super(pos, new Type("bool"), false);
+        super(pos, false);
+        type_ = new Type("bool");
         value_ = value;
     }
 

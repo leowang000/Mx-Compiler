@@ -11,12 +11,12 @@ import util.type.Type;
 
 public class VarDefNode extends ASTNode {
     public Type type_;
-    public ArrayList<Pair<String, ExprNode>> varList;
+    public ArrayList<Pair<String, ExprNode>> varList_;
 
     public VarDefNode(Position pos, Type type) {
         super(pos);
         type_ = type;
-        varList = new ArrayList<>();
+        varList_ = new ArrayList<>();
     }
 
     @Override

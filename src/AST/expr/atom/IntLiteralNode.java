@@ -8,7 +8,8 @@ public class IntLiteralNode extends AtomExprNode {
     public int value_;
 
     public IntLiteralNode(Position pos, int value) {
-        super(pos, new Type("int"), false);
+        super(pos, false);
+        type_ = new Type("int");
         value_ = value;
     }
 

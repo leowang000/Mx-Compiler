@@ -10,7 +10,7 @@ public class FuncCallExprNode extends ExprNode {
     public ArrayList<ExprNode> args_;
 
     public FuncCallExprNode(Position pos, ExprNode funcName) {
-        super(pos, funcName.type_, false);
+        super(pos, false);
         funcName_ = funcName;
         args_ = new ArrayList<>();
     }
