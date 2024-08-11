@@ -7,6 +7,7 @@ import util.*;
 
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
+import util.scope.GlobalScope;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -22,8 +23,10 @@ public class Main {
             ParseTree parseTreeRoot = parser.program();
             ASTBuilder astBuilder = new ASTBuilder();
             ProgramNode ast = (ProgramNode) astBuilder.visit(parseTreeRoot);
+            GlobalScope gScope = new GlobalScope();
+            new SymbolCollector(gScope).visit(ast);
         } catch (Error er) {
-            System.err.println(er.toString());
+            System.err.println(er);
             throw new RuntimeException();
         }
     }
