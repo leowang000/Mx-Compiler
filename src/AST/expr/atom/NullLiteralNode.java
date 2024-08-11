@@ -6,7 +6,8 @@ import util.type.Type;
 
 public class NullLiteralNode extends AtomExprNode {
     public NullLiteralNode(Position pos) {
-        super(pos, new Type("null"), false);
+        super(pos, false);
+        type_ = new Type("null");
     }
 
     public void accept(ASTVisitor visitor) {

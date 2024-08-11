@@ -7,8 +7,8 @@ import util.type.Type;
 public class IdentifierNode extends AtomExprNode {
     public String name_;
 
-    public IdentifierNode(Position pos, Type type, String name) {
-        super(pos, type, true);
+    public IdentifierNode(Position pos, String name) {
+        super(pos, true);
         name_ = name;
     }
 

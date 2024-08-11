@@ -6,8 +6,8 @@ import util.Position;
 import util.type.Type;
 
 public abstract class AtomExprNode extends ExprNode {
-    public AtomExprNode(Position pos, Type type, boolean isLeftValue) {
-        super(pos, type, isLeftValue);
+    public AtomExprNode(Position pos, boolean isLeftValue) {
+        super(pos, isLeftValue);
     }
 
     @Override

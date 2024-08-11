@@ -16,7 +16,6 @@ constructorDef : Identifier LeftParentheses RightParentheses suite;
 classDef : Class Identifier LeftBrace ((varDef Semicolon) | funcDef | constructorDef)* RightBrace;
 
 suite : LeftBrace statement* RightBrace;
-
 statement
     : suite #suiteStmt
     | varDef Semicolon #varDefStmt
@@ -63,11 +62,11 @@ primary
     ;
 
 fstring
-    : Fstring
+    : FString
     | FStringFront expression (FStringMid expression)* FStringBack
     ;
 
-arrayLiteral : LeftBrace literal (Comma literal)* RightBrace;
+arrayLiteral : LeftBrace (literal (Comma literal)*)? RightBrace;
 literal
     : True
     | False
@@ -138,7 +137,7 @@ fragment Escape : '\\\\' | '\\n' | '\\"';
 fragment Char : Escape | [\u0020-\u0021\u0023-\u005B\u005D-\u007E];
 StringLiteral : Quote Char* Quote;
 fragment FStringChar : Escape | '$$' | [\u0020-\u0021\u0023\u0025-\u005B\u005D-\u007E];
-Fstring : 'f' Quote FStringChar* Quote;
+FString : 'f' Quote FStringChar* Quote;
 FStringFront : 'f' Quote FStringChar* '$';
 FStringMid : '$' FStringChar* '$';
 FStringBack : '$' FStringChar* Quote;

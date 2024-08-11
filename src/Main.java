@@ -1,4 +1,7 @@
 import java.io.*;
+
+import AST.def.ProgramNode;
+import frontend.*;
 import parser.*;
 import util.*;
 
@@ -17,6 +20,8 @@ public class Main {
             parser.removeErrorListeners();
             parser.addErrorListener(new MxErrorListener());
             ParseTree parseTreeRoot = parser.program();
+            ASTBuilder astBuilder = new ASTBuilder();
+            ProgramNode ast = (ProgramNode) astBuilder.visit(parseTreeRoot);
         } catch (Error er) {
             System.err.println(er.toString());
             throw new RuntimeException();
