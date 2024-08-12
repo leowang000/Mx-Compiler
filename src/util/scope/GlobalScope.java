@@ -7,6 +7,7 @@ import java.util.List;
 
 import util.Position;
 import util.error.SemanticError;
+import util.error.SyntaxError;
 import util.type.ClassType;
 import util.type.FuncType;
 import util.type.Type;
@@ -44,17 +45,17 @@ public class GlobalScope extends ClassScope {
     @Override
     public void addFunc(String funcName, FuncType funcType, Position pos) {
         if (classDefMap_.containsKey(funcName)) {
-            throw new SemanticError("Symbol Redefinition Error: " + funcName, pos);
+            throw new SyntaxError("Symbol Redefinition Error: " + funcName, pos);
         }
         super.addFunc(funcName, funcType, pos);
     }
 
     public void addClass(String className, ClassType classType, Position pos) {
         if (funcDefMap_.containsKey(className)) {
-            throw new SemanticError("Symbol Redefinition Error: " + className, pos);
+            throw new SyntaxError("Symbol Redefinition Error: " + className, pos);
         }
         if (classDefMap_.containsKey(className)) {
-            throw new SemanticError("Class Redefinition Error: " + className, pos);
+            throw new SyntaxError("Class Redefinition Error: " + className, pos);
         }
         classDefMap_.put(className, classType);
     }

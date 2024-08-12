@@ -9,7 +9,6 @@ import parser.MxBaseVisitor;
 import parser.MxParser;
 import util.Pair;
 import util.Position;
-import util.error.SemanticError;
 import util.error.SyntaxError;
 import util.type.Type;
 
@@ -35,13 +34,16 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitClassDef(MxParser.ClassDefContext ctx) {
         if (ctx.constructorDef().size() >= 2) {
-            throw new SemanticError("Constructor Redefinition Error: " + ctx.Identifier().getText(),
-                                    new Position(ctx));
+            throw new SyntaxError("Constructor Redefinition Error: " + ctx.Identifier().getText(),
+                                  new Position(ctx.constructorDef(0)));
         }
         ConstructorDefNode constructor =
                 (ctx.constructorDef().isEmpty() ? null : (ConstructorDefNode) visit(ctx.constructorDef(0)));
         ClassDefNode classDef = new ClassDefNode(new Position(ctx), ctx.Identifier().getText(), constructor);
         for (var varDef : ctx.varDef()) {
+            if (!varDef.expression().isEmpty()) {
+                throw new SyntaxError("Member Variable Initialization Error", new Position(varDef));
+            }
             classDef.varDefList_.add((VarDefNode) visit(varDef));
         }
         for (var funcDef : ctx.funcDef()) {

@@ -3,6 +3,7 @@ package util.scope;
 import java.util.HashMap;
 
 import util.Position;
+import util.error.SyntaxError;
 import util.type.FuncType;
 import util.type.Type;
 import util.error.SemanticError;
@@ -18,7 +19,7 @@ public class Scope {
 
     public void addVar(String varName, Type type, Position pos) {
         if (varDefMap_.containsKey(varName)) {
-            throw new SemanticError("Variable Redefinition Error: " + varName, pos);
+            throw new SyntaxError("Variable Redefinition Error: " + varName, pos);
         }
         varDefMap_.put(varName, type);
     }

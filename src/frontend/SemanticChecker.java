@@ -10,7 +10,7 @@ import util.scope.*;
 import util.type.*;
 
 public class SemanticChecker implements ASTVisitor {
-    private GlobalScope gScope_;
+    private final GlobalScope gScope_;
     private Scope scope_ = null; // current scope
 
     public SemanticChecker(GlobalScope gScope) {
