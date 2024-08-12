@@ -9,8 +9,13 @@ public class ParenthesesExprNode extends ExprNode {
 
     public ParenthesesExprNode(Position pos, ExprNode expr) {
         super(pos, false);
-        type_ = new Type(expr.type_);
         expr_ = expr;
+    }
+
+    @Override
+    public void checkAndInferType() {
+        type_ = new Type(expr_.type_);
+        isLeftValue_ = expr_.isLeftValue_;
     }
 
     @Override

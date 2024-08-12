@@ -6,7 +6,6 @@ import util.Position;
 import util.error.SyntaxError;
 import util.type.FuncType;
 import util.type.Type;
-import util.error.SemanticError;
 
 public class Scope {
     public Scope parent_;

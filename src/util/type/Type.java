@@ -57,7 +57,8 @@ public class Type {
         isArray_ = other.isArray_;
     }
 
-    public boolean Equals(Object other) {
+    @Override
+    public boolean equals(Object other) {
         if (!(other instanceof Type)) {
             return false;
         }

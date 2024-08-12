@@ -10,7 +10,7 @@ public class PreUnaryExprNode extends ExprNode {
     public ExprNode expr_;
 
     public PreUnaryExprNode(Position pos, String op, ExprNode expr) {
-        super(pos, false);
+        super(pos, true);
         op_ = op;
         expr_ = expr;
     }

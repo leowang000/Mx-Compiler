@@ -3,7 +3,6 @@ package util.scope;
 import java.util.HashMap;
 
 import util.Position;
-import util.error.SemanticError;
 import util.error.SyntaxError;
 import util.type.FuncType;
 import util.type.Type;
@@ -27,6 +26,9 @@ public class ClassScope extends Scope {
     }
 
     public void addFunc(String funcName, FuncType funcType, Position pos) {
+        if (funcName.equals(name_)) {
+            throw new SyntaxError("Symbol Redefinition Error: " + funcName, pos);
+        }
         if (varDefMap_.containsKey(funcName)) {
             throw new SyntaxError("Symbol Redefinition Error: " + funcName, pos);
         }

@@ -7,15 +7,11 @@ import AST.ASTVisitor;
 import util.Position;
 
 public class ProgramNode extends ASTNode {
-    public ArrayList<VarDefNode> varDefList_;
-    public ArrayList<FuncDefNode> funcDefList_;
-    public ArrayList<ClassDefNode> classDefList_;
+    public ArrayList<ASTNode> defList_;
 
     public ProgramNode(Position pos) {
         super(pos);
-        varDefList_ = new ArrayList<>();
-        funcDefList_ = new ArrayList<>();
-        classDefList_ = new ArrayList<>();
+        defList_ = new ArrayList<>();
     }
 
     @Override

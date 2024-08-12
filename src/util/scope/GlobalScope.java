@@ -6,11 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import util.Position;
-import util.error.SemanticError;
-import util.error.SyntaxError;
-import util.type.ClassType;
-import util.type.FuncType;
-import util.type.Type;
+import util.error.*;
+import util.type.*;
 
 public class GlobalScope extends ClassScope {
     HashMap<String, ClassType> classDefMap_;

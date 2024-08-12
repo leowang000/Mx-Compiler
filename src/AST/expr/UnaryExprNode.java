@@ -27,10 +27,14 @@ public class UnaryExprNode extends ExprNode {
                     return;
                 }
             }
-            else {
+            if (op_.equals("+") || op_.equals("-") || op_.equals("~")) {
                 type_ = new Type("int");
                 return;
             }
+        }
+        if (expr_.type_.equals(new Type("bool")) && op_.equals("!")) {
+            type_ = new Type("bool");
+            return;
         }
         throw new SemanticError("Type Mismatch Error", pos_);
     }

@@ -5,6 +5,7 @@ import AST.def.*;
 import AST.expr.*;
 import AST.expr.atom.*;
 import AST.stmt.*;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import parser.MxBaseVisitor;
 import parser.MxParser;
 import util.Pair;
@@ -16,17 +17,10 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitProgram(MxParser.ProgramContext ctx) {
         ProgramNode program = new ProgramNode(new Position(ctx));
-        for (var funcDef : ctx.funcDef()) {
-            FuncDefNode funcDefNode = (FuncDefNode) visit(funcDef);
-            program.funcDefList_.add(funcDefNode);
-        }
-        for (var varDef : ctx.varDef()) {
-            VarDefNode varDefNode = (VarDefNode) visit(varDef);
-            program.varDefList_.add(varDefNode);
-        }
-        for (var classDef : ctx.classDef()) {
-            ClassDefNode classDefNode = (ClassDefNode) visit(classDef);
-            program.classDefList_.add(classDefNode);
+        for (var child : ctx.children) {
+            if (!(child instanceof TerminalNode)) {
+                program.defList_.add(visit(child));
+            }
         }
         return program;
     }

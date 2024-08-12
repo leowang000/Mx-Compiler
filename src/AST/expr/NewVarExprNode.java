@@ -6,7 +6,7 @@ import util.type.Type;
 
 public class NewVarExprNode extends ExprNode {
     public NewVarExprNode(Position pos, String typeName) {
-        super(pos, false);
+        super(pos, true);
         type_ = new Type(typeName);
     }
 
