@@ -11,9 +11,9 @@ import util.scope.GlobalScope;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        //String input_file_name = "testcases/sema/misc-package/misc-2.mx";
-        //CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
-        CharStream input = CharStreams.fromStream(System.in);
+        String input_file_name = "testcases/sema/const-array-package/const_array5.mx";
+        CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
+        //CharStream input = CharStreams.fromStream(System.in);
         try {
             MxLexer lexer = new MxLexer(input);
             lexer.removeErrorListeners();

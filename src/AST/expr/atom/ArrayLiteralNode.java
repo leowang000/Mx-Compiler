@@ -37,7 +37,7 @@ public class ArrayLiteralNode extends AtomExprNode {
                 }
             }
             else {
-                if (!atomExpr.type_.equals(type)) {
+                if (!atomExpr.type_.equals(new Type(type.name_, type.dim_ - 1))) {
                     return false;
                 }
             }
