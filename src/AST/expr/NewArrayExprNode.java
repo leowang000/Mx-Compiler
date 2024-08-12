@@ -22,11 +22,11 @@ public class NewArrayExprNode extends ExprNode {
     @Override
     public void checkAndInferType() {
         for (var expr : fixedSizeList_) {
-            if (!expr.type_.equals(new Type("int"))) {
+            if (MemberExprNode.isMemberFunc(expr) || !expr.type_.equals(new Type("int"))) {
                 throw new SemanticError("Type Mismatch Error", pos_);
             }
         }
-        if (array_ != null && !array_.EqualsType(type_)) {
+        if (array_ != null && !array_.equalsType(type_)) {
             throw new SemanticError("Type Mismatch Error", pos_);
         }
     }

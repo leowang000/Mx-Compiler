@@ -17,6 +17,10 @@ public class ConditionalExprNode extends ExprNode {
 
     @Override
     public void checkAndInferType() {
+        if (MemberExprNode.isMemberFunc(cond_) || MemberExprNode.isMemberFunc(lhs_) ||
+            MemberExprNode.isMemberFunc(rhs_)) {
+            throw new SemanticError("Type Mismatch Error", pos_);
+        }
         if (cond_.type_.equals(new Type("bool")) && lhs_.type_.equals(rhs_.type_)) {
             type_ = new Type(lhs_.type_.name_.equals("null") ? rhs_.type_ : lhs_.type_);
             return;

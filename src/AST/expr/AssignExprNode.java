@@ -16,6 +16,9 @@ public class AssignExprNode extends ExprNode {
 
     @Override
     public void checkAndInferType() {
+        if (MemberExprNode.isMemberFunc(lhs_) || MemberExprNode.isMemberFunc(rhs_)) {
+            throw new SemanticError("Type Mismatch Error", pos_);
+        }
         if (lhs_.isLeftValue_ && lhs_.type_.equals(rhs_.type_)) {
             type_ = new Type(lhs_.type_);
             return;

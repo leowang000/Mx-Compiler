@@ -18,6 +18,10 @@ public class MemberExprNode extends ExprNode {
         member_ = member;
     }
 
+    public static boolean isMemberFunc(ExprNode expr) {
+        return (expr instanceof MemberExprNode) && ((MemberExprNode) expr).funcType_ != null;
+    }
+
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);

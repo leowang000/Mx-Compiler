@@ -5,6 +5,7 @@ import AST.def.*;
 import AST.expr.*;
 import AST.expr.atom.*;
 import AST.stmt.*;
+import util.scope.ClassScope;
 import util.scope.GlobalScope;
 import util.type.*;
 
@@ -28,6 +29,7 @@ public class SymbolCollector implements ASTVisitor {
     @Override
     public void visit(ClassDefNode node) {
         gScope_.addClass(node.name_, new ClassType(node), node.pos_);
+        node.scope_ = new ClassScope(gScope_, node.name_);
         for (var funcDef : node.funcDefList_) {
             node.scope_.addFunc(funcDef.name_, new FuncType(funcDef), node.pos_);
         }
