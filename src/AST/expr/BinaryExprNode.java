@@ -18,6 +18,9 @@ public class BinaryExprNode extends ExprNode {
 
     @Override
     public void checkAndInferType() {
+        if (MemberExprNode.isMemberFunc(lhs_) || MemberExprNode.isMemberFunc(rhs_)) {
+            throw new SemanticError("Type Mismatch Error", pos_);
+        }
         if (op_.equals("+") && lhs_.type_.equals(new Type("string")) &&
             rhs_.type_.equals(new Type("string"))) {
             type_ = new Type("string");

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import AST.ASTVisitor;
 import util.Position;
+import util.error.SemanticError;
 import util.type.Type;
 
 public class ArrayLiteralNode extends AtomExprNode {
@@ -14,13 +15,24 @@ public class ArrayLiteralNode extends AtomExprNode {
         elemList_ = new ArrayList<>();
     }
 
-    public boolean EqualsType(Type type) {
+    @Override
+    public void checkAndInferType() {
+        Type type = getType(this);
+        if (type == null) {
+            return;
+        }
+        if (!equalsType(type)) {
+            throw new SemanticError("Type Mismatch Error", pos_);
+        }
+    }
+
+    public boolean equalsType(Type type) {
         if (!type.isArray_) {
             return false;
         }
         for (var atomExpr : elemList_) {
             if (atomExpr instanceof ArrayLiteralNode) {
-                if (!((ArrayLiteralNode) atomExpr).EqualsType(new Type(type.name_, type.dim_ - 1))) {
+                if (!((ArrayLiteralNode) atomExpr).equalsType(new Type(type.name_, type.dim_ - 1))) {
                     return false;
                 }
             }
@@ -36,5 +48,22 @@ public class ArrayLiteralNode extends AtomExprNode {
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);
+    }
+
+    private static Type getType(ArrayLiteralNode node) {
+        for (var elem : node.elemList_) {
+            if (elem instanceof ArrayLiteralNode) {
+                Type subType = getType((ArrayLiteralNode) elem);
+                if (subType != null) {
+                    return new Type(subType.name_, subType.dim_ + 1);
+                }
+            }
+            else {
+                if (!(elem instanceof NullLiteralNode)) {
+                    return new Type(elem.type_.name_, 1);
+                }
+            }
+        }
+        return null;
     }
 }

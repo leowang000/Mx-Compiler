@@ -15,7 +15,7 @@ public class GlobalScope extends ClassScope {
     HashMap<String, ClassType> classDefMap_;
 
     public GlobalScope() {
-        super(null);
+        super(null, null);
         funcDefMap_.put("print", new FuncType(new Type("void"),
                                               new ArrayList<>(List.of(new Type("string")))));
         funcDefMap_.put("println", new FuncType(new Type("void"),
@@ -41,7 +41,18 @@ public class GlobalScope extends ClassScope {
         classDefMap_.put("string", new ClassType(stringFuncMap, new HashMap<>()));
     }
 
+    @Override
+    public void addFunc(String funcName, FuncType funcType, Position pos) {
+        if (classDefMap_.containsKey(funcName)) {
+            throw new SemanticError("Symbol Redefinition Error: " + funcName, pos);
+        }
+        super.addFunc(funcName, funcType, pos);
+    }
+
     public void addClass(String className, ClassType classType, Position pos) {
+        if (funcDefMap_.containsKey(className)) {
+            throw new SemanticError("Symbol Redefinition Error: " + className, pos);
+        }
         if (classDefMap_.containsKey(className)) {
             throw new SemanticError("Class Redefinition Error: " + className, pos);
         }
@@ -54,8 +65,8 @@ public class GlobalScope extends ClassScope {
     }
 
     @Override
-    public boolean isInClass() {
-        return false;
+    public String getClassName() {
+        return null;
     }
 
     @Override

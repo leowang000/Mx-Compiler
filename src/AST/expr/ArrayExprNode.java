@@ -16,8 +16,10 @@ public class ArrayExprNode extends ExprNode {
 
     @Override
     public void checkAndInferType() {
-        if (array_.type_.isArray_ && index_.type_.equals(new Type("int")) &&
-            (!(array_ instanceof MemberExprNode) || ((MemberExprNode) array_).funcType_ != null)) {
+        if (MemberExprNode.isMemberFunc(array_) || MemberExprNode.isMemberFunc(index_)) {
+            throw new SemanticError("Type Mismatch Error", pos_);
+        }
+        if (array_.type_.isArray_ && index_.type_.equals(new Type("int"))) {
             type_ = new Type(array_.type_.name_, array_.type_.dim_ - 1);
             return;
         }

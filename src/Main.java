@@ -25,8 +25,9 @@ public class Main {
             ProgramNode ast = (ProgramNode) astBuilder.visit(parseTreeRoot);
             GlobalScope gScope = new GlobalScope();
             new SymbolCollector(gScope).visit(ast);
-        } catch (Error er) {
-            System.err.println(er);
+            new SemanticChecker(gScope).visit(ast);
+        } catch (Error err) {
+            System.err.println(err);
             throw new RuntimeException();
         }
     }

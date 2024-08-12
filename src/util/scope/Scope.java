@@ -27,8 +27,8 @@ public class Scope {
         return parent_.isInLoop();
     }
 
-    public boolean isInClass() {
-        return parent_.isInClass();
+    public String getClassName() {
+        return parent_.getClassName();
     }
 
     public void checkReturnType(Type type, Position pos) {

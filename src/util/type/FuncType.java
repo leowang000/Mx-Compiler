@@ -6,7 +6,7 @@ import AST.def.FuncDefNode;
 
 public class FuncType {
     public Type returnType_;
-    ArrayList<Type> argTypes_;
+    public ArrayList<Type> argTypes_;
 
     public FuncType(Type returnType){
         returnType_ = returnType;

@@ -10,8 +10,8 @@ import util.Position;
 import util.type.Type;
 
 public class FuncDefNode extends ASTNode {
-    public Type returnType_; // the return type
     public String name_;
+    public Type returnType_;
     public ArrayList<Pair<Type, String>> paramList_;
     public ArrayList<StmtNode> stmtList_;
 

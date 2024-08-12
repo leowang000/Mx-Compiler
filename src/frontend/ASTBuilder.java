@@ -112,13 +112,25 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     }
 
     @Override
+    public ASTNode visitEmptyStmt(MxParser.EmptyStmtContext ctx) {
+        return null;
+    }
+
+    @Override
     public ASTNode visitForStmt(MxParser.ForStmtContext ctx) {
-        StmtNode init = (ctx.initStmt instanceof MxParser.EmptyStmtContext ? null : (StmtNode) visit(ctx.initStmt));
+        StmtNode init = (StmtNode) visit(ctx.initStmt);
         ExprNode cond = (ctx.condExpr == null ? null : (ExprNode) visit(ctx.condExpr));
         ExprNode step = (ctx.stepExpr == null ? null : (ExprNode) visit(ctx.stepExpr));
-        StmtNode body =
-                (ctx.statement(1) instanceof MxParser.EmptyStmtContext ? null : (StmtNode) visit(ctx.statement(1)));
-        return new ForStmtNode(new Position(ctx), init, cond, step, body);
+        StmtNode body = (StmtNode) visit(ctx.statement(1));
+        ForStmtNode forStmt = new ForStmtNode(new Position(ctx), init, cond, step);
+        if (body != null) {
+            if (body instanceof SuiteStmtNode) {
+                forStmt.body_.addAll(((SuiteStmtNode) body).stmtList_);
+            } else {
+                forStmt.body_.add(body);
+            }
+        }
+        return forStmt;
     }
 
     @Override
@@ -155,8 +167,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitWhileStmt(MxParser.WhileStmtContext ctx) {
         return new WhileStmtNode(new Position(ctx), (ExprNode) visit(ctx.expression()),
-                                 ctx.statement() instanceof MxParser.EmptyStmtContext ? null : (StmtNode) visit(
-                                         ctx.statement()));
+                                 (StmtNode) visit(ctx.statement()));
     }
 
     @Override

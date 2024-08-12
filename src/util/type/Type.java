@@ -11,7 +11,7 @@ public class Type {
     public Type(String name) {
         name_ = name;
         dim_ = 0;
-        isClass_ = isBuiltInType(name);
+        isClass_ = !isBuiltInType(name);
         isArray_ = false;
     }
 
@@ -28,8 +28,7 @@ public class Type {
             dim_ = 0;
             isClass_ = false;
             isArray_ = false;
-        }
-        else {
+        } else {
             name_ = ctx.type().typeName().getText();
             dim_ = ctx.type().LeftBracket().size();
             isClass_ = isBuiltInType(name_);
@@ -67,8 +66,8 @@ public class Type {
         }
         Type otherType = (Type) other;
         if ((name_.equals("null") && otherType.name_.equals("null")) ||
-            (name_.equals("null") && !isBuiltInType(otherType.name_)) ||
-            (otherType.name_.equals("null") && !isBuiltInType(name_))) {
+            (name_.equals("null") && !isBuiltInType(otherType)) ||
+            (otherType.name_.equals("null") && !isBuiltInType(this))) {
             return true;
         }
         return name_.equals(((Type) other).name_) && dim_ == ((Type) other).dim_;
@@ -80,7 +79,12 @@ public class Type {
     }
 
     private static boolean isBuiltInType(String name) {
-        return !name.equals("null") && !name.equals("void") && !name.equals("int") && !name.equals("bool") &&
-               !name.equals("string");
+        return name.equals("null") || name.equals("void") || name.equals("int") || name.equals("bool") ||
+               name.equals("string");
+    }
+
+    private static boolean isBuiltInType(Type type) {
+        return type.equals(new Type("int")) || type.equals(new Type("bool")) ||
+               type.equals(new Type("string"));
     }
 }

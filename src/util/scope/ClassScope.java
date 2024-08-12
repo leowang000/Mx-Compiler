@@ -5,16 +5,30 @@ import java.util.HashMap;
 import util.Position;
 import util.error.SemanticError;
 import util.type.FuncType;
+import util.type.Type;
 
 public class ClassScope extends Scope {
+    public String name_;
     public HashMap<String, FuncType> funcDefMap_;
 
-    public ClassScope(Scope parent) {
+    public ClassScope(Scope parent, String name) {
         super(parent);
+        name_ = name;
         funcDefMap_ = new HashMap<>();
     }
 
+    @Override
+    public void addVar(String varName, Type type, Position pos) {
+        if (funcDefMap_.containsKey(varName)) {
+            throw new SemanticError("Symbol Redefinition Error: " + varName, pos);
+        }
+        super.addVar(varName, type, pos);
+    }
+
     public void addFunc(String funcName, FuncType funcType, Position pos) {
+        if (varDefMap_.containsKey(funcName)) {
+            throw new SemanticError("Symbol Redefinition Error: " + funcName, pos);
+        }
         if (funcDefMap_.containsKey(funcName)) {
             throw new SemanticError("Function Redefinition Error: " + funcName, pos);
         }
@@ -22,8 +36,8 @@ public class ClassScope extends Scope {
     }
 
     @Override
-    public boolean isInClass() {
-        return true;
+    public String getClassName() {
+        return name_;
     }
 
     @Override
