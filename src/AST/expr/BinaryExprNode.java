@@ -27,7 +27,7 @@ public class BinaryExprNode extends ExprNode {
             return;
         }
         if (op_.equals("+") || op_.equals("-") || op_.equals("*") || op_.equals("/") || op_.equals("%") ||
-            op_.equals("<<") || op_.equals(">>") || op_.equals("&") || op_.equals("|")) {
+            op_.equals("<<") || op_.equals(">>") || op_.equals("&") || op_.equals("|") || op_.equals("^")) {
             if (lhs_.type_.equals(new Type("int")) && rhs_.type_.equals(new Type("int"))) {
                 type_ = new Type("int");
                 return;
@@ -42,6 +42,12 @@ public class BinaryExprNode extends ExprNode {
         }
         if (op_.equals("==") || op_.equals("!=")) {
             if (lhs_.type_.equals(rhs_.type_)) {
+                type_ = new Type("bool");
+                return;
+            }
+        }
+        if (op_.equals("&&") || op_.equals("||")) {
+            if (lhs_.type_.equals(new Type("bool")) && rhs_.type_.equals(new Type("bool"))) {
                 type_ = new Type("bool");
                 return;
             }

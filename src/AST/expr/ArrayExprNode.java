@@ -9,7 +9,7 @@ public class ArrayExprNode extends ExprNode {
     public ExprNode array_, index_;
 
     public ArrayExprNode(Position pos, ExprNode array, ExprNode index) {
-        super(pos, array.isLeftValue_);
+        super(pos, true);
         array_ = array;
         index_ = index;
     }
@@ -21,6 +21,7 @@ public class ArrayExprNode extends ExprNode {
         }
         if (array_.type_.isArray_ && index_.type_.equals(new Type("int"))) {
             type_ = new Type(array_.type_.name_, array_.type_.dim_ - 1);
+            isLeftValue_ = array_.isLeftValue_;
             return;
         }
         throw new SemanticError("Type Mismatch Error", pos_);

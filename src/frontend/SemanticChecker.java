@@ -30,24 +30,14 @@ public class SemanticChecker implements ASTVisitor {
         if (!mainFuncType.argTypes_.isEmpty()) {
             throw new SemanticError("Main Function Arg Error", node.pos_);
         }
-        for (var varDef : node.varDefList_) {
-            varDef.accept(this);
-        }
-        for (var funcDef : node.funcDefList_) {
-            funcDef.accept(this);
-        }
-        for (var classDef : node.classDefList_) {
-            classDef.accept(this);
+        for (var def : node.defList_) {
+            def.accept(this);
         }
         scope_ = scope_.parent_;
     }
-
     @Override
     public void visit(ClassDefNode node) {
         scope_ = node.scope_;
-        for (var varDef : node.varDefList_) {
-            varDef.accept(this);
-        }
         for (var funcDef : node.funcDefList_) {
             funcDef.accept(this);
         }
@@ -72,7 +62,7 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public void visit(FuncDefNode node) {
         scope_ = new FuncScope(scope_, new Type(node.returnType_));
-        if (gScope_.getClassType(node.returnType_.name_) == null) {
+        if (!node.returnType_.equals(new Type("void")) && gScope_.getClassType(node.returnType_.name_) == null) {
             throw new SemanticError("Undefined Symbol Error", node.pos_);
         }
         for (var param : node.paramList_) {
@@ -93,15 +83,16 @@ public class SemanticChecker implements ASTVisitor {
             throw new SemanticError("Undefined Symbol Error", node.pos_);
         }
         for (var varUnit : node.varList_) {
-            varUnit.second_.accept(this);
-            if (varUnit.second_ instanceof ArrayLiteralNode) {
-                if (!((ArrayLiteralNode) varUnit.second_).equalsType(node.type_)) {
-                    throw new SemanticError("Type Mismatch Error", node.pos_);
-                }
-            }
-            else {
-                if (!varUnit.second_.type_.equals(node.type_)) {
-                    throw new SemanticError("Type Mismatch Error", node.pos_);
+            if (varUnit.second_ != null) {
+                varUnit.second_.accept(this);
+                if (varUnit.second_ instanceof ArrayLiteralNode) {
+                    if (!((ArrayLiteralNode) varUnit.second_).equalsType(node.type_)) {
+                        throw new SemanticError("Type Mismatch Error", node.pos_);
+                    }
+                } else {
+                    if (!varUnit.second_.type_.equals(node.type_)) {
+                        throw new SemanticError("Type Mismatch Error", node.pos_);
+                    }
                 }
             }
             scope_.addVar(varUnit.first_, node.type_, node.pos_);
@@ -129,19 +120,21 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(ForStmtNode node) {
-        scope_ = new LoopScope(scope_);
+        scope_ = new Scope(scope_);
         if (node.init_ != null) {
             node.init_.accept(this);
         }
         if (node.cond_ != null) {
+            node.cond_.accept(this);
             if (!node.cond_.type_.equals(new Type("bool"))) {
                 throw new SemanticError("Type Mismatch Error: the type of cond should be bool", node.pos_);
             }
-            node.cond_.accept(this);
         }
+        scope_ = new LoopScope(scope_);
         for (var stmt : node.body_) {
             stmt.accept(this);
         }
+        scope_ = scope_.parent_;
         if (node.step_ != null) {
             node.step_.accept(this);
         }
@@ -150,6 +143,7 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(IfStmtNode node) {
+        node.cond_.accept(this);
         if (!node.cond_.type_.equals(new Type("bool"))) {
             throw new SemanticError("Type Mismatch Error: the type of cond should be bool", node.pos_);
         }
@@ -163,6 +157,9 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(ReturnStmtNode node) {
+        if (node.expr_ != null) {
+            node.expr_.accept(this);
+        }
         scope_.checkReturnType(node.expr_ == null ? new Type("void") : node.expr_.type_, node.pos_);
     }
 
@@ -182,12 +179,15 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(WhileStmtNode node) {
+        scope_ = new LoopScope(scope_);
+        node.cond_.accept(this);
         if (!node.cond_.type_.equals(new Type("bool"))) {
             throw new SemanticError("Type Mismatch Error: the type of cond should be bool", node.pos_);
         }
         if (node.body_ != null) {
             node.body_.accept(this);
         }
+        scope_ = scope_.parent_;
     }
 
     @Override
@@ -221,15 +221,16 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(FuncCallExprNode node) {
-        node.funcName_.accept(this);
+        if (node.funcName_ instanceof MemberExprNode) {
+            node.funcName_.accept(this);
+        }
         for (var arg : node.args_) {
             arg.accept(this);
         }
         FuncType funcType = null;
         if (node.funcName_ instanceof IdentifierNode) {
-            funcType = gScope_.getFuncType(((IdentifierNode) node.funcName_).name_);
-        }
-        else if (node.funcName_ instanceof MemberExprNode) {
+            funcType = scope_.getFuncType(((IdentifierNode) node.funcName_).name_);
+        } else if (node.funcName_ instanceof MemberExprNode) {
             funcType = ((MemberExprNode) node.funcName_).funcType_;
         }
         if (funcType == null) {
@@ -255,8 +256,7 @@ public class SemanticChecker implements ASTVisitor {
             }
             node.funcType_ = new FuncType(new Type("int"));
             node.isLeftValue_ = false;
-        }
-        else {
+        } else {
             ClassType classType = gScope_.getClassType(node.class_.type_.name_);
             FuncType funcType = classType.funcMap_.get(node.member_);
             Type varType = classType.varMap_.get(node.member_);
@@ -294,6 +294,7 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public void visit(ParenthesesExprNode node) {
         node.expr_.accept(this);
+        node.checkAndInferType();
     }
 
     @Override
@@ -314,7 +315,8 @@ public class SemanticChecker implements ASTVisitor {
     }
 
     @Override
-    public void visit(BoolLiteralNode node) {}
+    public void visit(BoolLiteralNode node) {
+    }
 
     @Override
     public void visit(FStringNode node) {
@@ -334,13 +336,16 @@ public class SemanticChecker implements ASTVisitor {
     }
 
     @Override
-    public void visit(IntLiteralNode node) {}
+    public void visit(IntLiteralNode node) {
+    }
 
     @Override
-    public void visit(NullLiteralNode node) {}
+    public void visit(NullLiteralNode node) {
+    }
 
     @Override
-    public void visit(StringLiteralNode node) {}
+    public void visit(StringLiteralNode node) {
+    }
 
     @Override
     public void visit(ThisNode node) {
