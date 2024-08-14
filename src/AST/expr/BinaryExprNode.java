@@ -19,7 +19,7 @@ public class BinaryExprNode extends ExprNode {
     @Override
     public void checkAndInferType() {
         if (MemberExprNode.isMemberFunc(lhs_) || MemberExprNode.isMemberFunc(rhs_)) {
-            System.err.println("Type Mismatch");
+            System.err.println("Invalid Type");
             throw new SemanticError("Type Mismatch Error", pos_);
         }
         if (op_.equals("+") && lhs_.type_.equals(new Type("string")) &&
@@ -53,7 +53,12 @@ public class BinaryExprNode extends ExprNode {
                 return;
             }
         }
-        System.err.println("Type Mismatch");
+        if (!lhs_.type_.equals(rhs_.type_)) {
+            System.err.println("Type Mismatch");
+        }
+        else {
+            System.err.println("Invalid Type");
+        }
         throw new SemanticError("Type Mismatch Error", pos_);
     }
 
