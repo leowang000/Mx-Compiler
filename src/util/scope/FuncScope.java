@@ -6,6 +6,7 @@ import util.error.SemanticError;
 
 public class FuncScope extends Scope {
     public Type returnType_;
+    public boolean isReturned_ = false;
 
     public FuncScope(Scope parent, Type returnType) {
         super(parent);
@@ -20,5 +21,6 @@ public class FuncScope extends Scope {
                     String.format("Return Type Mismatch Error: should return %s, but return %s", returnType_, type),
                     pos);
         }
+        isReturned_ = true;
     }
 }

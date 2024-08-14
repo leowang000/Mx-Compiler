@@ -65,6 +65,9 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public void visit(FuncDefNode node) {
         scope_ = new FuncScope(scope_, new Type(node.returnType_));
+        if (node.returnType_.equals(new Type("void")) || node.name_.equals("main")) {
+            ((FuncScope) scope_).isReturned_ = true;
+        }
         if (!node.returnType_.equals(new Type("void")) && gScope_.getClassType(node.returnType_.name_) == null) {
             System.out.println("Undefined Identifier");
             throw new SemanticError("Undefined Symbol Error", node.pos_);
@@ -78,6 +81,10 @@ public class SemanticChecker implements ASTVisitor {
         }
         for (var stmt : node.stmtList_) {
             stmt.accept(this);
+        }
+        if (!((FuncScope) scope_).isReturned_) {
+            System.out.println("Missing Return Statement");
+            throw new SemanticError("Missing Return Statement Error", node.pos_);
         }
         scope_ = scope_.parent_;
     }

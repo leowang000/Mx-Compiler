@@ -11,7 +11,7 @@ import util.scope.GlobalScope;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        //String input_file_name = "testcases/sema/basic-package/basic-7.mx";
+        //String input_file_name = "testcases/sema/basic-package/basic-26.mx";
         //CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
         CharStream input = CharStreams.fromStream(System.in);
         try {
