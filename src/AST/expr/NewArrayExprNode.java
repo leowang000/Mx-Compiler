@@ -23,10 +23,12 @@ public class NewArrayExprNode extends ExprNode {
     public void checkAndInferType() {
         for (var expr : fixedSizeList_) {
             if (MemberExprNode.isMemberFunc(expr) || !expr.type_.equals(new Type("int"))) {
+                System.err.println("Invalid Type");
                 throw new SemanticError("Type Mismatch Error", pos_);
             }
         }
         if (array_ != null && !array_.equalsType(type_)) {
+            System.err.println("Type Mismatch");
             throw new SemanticError("Type Mismatch Error", pos_);
         }
     }

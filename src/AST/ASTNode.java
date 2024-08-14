@@ -3,7 +3,7 @@ package AST;
 import util.Position;
 
 abstract public class ASTNode {
-    public Position pos_ = null;
+    public Position pos_;
 
     public ASTNode(Position pos) {
         pos_ = pos;

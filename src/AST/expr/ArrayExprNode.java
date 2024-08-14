@@ -17,12 +17,19 @@ public class ArrayExprNode extends ExprNode {
     @Override
     public void checkAndInferType() {
         if (MemberExprNode.isMemberFunc(array_) || MemberExprNode.isMemberFunc(index_)) {
+            System.err.println("Invalid Type");
             throw new SemanticError("Type Mismatch Error", pos_);
         }
         if (array_.type_.isArray_ && index_.type_.equals(new Type("int"))) {
             type_ = new Type(array_.type_.name_, array_.type_.dim_ - 1);
             isLeftValue_ = array_.isLeftValue_;
             return;
+        }
+        if (!array_.type_.isArray_) {
+            System.err.println("Dimension Out Of Bound");
+        }
+        if (!index_.type_.equals(new Type("int"))) {
+            System.err.println("Invalid Type");
         }
         throw new SemanticError("Type Mismatch Error", pos_);
     }

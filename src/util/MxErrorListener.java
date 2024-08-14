@@ -3,7 +3,7 @@ package util;
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
-import util.error.SemanticError;
+import util.error.SyntaxError;
 
 public class MxErrorListener extends BaseErrorListener {
     @Override
@@ -12,6 +12,7 @@ public class MxErrorListener extends BaseErrorListener {
                             int line, int charPositionInLine,
                             String msg,
                             RecognitionException e) {
-        throw new SemanticError(msg, new Position(line, charPositionInLine));
+        System.err.println("Invalid Identifier");
+        throw new SyntaxError(msg, new Position(line, charPositionInLine));
     }
 }

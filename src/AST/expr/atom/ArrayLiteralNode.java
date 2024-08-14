@@ -22,6 +22,7 @@ public class ArrayLiteralNode extends AtomExprNode {
             return;
         }
         if (!equalsType(type)) {
+            System.err.println("Invalid Type");
             throw new SemanticError("Type Mismatch Error", pos_);
         }
     }
