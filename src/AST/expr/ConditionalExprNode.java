@@ -19,7 +19,7 @@ public class ConditionalExprNode extends ExprNode {
     public void checkAndInferType() {
         if (MemberExprNode.isMemberFunc(cond_) || MemberExprNode.isMemberFunc(lhs_) ||
             MemberExprNode.isMemberFunc(rhs_)) {
-            System.err.println("Type Mismatch");
+            System.out.println("Type Mismatch");
             throw new SemanticError("Type Mismatch Error", pos_);
         }
         if (cond_.type_.equals(new Type("bool")) && lhs_.type_.equals(rhs_.type_)) {
@@ -27,10 +27,10 @@ public class ConditionalExprNode extends ExprNode {
             return;
         }
         if (!cond_.type_.equals(new Type("bool"))) {
-            System.err.println("Invalid Type");
+            System.out.println("Invalid Type");
         }
         if (!lhs_.type_.equals(new Type("bool"))) {
-            System.err.println("Type Mismatch");
+            System.out.println("Type Mismatch");
         }
         throw new SemanticError("Type Mismatch Error", pos_);
     }

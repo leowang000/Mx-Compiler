@@ -20,7 +20,7 @@ public class ClassScope extends Scope {
     @Override
     public void addVar(String varName, Type type, Position pos) {
         if (funcDefMap_.containsKey(varName)) {
-            System.err.println("Multiple Definitions");
+            System.out.println("Multiple Definitions");
             throw new SyntaxError("Symbol Redefinition Error: " + varName, pos);
         }
         super.addVar(varName, type, pos);
@@ -28,15 +28,15 @@ public class ClassScope extends Scope {
 
     public void addFunc(String funcName, FuncType funcType, Position pos) {
         if (funcName.equals(name_)) {
-            System.err.println("Multiple Definitions");
+            System.out.println("Multiple Definitions");
             throw new SyntaxError("Symbol Redefinition Error: " + funcName, pos);
         }
         if (varDefMap_.containsKey(funcName)) {
-            System.err.println("Multiple Definitions");
+            System.out.println("Multiple Definitions");
             throw new SyntaxError("Symbol Redefinition Error: " + funcName, pos);
         }
         if (funcDefMap_.containsKey(funcName)) {
-            System.err.println("Multiple Definitions");
+            System.out.println("Multiple Definitions");
             throw new SyntaxError("Function Redefinition Error: " + funcName, pos);
         }
         funcDefMap_.put(funcName, funcType);

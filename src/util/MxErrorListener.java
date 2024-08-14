@@ -12,7 +12,7 @@ public class MxErrorListener extends BaseErrorListener {
                             int line, int charPositionInLine,
                             String msg,
                             RecognitionException e) {
-        System.err.println("Invalid Identifier");
+        System.out.println("Invalid Identifier");
         throw new SyntaxError(msg, new Position(line, charPositionInLine));
     }
 }

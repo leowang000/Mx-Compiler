@@ -18,14 +18,14 @@ public class PreUnaryExprNode extends ExprNode {
     @Override
     public void checkAndInferType() {
         if (MemberExprNode.isMemberFunc(expr_)) {
-            System.err.println("Invalid Type");
+            System.out.println("Invalid Type");
             throw new SemanticError("Type Mismatch Error", pos_);
         }
         if (expr_.isLeftValue_ && expr_.type_.equals(new Type("int"))) {
             type_ = new Type("int");
             return;
         }
-        System.err.println("Invalid Type");
+        System.out.println("Invalid Type");
         throw new SemanticError("Type Mismatch Error", pos_);
     }
 

@@ -18,7 +18,7 @@ public class Scope {
 
     public void addVar(String varName, Type type, Position pos) {
         if (varDefMap_.containsKey(varName)) {
-            System.err.println("Multiple Definitions");
+            System.out.println("Multiple Definitions");
             throw new SyntaxError("Variable Redefinition Error: " + varName, pos);
         }
         varDefMap_.put(varName, type);

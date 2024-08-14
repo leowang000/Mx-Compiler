@@ -42,7 +42,7 @@ public class GlobalScope extends ClassScope {
     @Override
     public void addFunc(String funcName, FuncType funcType, Position pos) {
         if (classDefMap_.containsKey(funcName)) {
-            System.err.println("Multiple Definitions");
+            System.out.println("Multiple Definitions");
             throw new SyntaxError("Symbol Redefinition Error: " + funcName, pos);
         }
         super.addFunc(funcName, funcType, pos);
@@ -50,11 +50,11 @@ public class GlobalScope extends ClassScope {
 
     public void addClass(String className, ClassType classType, Position pos) {
         if (funcDefMap_.containsKey(className)) {
-            System.err.println("Multiple Definitions");
+            System.out.println("Multiple Definitions");
             throw new SyntaxError("Symbol Redefinition Error: " + className, pos);
         }
         if (classDefMap_.containsKey(className)) {
-            System.err.println("Multiple Definitions");
+            System.out.println("Multiple Definitions");
             throw new SyntaxError("Class Redefinition Error: " + className, pos);
         }
         classDefMap_.put(className, classType);

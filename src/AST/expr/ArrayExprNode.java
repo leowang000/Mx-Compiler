@@ -17,7 +17,7 @@ public class ArrayExprNode extends ExprNode {
     @Override
     public void checkAndInferType() {
         if (MemberExprNode.isMemberFunc(array_) || MemberExprNode.isMemberFunc(index_)) {
-            System.err.println("Invalid Type");
+            System.out.println("Invalid Type");
             throw new SemanticError("Type Mismatch Error", pos_);
         }
         if (array_.type_.isArray_ && index_.type_.equals(new Type("int"))) {
@@ -26,10 +26,10 @@ public class ArrayExprNode extends ExprNode {
             return;
         }
         if (!array_.type_.isArray_) {
-            System.err.println("Dimension Out Of Bound");
+            System.out.println("Dimension Out Of Bound");
         }
         if (!index_.type_.equals(new Type("int"))) {
-            System.err.println("Invalid Type");
+            System.out.println("Invalid Type");
         }
         throw new SemanticError("Type Mismatch Error", pos_);
     }

@@ -24,7 +24,7 @@ public class FStringNode extends AtomExprNode {
         for (ExprNode expr : exprList_) {
             if (!expr.type_.equals(new Type("int")) && !expr.type_.equals(new Type("bool")) &&
                 !expr.type_.equals(new Type("string"))) {
-                System.err.println("Invalid Type");
+                System.out.println("Invalid Type");
                 throw new SemanticError("Type Mismatch Error", pos_);
             }
         }

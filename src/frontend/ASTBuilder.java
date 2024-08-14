@@ -28,7 +28,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitClassDef(MxParser.ClassDefContext ctx) {
         if (ctx.constructorDef().size() >= 2) {
-            System.err.println("Multiple Definitions");
+            System.out.println("Multiple Definitions");
             throw new SyntaxError("Constructor Redefinition Error: " + ctx.Identifier().getText(),
                                   new Position(ctx.constructorDef(0)));
         }
@@ -37,7 +37,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         ClassDefNode classDef = new ClassDefNode(new Position(ctx), ctx.Identifier().getText(), constructor);
         for (var varDef : ctx.varDef()) {
             if (!varDef.expression().isEmpty()) {
-                System.err.println("Invalid Identifier");
+                System.out.println("Invalid Identifier");
                 throw new SyntaxError("Member Variable Initialization Error", new Position(varDef));
             }
             classDef.varDefList_.add((VarDefNode) visit(varDef));
@@ -209,7 +209,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitNewArrayExpr(MxParser.NewArrayExprContext ctx) {
         if (!ctx.expression().isEmpty() && ctx.arrayLiteral() != null) {
-            System.err.println("Invalid Identifier");
+            System.out.println("Invalid Identifier");
             throw new SyntaxError("Invalid New Expression Error", new Position(ctx));
         }
         Type type = new Type(ctx.typeName().getText(), ctx.LeftBracket().size());
@@ -218,7 +218,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         for (int i = 0; i < ctx.expression().size(); i++) {
             if (ctx.expression(i).getStart().getTokenIndex() < ctx.LeftBracket(i).getSymbol().getTokenIndex() ||
                 ctx.expression(i).getStart().getTokenIndex() > ctx.RightBracket(i).getSymbol().getTokenIndex()) {
-                System.err.println("Invalid Identifier");
+                System.out.println("Invalid Identifier");
                 throw new SyntaxError("Invalid New Expression Error", new Position(ctx));
             }
             newArray.fixedSizeList_.add((ExprNode) visit(ctx.expression(i)));

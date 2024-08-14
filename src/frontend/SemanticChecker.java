@@ -25,11 +25,11 @@ public class SemanticChecker implements ASTVisitor {
             throw new SemanticError("Main Function Missing Error", node.pos_);
         }
         if (!mainFuncType.returnType_.equals(new Type("int"))) {
-            System.err.println("Invalid Type");
+            System.out.println("Invalid Type");
             throw new SemanticError("Main Function Return Type Error", node.pos_);
         }
         if (!mainFuncType.argTypes_.isEmpty()) {
-            System.err.println("Invalid Type");
+            System.out.println("Invalid Type");
             throw new SemanticError("Main Function Arg Error", node.pos_);
         }
         for (var def : node.defList_) {
@@ -45,7 +45,7 @@ public class SemanticChecker implements ASTVisitor {
         }
         if (node.constructor_ != null) {
             if (!node.constructor_.name_.equals(node.name_)) {
-                System.err.println("Undefined Identifier");
+                System.out.println("Undefined Identifier");
                 throw new SemanticError("Constructor Name Error", node.pos_);
             }
             node.constructor_.accept(this);
@@ -66,12 +66,12 @@ public class SemanticChecker implements ASTVisitor {
     public void visit(FuncDefNode node) {
         scope_ = new FuncScope(scope_, new Type(node.returnType_));
         if (!node.returnType_.equals(new Type("void")) && gScope_.getClassType(node.returnType_.name_) == null) {
-            System.err.println("Undefined Identifier");
+            System.out.println("Undefined Identifier");
             throw new SemanticError("Undefined Symbol Error", node.pos_);
         }
         for (var param : node.paramList_) {
             if (gScope_.getClassType(param.first_.name_) == null) {
-                System.err.println("Undefined Identifier");
+                System.out.println("Undefined Identifier");
                 throw new SemanticError("Undefined Symbol Error", node.pos_);
             }
             scope_.addVar(param.second_, param.first_, node.pos_);
@@ -85,7 +85,7 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public void visit(VarDefNode node) {
         if (gScope_.getClassType(node.type_.name_) == null) {
-            System.err.println("Undefined Identifier");
+            System.out.println("Undefined Identifier");
             throw new SemanticError("Undefined Symbol Error", node.pos_);
         }
         for (var varUnit : node.varList_) {
@@ -93,12 +93,12 @@ public class SemanticChecker implements ASTVisitor {
                 varUnit.second_.accept(this);
                 if (varUnit.second_ instanceof ArrayLiteralNode) {
                     if (!((ArrayLiteralNode) varUnit.second_).equalsType(node.type_)) {
-                        System.err.println("Type Mismatch");
+                        System.out.println("Type Mismatch");
                         throw new SemanticError("Type Mismatch Error", node.pos_);
                     }
                 } else {
                     if (!varUnit.second_.type_.equals(node.type_)) {
-                        System.err.println("Type Mismatch");
+                        System.out.println("Type Mismatch");
                         throw new SemanticError("Type Mismatch Error", node.pos_);
                     }
                 }
@@ -110,7 +110,7 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public void visit(BreakStmtNode node) {
         if (!scope_.isInLoop()) {
-            System.err.println("Invalid Control Flow");
+            System.out.println("Invalid Control Flow");
             throw new SemanticError("Break Statement Error", node.pos_);
         }
     }
@@ -118,7 +118,7 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public void visit(ContinueStmtNode node) {
         if (!scope_.isInLoop()) {
-            System.err.println("Invalid Control Flow");
+            System.out.println("Invalid Control Flow");
             throw new SemanticError("Continue Statement Error", node.pos_);
         }
     }
@@ -137,7 +137,7 @@ public class SemanticChecker implements ASTVisitor {
         if (node.cond_ != null) {
             node.cond_.accept(this);
             if (!node.cond_.type_.equals(new Type("bool"))) {
-                System.err.println("Invalid Type");
+                System.out.println("Invalid Type");
                 throw new SemanticError("Type Mismatch Error: the type of cond should be bool", node.pos_);
             }
         }
@@ -156,7 +156,7 @@ public class SemanticChecker implements ASTVisitor {
     public void visit(IfStmtNode node) {
         node.cond_.accept(this);
         if (!node.cond_.type_.equals(new Type("bool"))) {
-            System.err.println("Invalid Type");
+            System.out.println("Invalid Type");
             throw new SemanticError("Type Mismatch Error: the type of cond should be bool", node.pos_);
         }
         if (node.then_ != null) {
@@ -194,7 +194,7 @@ public class SemanticChecker implements ASTVisitor {
         scope_ = new LoopScope(scope_);
         node.cond_.accept(this);
         if (!node.cond_.type_.equals(new Type("bool"))) {
-            System.err.println("Invalid Type");
+            System.out.println("Invalid Type");
             throw new SemanticError("Type Mismatch Error: the type of cond should be bool", node.pos_);
         }
         if (node.body_ != null) {
@@ -247,16 +247,16 @@ public class SemanticChecker implements ASTVisitor {
             funcType = ((MemberExprNode) node.funcName_).funcType_;
         }
         if (funcType == null) {
-            System.err.println("Undefined Identifier");
+            System.out.println("Undefined Identifier");
             throw new SemanticError("Undefined Function Error", node.pos_);
         }
         if (funcType.argTypes_.size() != node.args_.size()) {
-            System.err.println("Invalid Identifier");
+            System.out.println("Invalid Identifier");
             throw new SemanticError("Args Mismatch Error", node.pos_);
         }
         for (int i = 0; i < node.args_.size(); i++) {
             if (!funcType.argTypes_.get(i).equals(node.args_.get(i).type_)) {
-                System.err.println("Type Mismatch");
+                System.out.println("Type Mismatch");
                 throw new SemanticError("Type Mismatch Error", node.pos_);
             }
         }
@@ -268,7 +268,7 @@ public class SemanticChecker implements ASTVisitor {
         node.class_.accept(this);
         if (node.class_.type_.isArray_) {
             if (!node.member_.equals("size")) {
-                System.err.println("Undefined Identifier");
+                System.out.println("Undefined Identifier");
                 throw new SemanticError("Undefined Symbol Error", node.pos_);
             }
             node.funcType_ = new FuncType(new Type("int"));
@@ -286,7 +286,7 @@ public class SemanticChecker implements ASTVisitor {
                 node.type_ = varType;
                 return;
             }
-            System.err.println("Undefined Identifier");
+            System.out.println("Undefined Identifier");
             throw new SemanticError("Undefined Symbol Error", node.pos_);
         }
     }
@@ -297,7 +297,7 @@ public class SemanticChecker implements ASTVisitor {
             sz.accept(this);
         }
         if (gScope_.getClassType(node.type_.name_) == null) {
-            System.err.println("Undefined Identifier");
+            System.out.println("Undefined Identifier");
             throw new SemanticError("Undefined Class Error", node.pos_);
         }
         node.checkAndInferType();
@@ -306,7 +306,7 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public void visit(NewVarExprNode node) {
         if (gScope_.getClassType(node.type_.name_) == null) {
-            System.err.println("Undefined Identifier");
+            System.out.println("Undefined Identifier");
             throw new SemanticError("Undefined Class Error", node.pos_);
         }
     }
@@ -350,7 +350,7 @@ public class SemanticChecker implements ASTVisitor {
     public void visit(IdentifierNode node) {
         Type varType = scope_.getVarType(node.name_);
         if (varType == null) {
-            System.err.println("Undefined Identifier");
+            System.out.println("Undefined Identifier");
             throw new SemanticError("Undefined Variable Error", node.pos_);
         }
         node.type_ = varType;
@@ -372,7 +372,7 @@ public class SemanticChecker implements ASTVisitor {
     public void visit(ThisNode node) {
         String className = scope_.getClassName();
         if (className == null) {
-            System.err.println("Undefined Identifier");
+            System.out.println("Undefined Identifier");
             throw new SemanticError("This Expression Error", node.pos_);
         }
         node.type_ = new Type(className);

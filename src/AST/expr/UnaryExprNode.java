@@ -18,7 +18,7 @@ public class UnaryExprNode extends ExprNode {
     @Override
     public void checkAndInferType() {
         if (MemberExprNode.isMemberFunc(expr_)) {
-            System.err.println("Invalid Type");
+            System.out.println("Invalid Type");
             throw new SemanticError("Type Mismatch Error", pos_);
         }
         if (expr_.type_.equals(new Type("int"))) {
@@ -37,7 +37,7 @@ public class UnaryExprNode extends ExprNode {
             type_ = new Type("bool");
             return;
         }
-        System.err.println("Invalid Type");
+        System.out.println("Invalid Type");
         throw new SemanticError("Type Mismatch Error", pos_);
     }
 
