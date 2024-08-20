@@ -14,13 +14,8 @@ public class FuncScope extends Scope {
     }
 
     @Override
-    public void checkReturnType(Type type, Position pos) {
-        if (!returnType_.equals(type)) {
-            System.out.println("Type Mismatch");
-            throw new SemanticError(
-                    String.format("Return Type Mismatch Error: should return %s, but return %s", returnType_, type),
-                    pos);
-        }
+    public Type getReturnType() {
         isReturned_ = true;
+        return returnType_;
     }
 }

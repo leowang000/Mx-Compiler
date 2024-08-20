@@ -1,7 +1,7 @@
 package frontend;
 
 import AST.*;
-import AST.def.*;
+import AST.module.*;
 import AST.expr.*;
 import AST.expr.atom.*;
 import AST.stmt.*;
@@ -28,7 +28,7 @@ public class SemanticChecker implements ASTVisitor {
             System.out.println("Invalid Type");
             throw new SemanticError("Main Function Return Type Error", node.pos_);
         }
-        if (!mainFuncType.argTypes_.isEmpty()) {
+        if (!mainFuncType.argTypeList_.isEmpty()) {
             System.out.println("Invalid Type");
             throw new SemanticError("Main Function Arg Error", node.pos_);
         }
@@ -179,7 +179,19 @@ public class SemanticChecker implements ASTVisitor {
         if (node.expr_ != null) {
             node.expr_.accept(this);
         }
-        scope_.checkReturnType(node.expr_ == null ? new Type("void") : node.expr_.type_, node.pos_);
+        Type returnType = scope_.getReturnType();
+        if (node.expr_ instanceof ArrayLiteralNode) {
+            if (!((ArrayLiteralNode) node.expr_).equalsType(returnType)) {
+                System.out.println("Type Mismatch");
+                throw new SemanticError("Return Type Mismatch Error", node.pos_);
+            }
+        }
+        else {
+            if (!returnType.equals(node.expr_ == null ? new Type("void") : node.expr_.type_)) {
+                System.out.println("Type Mismatch");
+                throw new SemanticError("Return Type Mismatch Error", node.pos_);
+            }
+        }
     }
 
     @Override
@@ -257,14 +269,22 @@ public class SemanticChecker implements ASTVisitor {
             System.out.println("Undefined Identifier");
             throw new SemanticError("Undefined Function Error", node.pos_);
         }
-        if (funcType.argTypes_.size() != node.args_.size()) {
+        if (funcType.argTypeList_.size() != node.args_.size()) {
             System.out.println("Invalid Identifier");
             throw new SemanticError("Args Mismatch Error", node.pos_);
         }
         for (int i = 0; i < node.args_.size(); i++) {
-            if (!funcType.argTypes_.get(i).equals(node.args_.get(i).type_)) {
-                System.out.println("Type Mismatch");
-                throw new SemanticError("Type Mismatch Error", node.pos_);
+            if (node.args_.get(i) instanceof ArrayLiteralNode) {
+                if (!((ArrayLiteralNode) node.args_.get(i)).equalsType(funcType.argTypeList_.get(i))) {
+                    System.out.println("Type Mismatch");
+                    throw new SemanticError("Type Mismatch Error", node.pos_);
+                }
+            }
+            else {
+                if (!funcType.argTypeList_.get(i).equals(node.args_.get(i).type_)) {
+                    System.out.println("Type Mismatch");
+                    throw new SemanticError("Type Mismatch Error", node.pos_);
+                }
             }
         }
         node.type_ = new Type(funcType.returnType_);
@@ -273,6 +293,15 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public void visit(MemberExprNode node) {
         node.class_.accept(this);
+        if (node.class_ instanceof ArrayLiteralNode) {
+            if (!node.member_.equals("size")) {
+                System.out.println("Undefined Identifier");
+                throw new SemanticError("Undefined Symbol Error", node.pos_);
+            }
+            node.funcType_ = new FuncType(new Type("int"));
+            node.isLeftValue_ = false;
+            return;
+        }
         if (node.class_.type_.isArray_) {
             if (!node.member_.equals("size")) {
                 System.out.println("Undefined Identifier");

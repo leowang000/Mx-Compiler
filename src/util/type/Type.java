@@ -58,20 +58,20 @@ public class Type {
     }
 
     @Override
-    public boolean equals(Object other) {
-        if (!(other instanceof Type)) {
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Type)) {
             return false;
         }
-        if (this == other) {
+        if (this == obj) {
             return true;
         }
-        Type otherType = (Type) other;
+        Type otherType = (Type) obj;
         if ((name_.equals("null") && otherType.name_.equals("null")) ||
             (name_.equals("null") && !isBuiltInType(otherType)) ||
             (otherType.name_.equals("null") && !isBuiltInType(this))) {
             return true;
         }
-        return name_.equals(((Type) other).name_) && dim_ == ((Type) other).dim_;
+        return name_.equals(((Type) obj).name_) && dim_ == ((Type) obj).dim_;
     }
 
     @Override

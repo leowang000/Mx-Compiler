@@ -17,5 +17,5 @@ public abstract class ExprNode extends ASTNode {
     public void checkAndInferType() {}
 
     @Override
-    abstract public void accept(ASTVisitor visitor);
+    public abstract void accept(ASTVisitor visitor);
 }

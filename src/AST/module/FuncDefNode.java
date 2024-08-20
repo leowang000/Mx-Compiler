@@ -1,4 +1,4 @@
-package AST.def;
+package AST.module;
 
 import java.util.ArrayList;
 

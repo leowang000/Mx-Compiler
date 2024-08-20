@@ -1,7 +1,7 @@
 package AST.stmt;
 
 import AST.ASTVisitor;
-import AST.def.VarDefNode;
+import AST.module.VarDefNode;
 import util.Position;
 
 public class VarDefStmtNode extends StmtNode {

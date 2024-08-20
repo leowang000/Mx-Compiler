@@ -71,8 +71,8 @@ public class GlobalScope extends ClassScope {
     }
 
     @Override
-    public void checkReturnType(Type type, Position pos) {
-        throw new SemanticError("Unexpected Return Error", pos);
+    public Type getReturnType() {
+        return null;
     }
 
     @Override

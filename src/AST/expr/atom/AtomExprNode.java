@@ -11,5 +11,5 @@ public abstract class AtomExprNode extends ExprNode {
     }
 
     @Override
-    abstract public void accept(ASTVisitor visitor);
+    public abstract void accept(ASTVisitor visitor);
 }

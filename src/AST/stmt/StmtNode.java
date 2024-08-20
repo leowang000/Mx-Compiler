@@ -10,5 +10,5 @@ public abstract class StmtNode extends ASTNode {
     }
 
     @Override
-    abstract public void accept(ASTVisitor visitor);
+    public abstract void accept(ASTVisitor visitor);
 }

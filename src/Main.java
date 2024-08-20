@@ -1,6 +1,7 @@
 import java.io.*;
 
-import AST.def.ProgramNode;
+import AST.module.ProgramNode;
+import IR.module.IRProgram;
 import frontend.*;
 import parser.*;
 import util.*;
@@ -11,9 +12,9 @@ import util.scope.GlobalScope;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        //String input_file_name = "testcases/sema/basic-package/basic-26.mx";
-        //CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
-        CharStream input = CharStreams.fromStream(System.in);
+        String input_file_name = "testcases/sema/basic-package/basic-1.mx";
+        CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
+        //CharStream input = CharStreams.fromStream(System.in);
         try {
             MxLexer lexer = new MxLexer(input);
             lexer.removeErrorListeners();
@@ -24,9 +25,12 @@ public class Main {
             ParseTree parseTreeRoot = parser.program();
             ASTBuilder astBuilder = new ASTBuilder();
             ProgramNode ast = (ProgramNode) astBuilder.visit(parseTreeRoot);
-            GlobalScope gScope = new GlobalScope();
-            new SymbolCollector(gScope).visit(ast);
-            new SemanticChecker(gScope).visit(ast);
+            GlobalScope globalScope = new GlobalScope();
+            new SymbolCollector(globalScope).visit(ast);
+            new SemanticChecker(globalScope).visit(ast);
+            IRProgram irProgram = new IRProgram();
+            IRBuilder irBuilder = new IRBuilder(globalScope, irProgram);
+            irBuilder.visit(ast);
         } catch (Error err) {
             System.err.println(err);
             throw new RuntimeException();

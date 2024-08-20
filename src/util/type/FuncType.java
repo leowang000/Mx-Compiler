@@ -2,27 +2,27 @@ package util.type;
 
 import java.util.ArrayList;
 
-import AST.def.FuncDefNode;
+import AST.module.FuncDefNode;
 
 public class FuncType {
     public Type returnType_;
-    public ArrayList<Type> argTypes_;
+    public ArrayList<Type> argTypeList_;
 
     public FuncType(Type returnType){
         returnType_ = returnType;
-        argTypes_ = new ArrayList<>();
+        argTypeList_ = new ArrayList<>();
     }
 
     public FuncType(Type returnType, ArrayList<Type> argTypes) {
         returnType_ = returnType;
-        argTypes_ = argTypes;
+        argTypeList_ = argTypes;
     }
 
     public FuncType(FuncDefNode funcDef) {
         returnType_ = new Type(funcDef.returnType_);
-        argTypes_ = new ArrayList<>();
+        argTypeList_ = new ArrayList<>();
         for (var param : funcDef.paramList_) {
-            argTypes_.add(param.first_);
+            argTypeList_.add(param.first_);
         }
     }
 }

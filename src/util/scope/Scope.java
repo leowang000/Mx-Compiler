@@ -32,8 +32,8 @@ public class Scope {
         return parent_.getClassName();
     }
 
-    public void checkReturnType(Type type, Position pos) {
-        parent_.checkReturnType(type, pos);
+    public Type getReturnType() {
+        return parent_.getReturnType();
     }
 
     public Type getVarType(String varName) {

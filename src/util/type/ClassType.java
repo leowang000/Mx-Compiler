@@ -2,7 +2,7 @@ package util.type;
 
 import java.util.HashMap;
 
-import AST.def.ClassDefNode;
+import AST.module.ClassDefNode;
 
 public class ClassType {
     public HashMap<String, FuncType> funcMap_;

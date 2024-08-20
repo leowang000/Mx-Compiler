@@ -1,6 +1,6 @@
 package AST;
 
-import AST.def.*;
+import AST.module.*;
 import AST.stmt.*;
 import AST.expr.*;
 import AST.expr.atom.*;

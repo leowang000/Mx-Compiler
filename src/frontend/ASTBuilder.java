@@ -1,7 +1,7 @@
 package frontend;
 
 import AST.*;
-import AST.def.*;
+import AST.module.*;
 import AST.expr.*;
 import AST.expr.atom.*;
 import AST.stmt.*;
