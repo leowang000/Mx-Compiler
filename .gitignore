@@ -1,12 +1,8 @@
 tools/
-antlr-runtime-4.12.0.jar
 MxCompiler.iml
 MxCompiler.jar
-.idea/
+**/.idea/
 gen/
-code
-res.out
-output.ll
 out/
 *.in
 *.out
@@ -14,7 +10,5 @@ out/
 *.txt
 *.s
 bin/*
-!bin/builtin.s
 Clang-Trial/
-src/Jorginho/
 *.ans
