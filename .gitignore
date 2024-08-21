@@ -1,14 +1,5 @@
-tools/
-MxCompiler.iml
-MxCompiler.jar
 **/.idea/
-gen/
+bin/
 out/
-*.in
-*.out
-*.ll
-*.txt
-*.s
-bin/*
-Clang-Trial/
-*.ans
+tutorial/
+Mx-Compiler.iml
