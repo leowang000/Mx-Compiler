@@ -14,8 +14,7 @@ public class StringLiteralNode extends AtomExprNode {
     }
 
     public static String getString(String str) {
-        return str.substring(1, str.length() - 1).replace("\\\\", "\\").
-                replace("\\n", "\n").replace("\\\"", "\"");
+        return str.substring(1, str.length() - 1).replace("\\\\", "\\").replace("\\n", "\n").replace("\\\"", "\"");
     }
 
     @Override

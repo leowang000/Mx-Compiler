@@ -59,9 +59,4 @@ public class IRStructType extends IRType {
         }
         return res;
     }
-
-    @Override
-    public IRValue getDefaultValue() {
-        return null;
-    }
 }

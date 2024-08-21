@@ -1,6 +1,7 @@
 package IR.module;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import IR.IRNode;
 import IR.IRVisitor;
@@ -11,10 +12,11 @@ public class IRFuncDecl extends IRNode {
     public IRType returnType_;
     public ArrayList<IRType> argTypeList_;
 
-    public IRFuncDecl(String name, IRType returnType) {
+    public IRFuncDecl(String name, IRType returnType, IRType... argTypes) {
         name_ = name;
         returnType_ = returnType;
         argTypeList_ = new ArrayList<>();
+        argTypeList_.addAll(Arrays.asList(argTypes));
     }
 
     @Override

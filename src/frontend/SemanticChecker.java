@@ -37,6 +37,7 @@ public class SemanticChecker implements ASTVisitor {
         }
         scope_ = scope_.parent_;
     }
+
     @Override
     public void visit(ClassDefNode node) {
         scope_ = node.scope_;
@@ -103,7 +104,8 @@ public class SemanticChecker implements ASTVisitor {
                         System.out.println("Type Mismatch");
                         throw new SemanticError("Type Mismatch Error", node.pos_);
                     }
-                } else {
+                }
+                else {
                     if (!varUnit.second_.type_.equals(node.type_)) {
                         System.out.println("Type Mismatch");
                         throw new SemanticError("Type Mismatch Error", node.pos_);
@@ -262,7 +264,8 @@ public class SemanticChecker implements ASTVisitor {
         FuncType funcType = null;
         if (node.funcName_ instanceof IdentifierNode) {
             funcType = scope_.getFuncType(((IdentifierNode) node.funcName_).name_);
-        } else if (node.funcName_ instanceof MemberExprNode) {
+        }
+        else if (node.funcName_ instanceof MemberExprNode) {
             funcType = ((MemberExprNode) node.funcName_).funcType_;
         }
         if (funcType == null) {
@@ -309,7 +312,8 @@ public class SemanticChecker implements ASTVisitor {
             }
             node.funcType_ = new FuncType(new Type("int"));
             node.isLeftValue_ = false;
-        } else {
+        }
+        else {
             ClassType classType = gScope_.getClassType(node.class_.type_.name_);
             FuncType funcType = classType.funcMap_.get(node.member_);
             Type varType = classType.varMap_.get(node.member_);
@@ -371,8 +375,7 @@ public class SemanticChecker implements ASTVisitor {
     }
 
     @Override
-    public void visit(BoolLiteralNode node) {
-    }
+    public void visit(BoolLiteralNode node) {}
 
     @Override
     public void visit(FStringNode node) {
@@ -393,16 +396,13 @@ public class SemanticChecker implements ASTVisitor {
     }
 
     @Override
-    public void visit(IntLiteralNode node) {
-    }
+    public void visit(IntLiteralNode node) {}
 
     @Override
-    public void visit(NullLiteralNode node) {
-    }
+    public void visit(NullLiteralNode node) {}
 
     @Override
-    public void visit(StringLiteralNode node) {
-    }
+    public void visit(StringLiteralNode node) {}
 
     @Override
     public void visit(ThisNode node) {

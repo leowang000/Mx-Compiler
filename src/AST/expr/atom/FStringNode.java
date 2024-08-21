@@ -31,8 +31,7 @@ public class FStringNode extends AtomExprNode {
     }
 
     public static String getFString(String str, int begin, int end) {
-        return str.substring(begin, str.length() + end).replace("\\\\", "\\")
-                .replace("\\n", "\n").replace("\\\"", "\"")
+        return str.substring(begin, str.length() + end).replace("\\\\", "\\").replace("\\n", "\n").replace("\\\"", "\"")
                 .replace("$$", "$");
     }
 

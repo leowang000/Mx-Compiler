@@ -124,7 +124,8 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         if (body != null) {
             if (body instanceof SuiteStmtNode) {
                 forStmt.body_.addAll(((SuiteStmtNode) body).stmtList_);
-            } else {
+            }
+            else {
                 forStmt.body_.add(body);
             }
         }
@@ -265,7 +266,8 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         FStringNode fString = new FStringNode(new Position(ctx));
         if (ctx.FString() != null) {
             fString.strList_.add(FStringNode.getFString(ctx.FString().getText(), 2, -1));
-        } else {
+        }
+        else {
             for (var expr : ctx.expression()) {
                 fString.exprList_.add((ExprNode) visit(expr));
             }

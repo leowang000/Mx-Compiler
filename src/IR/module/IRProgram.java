@@ -5,6 +5,8 @@ import java.util.HashMap;
 
 import IR.IRNode;
 import IR.IRVisitor;
+import IR.type.IRIntType;
+import IR.type.IRPtrType;
 import IR.type.IRVoidType;
 
 public class IRProgram extends IRNode {
@@ -22,8 +24,44 @@ public class IRProgram extends IRNode {
         arrayList_ = new ArrayList<>();
         funcDeclList_ = new ArrayList<>();
         funcDefMap_ = new HashMap<>();
-        // TODO: Add Declarations of Builtin Functions
-        funcDeclList_.add(new IRFuncDecl("..init", new IRVoidType()));
+        funcDeclList_.add(new IRFuncDecl("print", new IRVoidType(), new IRPtrType(new IRIntType(8))));
+        funcDeclList_.add(new IRFuncDecl("println", new IRVoidType(), new IRPtrType(new IRIntType(8))));
+        funcDeclList_.add(new IRFuncDecl("printInt", new IRVoidType(), new IRIntType(32)));
+        funcDeclList_.add(new IRFuncDecl("printlnInt", new IRVoidType(), new IRIntType(32)));
+        funcDeclList_.add(new IRFuncDecl("getString", new IRPtrType(new IRIntType(8))));
+        funcDeclList_.add(new IRFuncDecl("getInt", new IRIntType(32)));
+        funcDeclList_.add(new IRFuncDecl("toString", new IRPtrType(new IRIntType(8))));
+        funcDeclList_.add(
+                new IRFuncDecl("array.copy", new IRVoidType(), new IRPtrType(), new IRIntType(32), new IRIntType(32)));
+        funcDeclList_.add(new IRFuncDecl("array.size", new IRIntType(32), new IRPtrType()));
+        funcDeclList_.add(
+                new IRFuncDecl("string.copy", new IRPtrType(new IRIntType(8)), new IRPtrType(new IRIntType(8))));
+        funcDeclList_.add(new IRFuncDecl("string.length", new IRIntType(32), new IRPtrType(new IRIntType(8))));
+        funcDeclList_.add(
+                new IRFuncDecl("string.ord", new IRIntType(32), new IRPtrType(new IRIntType(8)), new IRIntType(32)));
+        funcDeclList_.add(new IRFuncDecl("string.parseInt", new IRIntType(32), new IRPtrType(new IRIntType(8))));
+        funcDeclList_.add(
+                new IRFuncDecl("string.substring", new IRPtrType(new IRIntType(8)), new IRPtrType(new IRIntType(8)),
+                               new IRIntType(32), new IRIntType(32)));
+        funcDeclList_.add(new IRFuncDecl("builtin.bool_to_string", new IRPtrType(new IRIntType(8)), new IRIntType(1)));
+        funcDeclList_.add(
+                new IRFuncDecl("builtin.malloc_array", new IRPtrType(), new IRIntType(32), new IRIntType(32)));
+        funcDeclList_.add(
+                new IRFuncDecl("builtin.string_cat", new IRPtrType(new IRIntType(8)), new IRPtrType(new IRIntType(8)),
+                               new IRPtrType(new IRIntType(8))));
+        funcDeclList_.add(new IRFuncDecl("builtin.string_eq", new IRIntType(1), new IRPtrType(new IRIntType(8)),
+                                         new IRPtrType(new IRIntType(8))));
+        funcDeclList_.add(new IRFuncDecl("builtin.string_ge", new IRIntType(1), new IRPtrType(new IRIntType(8)),
+                                         new IRPtrType(new IRIntType(8))));
+        funcDeclList_.add(new IRFuncDecl("builtin.string_geq", new IRIntType(1), new IRPtrType(new IRIntType(8)),
+                                         new IRPtrType(new IRIntType(8))));
+        funcDeclList_.add(new IRFuncDecl("builtin.string_le", new IRIntType(1), new IRPtrType(new IRIntType(8)),
+                                         new IRPtrType(new IRIntType(8))));
+        funcDeclList_.add(new IRFuncDecl("builtin.string_leq", new IRIntType(1), new IRPtrType(new IRIntType(8)),
+                                         new IRPtrType(new IRIntType(8))));
+        funcDeclList_.add(new IRFuncDecl("builtin.string_ne", new IRIntType(1), new IRPtrType(new IRIntType(8)),
+                                         new IRPtrType(new IRIntType(8))));
+        funcDeclList_.add(new IRFuncDecl("builtin.init", new IRVoidType()));
     }
 
     @Override

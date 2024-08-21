@@ -10,6 +10,4 @@ public abstract class IRType {
     public abstract boolean equals(Object obj);
 
     public abstract int getSize();
-
-    public abstract IRValue getDefaultValue();
 }

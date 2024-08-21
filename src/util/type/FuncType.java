@@ -1,6 +1,7 @@
 package util.type;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import AST.module.FuncDefNode;
 
@@ -8,14 +9,10 @@ public class FuncType {
     public Type returnType_;
     public ArrayList<Type> argTypeList_;
 
-    public FuncType(Type returnType){
+    public FuncType(Type returnType, Type... argTypes) {
         returnType_ = returnType;
         argTypeList_ = new ArrayList<>();
-    }
-
-    public FuncType(Type returnType, ArrayList<Type> argTypes) {
-        returnType_ = returnType;
-        argTypeList_ = argTypes;
+        argTypeList_.addAll(Arrays.asList(argTypes));
     }
 
     public FuncType(FuncDefNode funcDef) {

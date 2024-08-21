@@ -50,9 +50,4 @@ public class IRPtrType extends IRType {
     public int getSize() {
         return 4;
     }
-
-    @Override
-    public IRValue getDefaultValue() {
-        return new IRNullConst();
-    }
 }

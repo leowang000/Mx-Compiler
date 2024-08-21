@@ -2,6 +2,8 @@ package IR.module;
 
 import IR.IRNode;
 import IR.IRVisitor;
+import IR.type.IRIntType;
+import IR.type.IRPtrType;
 import IR.type.IRType;
 import IR.value.var.IRGlobalVar;
 
@@ -14,7 +16,11 @@ public class IRGlobalVarDef extends IRNode {
 
     @Override
     public String toString() {
-        return String.format("%s = global %s %s\n", var_, var_.type_, var_.type_.getDefaultValue());
+        IRType baseType = ((IRPtrType) var_.type_).base_;
+        if (baseType instanceof IRIntType) {
+            return String.format("%s = global %s 0\n", var_, baseType);
+        }
+        return String.format("%s = global ptr null\n", var_);
     }
 
     @Override

@@ -72,15 +72,18 @@ int __array_size(void *arr) {
   return ((size_t *) arr)[-1];
 }
 
+char *__string_copy(const char *str) {
+  char *res = (char *) malloc(strlen(str) + 1);
+  strcpy(res, str);
+  return res;
+}
+
 int __string_length(const char *str) {
   return strlen(str);
 }
 
-char *__string_substring(const char *str, int left, int right) {
-  char *res = (char *) malloc(right - left + 1);
-  strcpy(res, str);
-  res[right - left] = '\0';
-  return res;
+int __string_ord(const char *str, int pos) {
+  return str[pos];
 }
 
 int __string_parseInt(const char *str) {
@@ -89,8 +92,11 @@ int __string_parseInt(const char *str) {
   return res;
 }
 
-int __string_ord(const char *str, int pos) {
-  return str[pos];
+char *__string_substring(const char *str, int left, int right) {
+  char *res = (char *) malloc(right - left + 1);
+  strcpy(res, str);
+  res[right - left] = '\0';
+  return res;
 }
 
 char *__builtin_bool_to_string(bool value) {
@@ -116,22 +122,22 @@ bool __builtin_string_eq(const char *lhs, const char *rhs) {
   return strcmp(lhs, rhs) == 0;
 }
 
-bool __builtin_string_ne(const char *lhs, const char *rhs) {
-  return strcmp(lhs, rhs) != 0;
+bool __builtin_string_ge(const char *lhs, const char *rhs) {
+  return strcmp(lhs, rhs) > 0;
+}
+
+bool __builtin_string_geq(const char *lhs, const char *rhs) {
+  return strcmp(lhs, rhs) >= 0;
 }
 
 bool __builtin_string_le(const char *lhs, const char *rhs) {
   return strcmp(lhs, rhs) < 0;
 }
 
-bool __builtin_string_ge(const char *lhs, const char *rhs) {
-  return strcmp(lhs, rhs) > 0;
-}
-
 bool __builtin_string_leq(const char *lhs, const char *rhs) {
   return strcmp(lhs, rhs) <= 0;
 }
 
-bool __builtin_string_geq(const char *lhs, const char *rhs) {
-  return strcmp(lhs, rhs) >= 0;
+bool __builtin_string_ne(const char *lhs, const char *rhs) {
+  return strcmp(lhs, rhs) != 0;
 }

@@ -17,9 +17,4 @@ public class IRVoidType extends IRType {
     public int getSize() {
         return 0;
     }
-
-    @Override
-    public IRValue getDefaultValue() {
-        return null;
-    }
 }

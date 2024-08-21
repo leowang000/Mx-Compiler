@@ -17,11 +17,11 @@ public class ArrayLiteralNode extends AtomExprNode {
 
     @Override
     public void checkAndInferType() {
-        Type type = getType(this);
-        if (type == null) {
+        type_ = getType(this);
+        if (type_ == null) {
             return;
         }
-        if (!equalsType(type)) {
+        if (!equalsType(type_)) {
             System.out.println("Invalid Type");
             throw new SemanticError("Type Mismatch Error", pos_);
         }

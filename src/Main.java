@@ -31,6 +31,7 @@ public class Main {
             IRProgram irProgram = new IRProgram();
             IRBuilder irBuilder = new IRBuilder(globalScope, irProgram);
             irBuilder.visit(ast);
+            System.out.print(irProgram);
         } catch (Error err) {
             System.err.println(err);
             throw new RuntimeException();

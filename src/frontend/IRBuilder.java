@@ -5,16 +5,19 @@ import AST.module.*;
 import AST.expr.*;
 import AST.expr.atom.*;
 import AST.stmt.*;
+import IR.module.IRBasicBlock;
 import IR.module.IRProgram;
 import util.scope.GlobalScope;
 
 public class IRBuilder implements ASTVisitor {
     private GlobalScope gScope_;
     private IRProgram irProgram_;
+    private IRBasicBlock currentBlock_;
 
     public IRBuilder(GlobalScope gScope, IRProgram irProgram) {
         gScope_ = gScope;
         irProgram_ = irProgram;
+        currentBlock_ = null;
     }
 
     @Override

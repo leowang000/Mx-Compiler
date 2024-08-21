@@ -28,9 +28,4 @@ public class IRIntType extends IRType {
     public int getSize() {
         return (len_ + 7) / 8;
     }
-
-    @Override
-    public IRValue getDefaultValue() {
-        return len_ == 1 ? new IRBoolConst(false) : new IRIntConst(0);
-    }
 }

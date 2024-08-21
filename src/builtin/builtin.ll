@@ -142,25 +142,31 @@ define dso_local i32 @array.size(ptr nocapture noundef readonly %0) local_unname
 }
 
 ; Function Attrs: nounwind
+define dso_local noundef ptr @string.copy(ptr noundef %0) local_unnamed_addr #0 {
+  %2 = tail call i32 @strlen(ptr noundef %0) #5
+  %3 = add i32 %2, 1
+  %4 = tail call ptr @malloc(i32 noundef %3) #5
+  %5 = tail call ptr @strcpy(ptr noundef %4, ptr noundef %0) #5
+  ret ptr %4
+}
+
+declare dso_local i32 @strlen(ptr noundef) local_unnamed_addr #1
+
+declare dso_local ptr @strcpy(ptr noundef, ptr noundef) local_unnamed_addr #1
+
+; Function Attrs: nounwind
 define dso_local i32 @string.length(ptr noundef %0) local_unnamed_addr #0 {
   %2 = tail call i32 @strlen(ptr noundef %0) #5
   ret i32 %2
 }
 
-declare dso_local i32 @strlen(ptr noundef) local_unnamed_addr #1
-
-; Function Attrs: nounwind
-define dso_local noundef ptr @string.substring(ptr noundef %0, i32 noundef %1, i32 noundef %2) local_unnamed_addr #0 {
-  %4 = sub nsw i32 %2, %1
-  %5 = add nsw i32 %4, 1
-  %6 = tail call ptr @malloc(i32 noundef %5) #5
-  %7 = tail call ptr @strcpy(ptr noundef %6, ptr noundef %0) #5
-  %8 = getelementptr inbounds i8, ptr %6, i32 %4
-  store i8 0, ptr %8, align 1, !tbaa !12
-  ret ptr %6
+; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(argmem: read)
+define dso_local range(i32 0, 256) i32 @string.ord(ptr nocapture noundef readonly %0, i32 noundef %1) local_unnamed_addr #3 {
+  %3 = getelementptr inbounds i8, ptr %0, i32 %1
+  %4 = load i8, ptr %3, align 1, !tbaa !12
+  %5 = zext i8 %4 to i32
+  ret i32 %5
 }
-
-declare dso_local ptr @strcpy(ptr noundef, ptr noundef) local_unnamed_addr #1
 
 ; Function Attrs: nounwind
 define dso_local i32 @string.parseInt(ptr noundef %0) local_unnamed_addr #0 {
@@ -174,12 +180,15 @@ define dso_local i32 @string.parseInt(ptr noundef %0) local_unnamed_addr #0 {
 
 declare dso_local i32 @sscanf(ptr noundef, ptr noundef, ...) local_unnamed_addr #1
 
-; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(argmem: read)
-define dso_local range(i32 0, 256) i32 @string.ord(ptr nocapture noundef readonly %0, i32 noundef %1) local_unnamed_addr #3 {
-  %3 = getelementptr inbounds i8, ptr %0, i32 %1
-  %4 = load i8, ptr %3, align 1, !tbaa !12
-  %5 = zext i8 %4 to i32
-  ret i32 %5
+; Function Attrs: nounwind
+define dso_local noundef ptr @string.substring(ptr noundef %0, i32 noundef %1, i32 noundef %2) local_unnamed_addr #0 {
+  %4 = sub nsw i32 %2, %1
+  %5 = add nsw i32 %4, 1
+  %6 = tail call ptr @malloc(i32 noundef %5) #5
+  %7 = tail call ptr @strcpy(ptr noundef %6, ptr noundef %0) #5
+  %8 = getelementptr inbounds i8, ptr %6, i32 %4
+  store i8 0, ptr %8, align 1, !tbaa !12
+  ret ptr %6
 }
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(none)
@@ -223,9 +232,16 @@ define dso_local zeroext i1 @builtin.string_eq(ptr noundef %0, ptr noundef %1) l
 declare dso_local i32 @strcmp(ptr noundef, ptr noundef) local_unnamed_addr #1
 
 ; Function Attrs: nounwind
-define dso_local zeroext i1 @builtin.string_ne(ptr noundef %0, ptr noundef %1) local_unnamed_addr #0 {
+define dso_local zeroext i1 @builtin.string_ge(ptr noundef %0, ptr noundef %1) local_unnamed_addr #0 {
   %3 = tail call i32 @strcmp(ptr noundef %0, ptr noundef %1) #5
-  %4 = icmp ne i32 %3, 0
+  %4 = icmp sgt i32 %3, 0
+  ret i1 %4
+}
+
+; Function Attrs: nounwind
+define dso_local zeroext i1 @builtin.string_geq(ptr noundef %0, ptr noundef %1) local_unnamed_addr #0 {
+  %3 = tail call i32 @strcmp(ptr noundef %0, ptr noundef %1) #5
+  %4 = icmp sgt i32 %3, -1
   ret i1 %4
 }
 
@@ -237,13 +253,6 @@ define dso_local zeroext i1 @builtin.string_le(ptr noundef %0, ptr noundef %1) l
 }
 
 ; Function Attrs: nounwind
-define dso_local zeroext i1 @builtin.string_ge(ptr noundef %0, ptr noundef %1) local_unnamed_addr #0 {
-  %3 = tail call i32 @strcmp(ptr noundef %0, ptr noundef %1) #5
-  %4 = icmp sgt i32 %3, 0
-  ret i1 %4
-}
-
-; Function Attrs: nounwind
 define dso_local zeroext i1 @builtin.string_leq(ptr noundef %0, ptr noundef %1) local_unnamed_addr #0 {
   %3 = tail call i32 @strcmp(ptr noundef %0, ptr noundef %1) #5
   %4 = icmp slt i32 %3, 1
@@ -251,9 +260,9 @@ define dso_local zeroext i1 @builtin.string_leq(ptr noundef %0, ptr noundef %1) 
 }
 
 ; Function Attrs: nounwind
-define dso_local zeroext i1 @builtin.string_geq(ptr noundef %0, ptr noundef %1) local_unnamed_addr #0 {
+define dso_local zeroext i1 @builtin.string_ne(ptr noundef %0, ptr noundef %1) local_unnamed_addr #0 {
   %3 = tail call i32 @strcmp(ptr noundef %0, ptr noundef %1) #5
-  %4 = icmp sgt i32 %3, -1
+  %4 = icmp ne i32 %3, 0
   ret i1 %4
 }
 

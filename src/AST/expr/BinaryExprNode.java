@@ -22,8 +22,7 @@ public class BinaryExprNode extends ExprNode {
             System.out.println("Invalid Type");
             throw new SemanticError("Type Mismatch Error", pos_);
         }
-        if (op_.equals("+") && lhs_.type_.equals(new Type("string")) &&
-            rhs_.type_.equals(new Type("string"))) {
+        if (op_.equals("+") && lhs_.type_.equals(new Type("string")) && rhs_.type_.equals(new Type("string"))) {
             type_ = new Type("string");
             return;
         }
