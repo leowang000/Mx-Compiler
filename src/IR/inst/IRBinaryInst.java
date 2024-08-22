@@ -10,8 +10,8 @@ public class IRBinaryInst extends IRInst {
     public IRValue lhs_, rhs_;
     public String op_;
 
-    public IRBinaryInst(String resultName, IRValue lhs, IRValue rhs, String op) {
-        result_ = new IRLocalVar(resultName, new IRIntType(32));
+    public IRBinaryInst(IRLocalVar result, IRValue lhs, IRValue rhs, String op) {
+        result_ = result;
         lhs_ = lhs;
         rhs_ = rhs;
         op_ = op;

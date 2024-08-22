@@ -9,8 +9,8 @@ public class IRLoadInst extends IRInst {
     public IRLocalVar result_;
     public IRValue pointer_;
 
-    public IRLoadInst(String resultName, IRValue pointer) {
-        result_ = new IRLocalVar(resultName, ((IRPtrType) pointer.type_).base_);
+    public IRLoadInst(IRLocalVar result, IRValue pointer) {
+        result_ = result;
         pointer_ = pointer;
     }
 

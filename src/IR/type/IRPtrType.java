@@ -1,8 +1,5 @@
 package IR.type;
 
-import IR.value.IRValue;
-import IR.value.constant.IRNullConst;
-
 public class IRPtrType extends IRType {
     public IRType base_;
     public int dim_;
@@ -25,8 +22,15 @@ public class IRPtrType extends IRType {
     }
 
     public IRPtrType(IRType base, int dim) {
-        base_ = base;
-        dim_ = dim;
+        if (base instanceof IRPtrType) {
+            IRPtrType baseType = (IRPtrType) base;
+            base_ = baseType.base_;
+            dim_ = baseType.dim_ + dim;
+        }
+        else {
+            base_ = base;
+            dim_ = dim;
+        }
     }
 
     @Override
@@ -49,5 +53,9 @@ public class IRPtrType extends IRType {
     @Override
     public int getSize() {
         return 4;
+    }
+
+    public IRType getDereferenceType() {
+        return dim_ == 1 ? base_ : new IRPtrType(base_, dim_ - 1);
     }
 }

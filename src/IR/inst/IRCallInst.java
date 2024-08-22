@@ -1,6 +1,7 @@
 package IR.inst;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import IR.IRVisitor;
 import IR.value.IRValue;
@@ -11,10 +12,11 @@ public class IRCallInst extends IRInst {
     public String funcName_;
     public ArrayList<IRValue> args_;
 
-    public IRCallInst(IRLocalVar result, String funcName) {
+    public IRCallInst(IRLocalVar result, String funcName, IRValue ... args) {
         result_ = result;
         funcName_ = funcName;
         args_ = new ArrayList<>();
+        args_.addAll(Arrays.asList(args));
     }
 
     @Override

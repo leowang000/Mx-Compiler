@@ -11,16 +11,21 @@ public class IRStructType extends IRType {
     public ArrayList<Integer> offset_;
     public HashMap<String, Integer> varToIdMap_;
 
-    public IRStructType(String name, ArrayList<IRType> fields) {
+    public IRStructType(String name) {
         name_ = name;
-        fields_ = fields;
-        offset_ = getOffset();
+        fields_ = new ArrayList<>();
+        offset_ = new ArrayList<>();
         varToIdMap_ = new HashMap<>();
     }
 
     @Override
     public String toString() {
         return "%struct." + name_;
+    }
+
+    public void setFields(ArrayList<IRType> fields) {
+        fields_ = fields;
+        offset_ = getOffset(fields);
     }
 
     public String getStructInfo() {
@@ -48,10 +53,10 @@ public class IRStructType extends IRType {
         return (offset_.get(offset_.size() - 1) + fields_.get(fields_.size() - 1).getSize() + 3) / 4 * 4;
     }
 
-    private ArrayList<Integer> getOffset() {
+    private static ArrayList<Integer> getOffset(ArrayList<IRType> fields) {
         ArrayList<Integer> res = new ArrayList<>();
         int offset = 0;
-        for (var type : fields_) {
+        for (var type : fields) {
             int sz = type.getSize();
             offset = (offset + sz - 1) / sz;
             res.add(offset);

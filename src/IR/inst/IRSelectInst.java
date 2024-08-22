@@ -8,8 +8,8 @@ public class IRSelectInst extends IRInst {
     public IRLocalVar result_;
     public IRValue cond_, val1_, val2_;
 
-    public IRSelectInst(String resultName, IRValue cond, IRValue val1, IRValue val2) {
-        result_ = new IRLocalVar(resultName, val1.type_);
+    public IRSelectInst(IRLocalVar result, IRValue cond, IRValue val1, IRValue val2) {
+        result_ = result;
         cond_ = cond;
         val1_ = val1;
         val2_ = val2;

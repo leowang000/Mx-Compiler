@@ -66,9 +66,6 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public void visit(FuncDefNode node) {
         scope_ = new FuncScope(scope_, new Type(node.returnType_));
-        if (node.returnType_.equals(new Type("void")) || node.name_.equals("main")) {
-            ((FuncScope) scope_).isReturned_ = true;
-        }
         if (!node.returnType_.equals(new Type("void")) && gScope_.getClassType(node.returnType_.name_) == null) {
             System.out.println("Undefined Identifier");
             throw new SemanticError("Undefined Symbol Error", node.pos_);
@@ -83,6 +80,20 @@ public class SemanticChecker implements ASTVisitor {
         for (var stmt : node.stmtList_) {
             stmt.accept(this);
         }
+        if (node.returnType_.equals(new Type("void"))) {
+            if (node.stmtList_.isEmpty() ||
+                !(node.stmtList_.get(node.stmtList_.size() - 1) instanceof ReturnStmtNode)) {
+                node.stmtList_.add(new ReturnStmtNode(null, null));
+                ((FuncScope) scope_).isReturned_ = true;
+            }
+        }
+        if (node.name_.equals("main")) {
+            if (node.stmtList_.isEmpty() ||
+                !(node.stmtList_.get(node.stmtList_.size() - 1) instanceof ReturnStmtNode)) {
+                node.stmtList_.add(new ReturnStmtNode(null, new IntLiteralNode(null, 0)));
+                ((FuncScope) scope_).isReturned_ = true;
+            }
+        }
         if (!((FuncScope) scope_).isReturned_) {
             System.out.println("Missing Return Statement");
             throw new SemanticError("Missing Return Statement Error", node.pos_);
@@ -96,23 +107,24 @@ public class SemanticChecker implements ASTVisitor {
             System.out.println("Undefined Identifier");
             throw new SemanticError("Undefined Symbol Error", node.pos_);
         }
-        for (var varUnit : node.varList_) {
-            if (varUnit.second_ != null) {
-                varUnit.second_.accept(this);
-                if (varUnit.second_ instanceof ArrayLiteralNode) {
-                    if (!((ArrayLiteralNode) varUnit.second_).equalsType(node.type_)) {
+        for (var pair : node.varList_) {
+            if (pair.second_ != null) {
+                pair.second_.accept(this);
+                if (pair.second_ instanceof ArrayLiteralNode) {
+                    if (!((ArrayLiteralNode) pair.second_).equalsType(node.type_)) {
                         System.out.println("Type Mismatch");
                         throw new SemanticError("Type Mismatch Error", node.pos_);
                     }
+                    pair.second_ = new NewArrayExprNode(pair.second_.pos_, node.type_, (ArrayLiteralNode) pair.second_);
                 }
                 else {
-                    if (!varUnit.second_.type_.equals(node.type_)) {
+                    if (!pair.second_.type_.equals(node.type_)) {
                         System.out.println("Type Mismatch");
                         throw new SemanticError("Type Mismatch Error", node.pos_);
                     }
                 }
             }
-            scope_.addVar(varUnit.first_, node.type_, node.pos_);
+            scope_.addVar(pair.first_, node.type_, node.pos_);
         }
     }
 
@@ -168,12 +180,16 @@ public class SemanticChecker implements ASTVisitor {
             System.out.println("Invalid Type");
             throw new SemanticError("Type Mismatch Error: the type of cond should be bool", node.pos_);
         }
-        if (node.then_ != null) {
-            node.then_.accept(this);
+        scope_ = new Scope(scope_);
+        for (var stmt : node.then_) {
+            stmt.accept(this);
         }
-        if (node.else_ != null) {
-            node.else_.accept(this);
+        scope_ = scope_.parent_;
+        scope_ = new Scope(scope_);
+        for (var stmt : node.else_) {
+            stmt.accept(this);
         }
+        scope_ = scope_.parent_;
     }
 
     @Override
@@ -218,9 +234,11 @@ public class SemanticChecker implements ASTVisitor {
             System.out.println("Invalid Type");
             throw new SemanticError("Type Mismatch Error: the type of cond should be bool", node.pos_);
         }
-        if (node.body_ != null) {
-            node.body_.accept(this);
+        scope_ = new Scope(scope_);
+        for (var stmt : node.body_) {
+            stmt.accept(this);
         }
+        scope_ = scope_.parent_;
         scope_ = scope_.parent_;
     }
 

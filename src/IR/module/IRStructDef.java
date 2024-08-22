@@ -10,8 +10,8 @@ import IR.type.IRType;
 public class IRStructDef extends IRNode {
     public IRStructType struct_;
 
-    public IRStructDef(String name, ArrayList<IRType> fields) {
-        struct_ = new IRStructType(name, fields);
+    public IRStructDef(String name) {
+        struct_ = new IRStructType(name);
     }
 
     @Override

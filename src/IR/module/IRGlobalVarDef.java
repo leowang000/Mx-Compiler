@@ -10,13 +10,13 @@ import IR.value.var.IRGlobalVar;
 public class IRGlobalVarDef extends IRNode {
     public IRGlobalVar var_;
 
-    public IRGlobalVarDef(String varName, IRType type) {
-        var_ = new IRGlobalVar(varName, type);
+    public IRGlobalVarDef(IRGlobalVar var) {
+        var_ = var;
     }
 
     @Override
     public String toString() {
-        IRType baseType = ((IRPtrType) var_.type_).base_;
+        IRType baseType = ((IRPtrType) var_.type_).getDereferenceType();
         if (baseType instanceof IRIntType) {
             return String.format("%s = global %s 0\n", var_, baseType);
         }

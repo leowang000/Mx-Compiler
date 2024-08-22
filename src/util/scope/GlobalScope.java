@@ -5,6 +5,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import IR.type.IRType;
+import IR.value.IRValue;
+import IR.value.var.IRGlobalVar;
 import util.Position;
 import util.error.*;
 import util.type.*;
@@ -31,6 +34,13 @@ public class GlobalScope extends ClassScope {
         stringFuncMap.put("parseInt", new FuncType(new Type("int")));
         stringFuncMap.put("ord", new FuncType(new Type("int"), new Type("int")));
         classDefMap_.put("string", new ClassType(stringFuncMap, new HashMap<>()));
+    }
+
+    @Override
+    public IRValue irAddVar(String varName, IRType type) {
+        IRGlobalVar globalVar =  new IRGlobalVar(varName, type);
+        irVarMap_.put(varName, globalVar);
+        return globalVar;
     }
 
     @Override

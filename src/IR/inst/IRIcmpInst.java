@@ -10,8 +10,8 @@ public class IRIcmpInst extends IRInst {
     public String cond_;
     public IRValue lhs_, rhs_;
 
-    public IRIcmpInst(String resultName, String cond, IRValue lhs, IRValue rhs) {
-        result_ = new IRLocalVar(resultName, new IRIntType(1));
+    public IRIcmpInst(IRLocalVar result, String cond, IRValue lhs, IRValue rhs) {
+        result_ = result;
         cond_ = cond;
         lhs_ = lhs;
         rhs_ = rhs;

@@ -13,7 +13,7 @@ public class NewArrayExprNode extends ExprNode {
     public ArrayLiteralNode array_;
 
     public NewArrayExprNode(Position pos, Type type, ArrayLiteralNode array) {
-        super(pos, true);
+        super(pos, false);
         type_ = type;
         fixedSizeList_ = new ArrayList<>();
         array_ = array;

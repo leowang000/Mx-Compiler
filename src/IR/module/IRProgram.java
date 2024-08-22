@@ -5,12 +5,10 @@ import java.util.HashMap;
 
 import IR.IRNode;
 import IR.IRVisitor;
-import IR.type.IRIntType;
-import IR.type.IRPtrType;
-import IR.type.IRVoidType;
+import IR.type.*;
 
 public class IRProgram extends IRNode {
-    public ArrayList<IRStructDef> structList_;
+    public HashMap<String, IRStructDef> structList_;
     public ArrayList<IRGlobalVarDef> globalVarList_;
     public ArrayList<IRStringLiteralDef> stringList_;
     public ArrayList<IRGlobalVarDef> arrayList_;
@@ -18,7 +16,7 @@ public class IRProgram extends IRNode {
     public HashMap<String, IRFuncDef> funcDefMap_;
 
     public IRProgram() {
-        structList_ = new ArrayList<>();
+        structList_ = new HashMap<>();
         globalVarList_ = new ArrayList<>();
         stringList_ = new ArrayList<>();
         arrayList_ = new ArrayList<>();
@@ -34,8 +32,6 @@ public class IRProgram extends IRNode {
         funcDeclList_.add(
                 new IRFuncDecl("array.copy", new IRVoidType(), new IRPtrType(), new IRIntType(32), new IRIntType(32)));
         funcDeclList_.add(new IRFuncDecl("array.size", new IRIntType(32), new IRPtrType()));
-        funcDeclList_.add(
-                new IRFuncDecl("string.copy", new IRPtrType(new IRIntType(8)), new IRPtrType(new IRIntType(8))));
         funcDeclList_.add(new IRFuncDecl("string.length", new IRIntType(32), new IRPtrType(new IRIntType(8))));
         funcDeclList_.add(
                 new IRFuncDecl("string.ord", new IRIntType(32), new IRPtrType(new IRIntType(8)), new IRIntType(32)));
@@ -44,6 +40,8 @@ public class IRProgram extends IRNode {
                 new IRFuncDecl("string.substring", new IRPtrType(new IRIntType(8)), new IRPtrType(new IRIntType(8)),
                                new IRIntType(32), new IRIntType(32)));
         funcDeclList_.add(new IRFuncDecl("builtin.bool_to_string", new IRPtrType(new IRIntType(8)), new IRIntType(1)));
+        funcDeclList_.add(new IRFuncDecl("builtin.calloc", new IRPtrType(), new IRIntType(32), new IRIntType(32)));
+        funcDeclList_.add(new IRFuncDecl("builtin.malloc", new IRPtrType(), new IRIntType(32)));
         funcDeclList_.add(
                 new IRFuncDecl("builtin.malloc_array", new IRPtrType(), new IRIntType(32), new IRIntType(32)));
         funcDeclList_.add(
@@ -67,7 +65,7 @@ public class IRProgram extends IRNode {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (var struct : structList_) {
+        for (var struct : structList_.values()) {
             sb.append(struct);
         }
         for (var globalVar : globalVarList_) {
@@ -91,5 +89,9 @@ public class IRProgram extends IRNode {
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
+    }
+
+    public IRStructType getStruct(String name) {
+        return structList_.get(name).struct_;
     }
 }

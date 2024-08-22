@@ -3,11 +3,10 @@ import java.io.*;
 import AST.module.ProgramNode;
 import IR.module.IRProgram;
 import frontend.*;
-import parser.*;
-import util.*;
-
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
+import parser.*;
+import util.*;
 import util.scope.GlobalScope;
 
 public class Main {

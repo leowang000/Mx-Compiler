@@ -8,13 +8,13 @@ import IR.value.var.IRLocalVar;
 public class IRAllocaInst extends IRInst {
     public IRLocalVar result_;
 
-    public IRAllocaInst(String resultName, IRType type) {
-        result_ = new IRLocalVar(resultName, new IRPtrType(type));
+    public IRAllocaInst(IRLocalVar result) {
+        result_ = result;
     }
 
     @Override
     public String toString() {
-        return String.format("%s = alloca %s", result_, ((IRPtrType) result_.type_).base_);
+        return String.format("%s = alloca %s", result_, ((IRPtrType) result_.type_).getDereferenceType());
     }
 
     @Override

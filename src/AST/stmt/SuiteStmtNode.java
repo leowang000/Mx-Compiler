@@ -14,11 +14,6 @@ public class SuiteStmtNode extends StmtNode {
         stmtList_ = new ArrayList<>();
     }
 
-    public SuiteStmtNode(StmtNode stmt) {
-        super(stmt.pos_);
-        stmtList_ = (stmt instanceof SuiteStmtNode ? ((SuiteStmtNode) stmt).stmtList_ : new ArrayList<>(List.of(stmt)));
-    }
-
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);

@@ -2,6 +2,9 @@ package util.scope;
 
 import java.util.HashMap;
 
+import IR.type.IRType;
+import IR.value.IRValue;
+import IR.value.var.IRLocalVar;
 import util.Position;
 import util.error.SyntaxError;
 import util.type.FuncType;
@@ -10,10 +13,17 @@ import util.type.Type;
 public class Scope {
     public Scope parent_;
     public HashMap<String, Type> varDefMap_;
+    public HashMap<String, IRValue> irVarMap_;
+    private static final HashMap<String, Integer> varCntMap_;
+
+    static {
+        varCntMap_ = new HashMap<>();
+    }
 
     public Scope(Scope parent) {
         parent_ = parent;
         varDefMap_ = new HashMap<>();
+        irVarMap_ = new HashMap<>();
     }
 
     public void addVar(String varName, Type type, Position pos) {
@@ -22,6 +32,21 @@ public class Scope {
             throw new SyntaxError("Variable Redefinition Error: " + varName, pos);
         }
         varDefMap_.put(varName, type);
+    }
+
+    public IRValue irAddVar(String varName, IRType type) {
+        int id;
+        if (varCntMap_.containsKey(varName)) {
+            id = varCntMap_.get(varName);
+            varCntMap_.put(varName, id + 1);
+        }
+        else {
+            id = 0;
+            varCntMap_.put(varName, 1);
+        }
+        IRLocalVar localVar = new IRLocalVar(String.format("%s.%d", varName, id), type);
+        irVarMap_.put(varName, localVar);
+        return localVar;
     }
 
     public boolean isInLoop() {
@@ -41,6 +66,13 @@ public class Scope {
             return varDefMap_.get(varName);
         }
         return parent_.getVarType(varName);
+    }
+
+    public IRValue getIRVar(String varName) {
+        if (irVarMap_.containsKey(varName)) {
+            return irVarMap_.get(varName);
+        }
+        return parent_.getIRVar(varName);
     }
 
     public FuncType getFuncType(String funcName) {
