@@ -60,6 +60,9 @@ public class SemanticChecker implements ASTVisitor {
         for (var stmt : node.stmtList_) {
             stmt.accept(this);
         }
+        if (node.stmtList_.isEmpty() || !(node.stmtList_.get(node.stmtList_.size() - 1) instanceof ReturnStmtNode)) {
+            node.stmtList_.add(new ReturnStmtNode(null, null));
+        }
         scope_ = scope_.parent_;
     }
 
@@ -116,6 +119,7 @@ public class SemanticChecker implements ASTVisitor {
                         throw new SemanticError("Type Mismatch Error", node.pos_);
                     }
                     pair.second_ = new NewArrayExprNode(pair.second_.pos_, node.type_, (ArrayLiteralNode) pair.second_);
+                    ((NewArrayExprNode) pair.second_).array_.type_ = pair.second_.type_;
                 }
                 else {
                     if (!pair.second_.type_.equals(node.type_)) {
@@ -155,12 +159,10 @@ public class SemanticChecker implements ASTVisitor {
         if (node.init_ != null) {
             node.init_.accept(this);
         }
-        if (node.cond_ != null) {
-            node.cond_.accept(this);
-            if (!node.cond_.type_.equals(new Type("bool"))) {
-                System.out.println("Invalid Type");
-                throw new SemanticError("Type Mismatch Error: the type of cond should be bool", node.pos_);
-            }
+        node.cond_.accept(this);
+        if (!node.cond_.type_.equals(new Type("bool"))) {
+            System.out.println("Invalid Type");
+            throw new SemanticError("Type Mismatch Error: the type of cond should be bool", node.pos_);
         }
         scope_ = new LoopScope(scope_);
         for (var stmt : node.body_) {
@@ -203,6 +205,8 @@ public class SemanticChecker implements ASTVisitor {
                 System.out.println("Type Mismatch");
                 throw new SemanticError("Return Type Mismatch Error", node.pos_);
             }
+            node.expr_ = new NewArrayExprNode(node.expr_.pos_, returnType, (ArrayLiteralNode) node.expr_);
+            ((NewArrayExprNode) node.expr_).array_.type_ = node.expr_.type_;
         }
         else {
             if (!returnType.equals(node.expr_ == null ? new Type("void") : node.expr_.type_)) {
@@ -228,17 +232,15 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(WhileStmtNode node) {
-        scope_ = new LoopScope(scope_);
         node.cond_.accept(this);
         if (!node.cond_.type_.equals(new Type("bool"))) {
             System.out.println("Invalid Type");
             throw new SemanticError("Type Mismatch Error: the type of cond should be bool", node.pos_);
         }
-        scope_ = new Scope(scope_);
+        scope_ = new LoopScope(scope_);
         for (var stmt : node.body_) {
             stmt.accept(this);
         }
-        scope_ = scope_.parent_;
         scope_ = scope_.parent_;
     }
 
@@ -253,19 +255,15 @@ public class SemanticChecker implements ASTVisitor {
     public void visit(AssignExprNode node) {
         node.lhs_.accept(this);
         node.rhs_.accept(this);
+        if (node.rhs_ instanceof ArrayLiteralNode) {
+            node.rhs_ = new NewArrayExprNode(node.rhs_.pos_, node.lhs_.type_, (ArrayLiteralNode) node.rhs_);
+            ((NewArrayExprNode) node.rhs_).array_.type_ = node.rhs_.type_;
+        }
         node.checkAndInferType();
     }
 
     @Override
     public void visit(BinaryExprNode node) {
-        node.lhs_.accept(this);
-        node.rhs_.accept(this);
-        node.checkAndInferType();
-    }
-
-    @Override
-    public void visit(ConditionalExprNode node) {
-        node.cond_.accept(this);
         node.lhs_.accept(this);
         node.rhs_.accept(this);
         node.checkAndInferType();
@@ -300,6 +298,10 @@ public class SemanticChecker implements ASTVisitor {
                     System.out.println("Type Mismatch");
                     throw new SemanticError("Type Mismatch Error", node.pos_);
                 }
+                NewArrayExprNode newNode = new NewArrayExprNode(node.args_.get(i).pos_, funcType.argTypeList_.get(i),
+                                                                (ArrayLiteralNode) node.args_.get(i));
+                newNode.array_.type_ = newNode.type_;
+                node.args_.set(i, newNode);
             }
             else {
                 if (!funcType.argTypeList_.get(i).equals(node.args_.get(i).type_)) {
@@ -307,8 +309,7 @@ public class SemanticChecker implements ASTVisitor {
                     throw new SemanticError("Type Mismatch Error", node.pos_);
                 }
             }
-        }
-        node.type_ = new Type(funcType.returnType_);
+        } node.type_ = new Type(funcType.returnType_);
     }
 
     @Override
@@ -359,6 +360,9 @@ public class SemanticChecker implements ASTVisitor {
             throw new SemanticError("Undefined Class Error", node.pos_);
         }
         node.checkAndInferType();
+        if (node.array_ != null) {
+            node.array_.type_ = node.type_;
+        }
     }
 
     @Override
@@ -378,6 +382,14 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public void visit(PreUnaryExprNode node) {
         node.expr_.accept(this);
+        node.checkAndInferType();
+    }
+
+    @Override
+    public void visit(TernaryExprNode node) {
+        node.cond_.accept(this);
+        node.lhs_.accept(this);
+        node.rhs_.accept(this);
         node.checkAndInferType();
     }
 

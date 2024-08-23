@@ -26,7 +26,7 @@ if [ "$(grep -c "Verdict:" "$TESTCASE")" -ne 1 ]; then
     exit 1
 fi
 VERDICT_STRING=$(grep "Verdict:" "$TESTCASE" | awk '{print $2}')
-if [ "$VERDICT_STRING" == "Fail" ]; then
+if [ "${VERDICT_STRING:0:4}" == "Fail" ]; then
     VERDICT=0
 else
     VERDICT=1

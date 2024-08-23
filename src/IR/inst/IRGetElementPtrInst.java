@@ -8,22 +8,21 @@ import IR.value.var.IRLocalVar;
 
 public class IRGetElementPtrInst extends IRInst {
     public IRLocalVar result_;
-    public IRValue ptrval_;
+    public IRValue ptr_;
     public IRValue id1_;
     public int id2_;
 
-    public IRGetElementPtrInst(String resultName, IRValue ptrval, IRValue id1) {
-        result_ = new IRLocalVar(resultName, ptrval.type_);
-        ptrval_ = ptrval;
+    public IRGetElementPtrInst(IRLocalVar result, IRValue ptr, IRValue id1) {
+        result_ = result;
+        ptr_ = ptr;
         id1_ = id1;
         id2_ = -1;
     }
 
-    public IRGetElementPtrInst(String resultName, IRValue ptrval, IRValue id1, int id2) {
-        result_ = new IRLocalVar(resultName, new IRPtrType(
-                ((IRStructType) ((IRPtrType) ptrval.type_).getDereferenceType()).fields_.get(id2)));
-        ptrval_ = ptrval;
-        id1_ = id1;
+    public IRGetElementPtrInst(IRLocalVar result, IRValue ptr, int id2) {
+        result_ = result;
+        ptr_ = ptr;
+        id1_ = null;
         id2_ = id2;
     }
 
@@ -31,10 +30,10 @@ public class IRGetElementPtrInst extends IRInst {
     public String toString() {
         if (id2_ == -1) {
             return String.format("%s = getelementptr %s, ptr %s, i32 %s", result_,
-                                 ((IRPtrType) ptrval_.type_).getDereferenceType(), ptrval_, id1_);
+                                 ((IRPtrType) ptr_.type_).getDereferenceType(), ptr_, id1_);
         }
-        return String.format("%s = getelementptr %s, ptr %s, i32 %s, i32 %d", result_,
-                             ((IRPtrType) ptrval_.type_).getDereferenceType(), ptrval_, id1_, id2_);
+        return String.format("%s = getelementptr %s, ptr %s, i32 0, i32 %d", result_,
+                             ((IRPtrType) ptr_.type_).getDereferenceType(), ptr_, id2_);
     }
 
     @Override

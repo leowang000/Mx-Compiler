@@ -13,7 +13,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
         String input_file_name = "testcases/sema/basic-package/basic-1.mx";
         CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
-        //CharStream input = CharStreams.fromStream(System.in);
+//        CharStream input = CharStreams.fromStream(System.in);
         try {
             MxLexer lexer = new MxLexer(input);
             lexer.removeErrorListeners();

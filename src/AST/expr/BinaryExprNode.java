@@ -7,7 +7,7 @@ import util.type.Type;
 
 public class BinaryExprNode extends ExprNode {
     public ExprNode lhs_, rhs_;
-    public String op_; // +-*/% << >> < > <= >= == != & && | ||
+    public String op_; // +-*/%&|^ << >> < > <= >= == != && ||
 
     public BinaryExprNode(Position pos, ExprNode lhs, ExprNode rhs, String op) {
         super(pos, false);

@@ -1,17 +1,20 @@
 package IR.module;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 
 import IR.IRNode;
 import IR.IRVisitor;
 import IR.type.IRStructType;
-import IR.type.IRType;
 
 public class IRStructDef extends IRNode {
     public IRStructType struct_;
+    public HashSet<String> memberFuncSet_;
+    public boolean hasConstructor_;
 
-    public IRStructDef(String name) {
+    public IRStructDef(String name, boolean hasConstructor) {
         struct_ = new IRStructType(name);
+        memberFuncSet_ = new HashSet<>();
+        hasConstructor_ = hasConstructor;
     }
 
     @Override

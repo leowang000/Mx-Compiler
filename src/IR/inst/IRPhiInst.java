@@ -22,7 +22,7 @@ public class IRPhiInst extends IRInst {
         StringBuilder sb = new StringBuilder();
         sb.append(result_).append(" = phi ").append(result_.type_).append(" ");
         for (int i = 0; i < infoList_.size(); i++) {
-            sb.append("[").append(infoList_.get(i).first_).append(", ").append(infoList_.get(i).second_.label_)
+            sb.append("[").append(infoList_.get(i).first_).append(", ").append(infoList_.get(i).second_.getLabel())
                     .append("]");
             if (i < infoList_.size() - 1) {
                 sb.append(", ");

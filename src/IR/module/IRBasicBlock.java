@@ -5,13 +5,13 @@ import java.util.ArrayList;
 import IR.IRNode;
 import IR.IRVisitor;
 import IR.inst.IRInst;
-import IR.value.var.IRLocalVar;
+import IR.value.IRValue;
 
 public class IRBasicBlock extends IRNode {
     public String label_;
     public ArrayList<IRInst> instList_;
     public IRFuncDef belong_;
-    public IRLocalVar result_;
+    public IRValue result_;
 
     public IRBasicBlock(String label, IRFuncDef belong) {
         label_ = label;
@@ -33,5 +33,9 @@ public class IRBasicBlock extends IRNode {
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
+    }
+
+    public String getLabel() {
+        return "%" + label_;
     }
 }

@@ -85,9 +85,6 @@ public class SymbolCollector implements ASTVisitor {
     public void visit(BinaryExprNode node) {}
 
     @Override
-    public void visit(ConditionalExprNode node) {}
-
-    @Override
     public void visit(FuncCallExprNode node) {}
 
     @Override
@@ -104,6 +101,9 @@ public class SymbolCollector implements ASTVisitor {
 
     @Override
     public void visit(PreUnaryExprNode node) {}
+
+    @Override
+    public void visit(TernaryExprNode node) {}
 
     @Override
     public void visit(UnaryExprNode node) {}

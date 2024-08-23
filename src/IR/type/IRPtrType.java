@@ -44,9 +44,6 @@ public class IRPtrType extends IRType {
             return false;
         }
         IRPtrType other = (IRPtrType) obj;
-        if (base_ == null) {
-            return other.base_ == null;
-        }
         return base_.equals(other.base_) && dim_ == other.dim_;
     }
 

@@ -117,7 +117,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitForStmt(MxParser.ForStmtContext ctx) {
         StmtNode init = (StmtNode) visit(ctx.initStmt);
-        ExprNode cond = (ctx.condExpr == null ? null : (ExprNode) visit(ctx.condExpr));
+        ExprNode cond = (ctx.condExpr == null ? new BoolLiteralNode(null, true) : (ExprNode) visit(ctx.condExpr));
         ExprNode step = (ctx.stepExpr == null ? null : (ExprNode) visit(ctx.stepExpr));
         StmtNode body = (StmtNode) visit(ctx.statement(1));
         ForStmtNode forStmt = new ForStmtNode(new Position(ctx), init, cond, step);
@@ -189,8 +189,8 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitConditionalExpr(MxParser.ConditionalExprContext ctx) {
-        return new ConditionalExprNode(new Position(ctx), (ExprNode) visit(ctx.expression(0)),
-                                       (ExprNode) visit(ctx.expression(1)), (ExprNode) visit(ctx.expression(2)));
+        return new TernaryExprNode(new Position(ctx), (ExprNode) visit(ctx.expression(0)),
+                                   (ExprNode) visit(ctx.expression(1)), (ExprNode) visit(ctx.expression(2)));
     }
 
     @Override

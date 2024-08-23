@@ -5,10 +5,10 @@ import util.Position;
 import util.error.SemanticError;
 import util.type.Type;
 
-public class ConditionalExprNode extends ExprNode {
+public class TernaryExprNode extends ExprNode {
     public ExprNode cond_, lhs_, rhs_;
 
-    public ConditionalExprNode(Position pos, ExprNode cond, ExprNode lhs, ExprNode rhs) {
+    public TernaryExprNode(Position pos, ExprNode cond, ExprNode lhs, ExprNode rhs) {
         super(pos, false);
         cond_ = cond;
         lhs_ = lhs;

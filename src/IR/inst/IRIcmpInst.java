@@ -7,14 +7,14 @@ import IR.value.var.IRLocalVar;
 
 public class IRIcmpInst extends IRInst {
     public IRLocalVar result_;
-    public String cond_;
     public IRValue lhs_, rhs_;
+    public String cond_;
 
-    public IRIcmpInst(IRLocalVar result, String cond, IRValue lhs, IRValue rhs) {
+    public IRIcmpInst(IRLocalVar result, IRValue lhs, IRValue rhs, String cond) {
         result_ = result;
-        cond_ = cond;
         lhs_ = lhs;
         rhs_ = rhs;
+        cond_ = cond;
     }
 
     @Override
