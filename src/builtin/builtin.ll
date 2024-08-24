@@ -150,7 +150,7 @@ define dso_local i32 @string.length(ptr noundef %0) local_unnamed_addr #0 {
 declare dso_local i32 @strlen(ptr noundef) local_unnamed_addr #1
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(argmem: read)
-define dso_local range(i32 0, 256) i32 @string.ord(ptr nocapture noundef readonly %0, i32 noundef %1) local_unnamed_addr #3 {
+define dso_local i32 @string.ord(ptr nocapture noundef readonly %0, i32 noundef %1) local_unnamed_addr #3 {
   %3 = getelementptr inbounds i8, ptr %0, i32 %1
   %4 = load i8, ptr %3, align 1, !tbaa !12
   %5 = zext i8 %4 to i32
@@ -170,17 +170,29 @@ define dso_local i32 @string.parseInt(ptr noundef %0) local_unnamed_addr #0 {
 declare dso_local i32 @sscanf(ptr noundef, ptr noundef, ...) local_unnamed_addr #1
 
 ; Function Attrs: nounwind
-define dso_local noundef ptr @string.substring(ptr noundef %0, i32 noundef %1, i32 noundef %2) local_unnamed_addr #0 {
+define dso_local ptr @string.substring(ptr nocapture noundef readonly %0, i32 noundef %1, i32 noundef %2) local_unnamed_addr #0 {
   %4 = sub nsw i32 %2, %1
   %5 = add nsw i32 %4, 1
   %6 = tail call ptr @malloc(i32 noundef %5) #5
-  %7 = tail call ptr @strcpy(ptr noundef %6, ptr noundef %0) #5
-  %8 = getelementptr inbounds i8, ptr %6, i32 %4
-  store i8 0, ptr %8, align 1, !tbaa !12
-  ret ptr %6
-}
+  %7 = getelementptr i8, ptr %0, i32 %1
+  %8 = icmp sgt i32 %4, 0
+  br i1 %8, label %11, label %9
 
-declare dso_local ptr @strcpy(ptr noundef, ptr noundef) local_unnamed_addr #1
+9:                                                ; preds = %11, %3
+  %10 = getelementptr inbounds i8, ptr %6, i32 %4
+  store i8 0, ptr %10, align 1, !tbaa !12
+  ret ptr %6
+
+11:                                               ; preds = %3, %11
+  %12 = phi i32 [ %16, %11 ], [ 0, %3 ]
+  %13 = getelementptr i8, ptr %7, i32 %12
+  %14 = load i8, ptr %13, align 1, !tbaa !12
+  %15 = getelementptr inbounds i8, ptr %6, i32 %12
+  store i8 %14, ptr %15, align 1, !tbaa !12
+  %16 = add nuw nsw i32 %12, 1
+  %17 = icmp eq i32 %16, %4
+  br i1 %17, label %9, label %11, !llvm.loop !13
+}
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(none)
 define dso_local noundef nonnull ptr @builtin.bool_to_string(i1 noundef zeroext %0) local_unnamed_addr #4 {
@@ -189,12 +201,22 @@ define dso_local noundef nonnull ptr @builtin.bool_to_string(i1 noundef zeroext 
 }
 
 ; Function Attrs: nounwind
-define dso_local ptr @builtin.calloc(i32 noundef %0, i32 noundef %1) local_unnamed_addr #0 {
-  %3 = tail call ptr @calloc(i32 noundef %0, i32 noundef %1) #5
-  ret ptr %3
+define dso_local ptr @builtin.calloc(i32 noundef %0) local_unnamed_addr #0 {
+  %2 = tail call ptr @calloc(i32 noundef %0, i32 noundef 1) #5
+  ret ptr %2
 }
 
 declare dso_local ptr @calloc(i32 noundef, i32 noundef) local_unnamed_addr #1
+
+; Function Attrs: nounwind
+define dso_local nonnull ptr @builtin.calloc_array(i32 noundef %0, i32 noundef %1) local_unnamed_addr #0 {
+  %3 = mul i32 %1, %0
+  %4 = add i32 %3, 4
+  %5 = tail call ptr @calloc(i32 noundef %4, i32 noundef 1) #5
+  store i32 %1, ptr %5, align 4, !tbaa !6
+  %6 = getelementptr inbounds i8, ptr %5, i32 4
+  ret ptr %6
+}
 
 ; Function Attrs: nounwind
 define dso_local ptr @builtin.malloc(i32 noundef %0) local_unnamed_addr #0 {
@@ -226,6 +248,8 @@ define dso_local noundef ptr @builtin.string_add(ptr noundef %0, ptr noundef %1)
   store i8 0, ptr %11, align 1, !tbaa !12
   ret ptr %7
 }
+
+declare dso_local ptr @strcpy(ptr noundef, ptr noundef) local_unnamed_addr #1
 
 ; Function Attrs: nounwind
 define dso_local zeroext i1 @builtin.string_eq(ptr noundef %0, ptr noundef %1) local_unnamed_addr #0 {
@@ -296,3 +320,4 @@ attributes #7 = { "no-builtin-calloc" "no-builtin-malloc" "no-builtin-memcpy" "n
 !10 = distinct !{!10, !11}
 !11 = !{!"llvm.loop.mustprogress"}
 !12 = !{!8, !8, i64 0}
+!13 = distinct !{!13, !11}

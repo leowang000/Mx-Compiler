@@ -42,7 +42,9 @@ public class IRProgram extends IRNode {
                 new IRFuncDecl("string.substring", new IRPtrType(new IRIntType(8)), new IRPtrType(new IRIntType(8)),
                                new IRIntType(32), new IRIntType(32)));
         funcDeclList_.add(new IRFuncDecl("builtin.bool_to_string", new IRPtrType(new IRIntType(8)), new IRIntType(1)));
-        funcDeclList_.add(new IRFuncDecl("builtin.calloc", new IRPtrType(), new IRIntType(32), new IRIntType(32)));
+        funcDeclList_.add(new IRFuncDecl("builtin.calloc", new IRPtrType(), new IRIntType(32)));
+        funcDeclList_.add(
+                new IRFuncDecl("builtin.calloc_array", new IRPtrType(), new IRIntType(32), new IRIntType(32)));
         funcDeclList_.add(new IRFuncDecl("builtin.malloc", new IRPtrType(), new IRIntType(32)));
         funcDeclList_.add(
                 new IRFuncDecl("builtin.malloc_array", new IRPtrType(), new IRIntType(32), new IRIntType(32)));
@@ -61,7 +63,6 @@ public class IRProgram extends IRNode {
                                          new IRPtrType(new IRIntType(8))));
         funcDeclList_.add(new IRFuncDecl("builtin.string_ne", new IRIntType(1), new IRPtrType(new IRIntType(8)),
                                          new IRPtrType(new IRIntType(8))));
-        funcDeclList_.add(new IRFuncDecl("builtin.init", new IRVoidType()));
     }
 
     @Override

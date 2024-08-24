@@ -88,9 +88,12 @@ int __mx_string_parseInt(const char *str) {
 }
 
 char *__mx_string_substring(const char *str, int left, int right) {
-  char *res = (char *) malloc(right - left + 1);
-  strcpy(res, str);
-  res[right - left] = '\0';
+  int len = right - left;
+  char *res = (char *) malloc(len + 1);
+  for (int i = 0; i < len; i++) {
+    res[i] = str[left + i];
+  }
+  res[len] = '\0';
   return res;
 }
 
@@ -98,8 +101,14 @@ char *__mx_builtin_bool_to_string(bool value) {
   return value ? "true" : "false";
 }
 
-void *__mx_builtin_calloc(size_t n, size_t type_size) {
-  return calloc(n, type_size);
+void *__mx_builtin_calloc(size_t n) {
+  return calloc(n, 1);
+}
+
+void *__mx_builtin_calloc_array(size_t type_size, size_t array_size) {
+  size_t *res = (size_t *) calloc(type_size * array_size + 4, 1);
+  res[0] = array_size;
+  return res + 1;
 }
 
 void *__mx_builtin_malloc(size_t n) {

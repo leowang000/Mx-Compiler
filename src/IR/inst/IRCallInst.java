@@ -30,7 +30,7 @@ public class IRCallInst extends IRInst {
         }
         sb.append(" @").append(funcName_).append("(");
         for (int i = 0; i < args_.size(); i++) {
-            sb.append(args_.get(i));
+            sb.append(args_.get(i).type_).append(" ").append(args_.get(i));
             if (i < args_.size() - 1) {
                 sb.append(", ");
             }

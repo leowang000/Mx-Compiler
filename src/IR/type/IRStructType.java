@@ -58,7 +58,7 @@ public class IRStructType extends IRType {
         int offset = 0;
         for (var type : fields) {
             int sz = type.getSize();
-            offset = (offset + sz - 1) / sz;
+            offset = (offset + sz - 1) / sz * sz;
             res.add(offset);
             offset += sz;
         }

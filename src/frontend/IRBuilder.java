@@ -108,17 +108,14 @@ public class IRBuilder implements ASTVisitor {
         scope_ = new FuncScope(scope_, new Type("void"));
         IRType returnType = new IRVoidType();
         String funcName = String.format("struct.%s.%s", node.name_, node.name_);
-        IRFuncDecl funcDecl = new IRFuncDecl(funcName, returnType);
         IRFuncDef funcDef = new IRFuncDef(funcName, returnType);
         currentBlock_ = new IRBasicBlock(funcName + "_entry", funcDef);
         IRType type = new IRPtrType(new IRStructType(node.name_));
         IRLocalVar localVar = new IRLocalVar("this", type);
-        funcDecl.argTypeList_.add(type);
         funcDef.args_.add(localVar);
         for (var stmt : node.stmtList_) {
             stmt.accept(this);
         }
-        irProgram_.funcDeclList_.add(funcDecl);
         irProgram_.funcDefMap_.put(funcName, funcDef);
         scope_ = scope_.parent_;
     }
@@ -130,7 +127,6 @@ public class IRBuilder implements ASTVisitor {
         IRType returnType = IRType.toIRType(node.returnType_);
         String funcName =
                 (isMemberFunction ? String.format("struct.%s.%s", scope_.getClassName(), node.name_) : node.name_);
-        IRFuncDecl funcDecl = new IRFuncDecl(funcName, returnType);
         IRFuncDef funcDef = new IRFuncDef(funcName, returnType);
         currentBlock_ = new IRBasicBlock(funcName + "_entry", funcDef);
         if (node.name_.equals("main")) {
@@ -139,13 +135,11 @@ public class IRBuilder implements ASTVisitor {
         if (isMemberFunction) {
             IRType type = new IRPtrType(new IRStructType(scope_.getClassName()));
             IRLocalVar localVar = new IRLocalVar("this", type);
-            funcDecl.argTypeList_.add(type);
             funcDef.args_.add(localVar);
         }
         for (var pair : node.paramList_) {
             IRType type = IRType.toIRType(pair.first_);
             IRLocalVar localVar = IRLocalVar.newLocalVar(type);
-            funcDecl.argTypeList_.add(type);
             funcDef.args_.add(localVar);
             addVarAndAssign(pair.second_, localVar);
         }
@@ -157,7 +151,6 @@ public class IRBuilder implements ASTVisitor {
             }
         }
         endBlock_ = false;
-        irProgram_.funcDeclList_.add(funcDecl);
         irProgram_.funcDefMap_.put(funcName, funcDef);
         scope_ = scope_.parent_;
     }
@@ -410,6 +403,7 @@ public class IRBuilder implements ASTVisitor {
             node.lhs_.accept(this);
             IRValue lhsValue = getValueResult(node.lhs_.isLeftValue_);
             IRLocalVar resultPtr = IRLocalVar.newLocalVar(new IRPtrType(new IRIntType(1)));
+            currentBlock_.instList_.add(new IRAllocaInst(resultPtr));
             currentBlock_.instList_.add(new IRStoreInst(new IRBoolConst(false), resultPtr));
             currentBlock_.instList_.add(new IRBrInst(lhsValue, rhs, end));
             submitBlock();
@@ -432,6 +426,7 @@ public class IRBuilder implements ASTVisitor {
             node.lhs_.accept(this);
             IRValue lhsValue = getValueResult(node.lhs_.isLeftValue_);
             IRLocalVar resultPtr = IRLocalVar.newLocalVar(new IRPtrType(new IRIntType(1)));
+            currentBlock_.instList_.add(new IRAllocaInst(resultPtr));
             currentBlock_.instList_.add(new IRStoreInst(new IRBoolConst(true), resultPtr));
             currentBlock_.instList_.add(new IRBrInst(lhsValue, end, rhs));
             submitBlock();
@@ -559,8 +554,6 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public void visit(FuncCallExprNode node) {
-        IRLocalVar newVar =
-                (node.type_.equals(new Type("void")) ? null : IRLocalVar.newLocalVar(IRType.toIRType(node.type_)));
         IRCallInst callInst;
         if (node.funcName_ instanceof MemberExprNode) {
             MemberExprNode funcNameNode = (MemberExprNode) node.funcName_;
@@ -576,18 +569,18 @@ public class IRBuilder implements ASTVisitor {
             else {
                 funcName = String.format("struct.%s.%s", funcNameNode.class_.type_.name_, funcNameNode.member_);
             }
-            callInst = new IRCallInst(newVar, funcName);
+            callInst = new IRCallInst(null, funcName);
             callInst.args_.add(clas);
         }
         else {
             String funcName = ((IdentifierNode) node.funcName_).name_;
             IRStructDef currentStructDef = getCurrentStructDef();
             if (currentStructDef != null && currentStructDef.memberFuncSet_.contains(funcName)) {
-                callInst = new IRCallInst(newVar, String.format("struct.%s.%s", scope_.getClassName(), funcName));
+                callInst = new IRCallInst(null, String.format("struct.%s.%s", scope_.getClassName(), funcName));
                 callInst.args_.add(currentBlock_.belong_.args_.get(0));
             }
             else {
-                callInst = new IRCallInst(newVar, funcName);
+                callInst = new IRCallInst(null, funcName);
             }
         }
         for (var arg : node.args_) {
@@ -595,17 +588,20 @@ public class IRBuilder implements ASTVisitor {
             IRValue value = getValueResult(arg.isLeftValue_);
             callInst.args_.add(value);
         }
+        IRLocalVar newVar =
+                (node.type_.equals(new Type("void")) ? null : IRLocalVar.newLocalVar(IRType.toIRType(node.type_)));
+        callInst.result_ = newVar;
         currentBlock_.instList_.add(callInst);
         currentBlock_.result_ = newVar;
     }
 
     @Override
     public void visit(MemberExprNode node) {
-        IRLocalVar newVar = IRLocalVar.newLocalVar(new IRPtrType(IRType.toIRType(node.type_)));
         node.class_.accept(this);
         IRValue clas = getValueResult(node.class_.isLeftValue_);
         int id = irProgram_.structDefMap_.get(
                 ((IRStructType) ((IRPtrType) clas.type_).base_).name_).struct_.varToIdMap_.get(node.member_);
+        IRLocalVar newVar = IRLocalVar.newLocalVar(new IRPtrType(IRType.toIRType(node.type_)));
         currentBlock_.instList_.add(new IRGetElementPtrInst(newVar, clas, id));
         currentBlock_.result_ = newVar;
     }
@@ -623,8 +619,8 @@ public class IRBuilder implements ASTVisitor {
             currentBlock_.result_ = res;
             return;
         }
-        IRLocalVar newVar = IRLocalVar.newLocalVar(type);
         node.array_.accept(this);
+        IRLocalVar newVar = IRLocalVar.newLocalVar(type);
         currentBlock_.instList_.add(new IRCallInst(newVar, "array.copy", currentBlock_.result_, new IRIntConst(
                 IRType.toIRType(new Type(node.type_.name_, 0)).getSize()), new IRIntConst(node.type_.dim_)));
         currentBlock_.result_ = newVar;
@@ -641,8 +637,8 @@ public class IRBuilder implements ASTVisitor {
                     new IRCallInst(null, String.format("struct.%s.%s", node.type_.name_, node.type_.name_), newVar));
         }
         else {
-            currentBlock_.instList_.add(new IRCallInst(newVar, "builtin.calloc", new IRIntConst(1),
-                                                       new IRIntConst(struct.struct_.getSize())));
+            currentBlock_.instList_.add(
+                    new IRCallInst(newVar, "builtin.calloc", new IRIntConst(struct.struct_.getSize())));
         }
         currentBlock_.result_ = newVar;
     }
@@ -666,40 +662,55 @@ public class IRBuilder implements ASTVisitor {
     @Override
     public void visit(TernaryExprNode node) {
         int id = ternaryCnt_++;
+        boolean isResultVoid = (node.lhs_.type_.equals(new Type("void")));
         IRBasicBlock lhs = new IRBasicBlock("ternary_lhs_" + id, currentBlock_.belong_);
         IRBasicBlock rhs = new IRBasicBlock("ternary_rhs_" + id, currentBlock_.belong_);
         IRBasicBlock end = new IRBasicBlock("ternary_end_" + id, currentBlock_.belong_);
         node.cond_.accept(this);
         IRValue cond = getValueResult(node.cond_.isLeftValue_);
-        IRLocalVar resultPtr = IRLocalVar.newLocalVar(new IRPtrType(IRType.toIRType(node.lhs_.type_)));
+        IRLocalVar resultPtr = null;
+        if (!isResultVoid) {
+            resultPtr = IRLocalVar.newLocalVar(new IRPtrType(IRType.toIRType(node.lhs_.type_)));
+            currentBlock_.instList_.add(new IRAllocaInst(resultPtr));
+        }
         currentBlock_.instList_.add(new IRBrInst(cond, lhs, rhs));
         submitBlock();
         currentBlock_ = lhs;
         node.lhs_.accept(this);
-        IRValue lhsValue = getValueResult(node.lhs_.isLeftValue_);
-        currentBlock_.instList_.add(new IRStoreInst(lhsValue, resultPtr));
+        IRValue lhsValue;
+        if (!isResultVoid) {
+            lhsValue = getValueResult(node.lhs_.isLeftValue_);
+            currentBlock_.instList_.add(new IRStoreInst(lhsValue, resultPtr));
+        }
         currentBlock_.instList_.add(new IRJumpInst(end));
+        submitBlock();
         currentBlock_ = rhs;
         node.rhs_.accept(this);
-        IRValue rhsValue = getValueResult(node.rhs_.isLeftValue_);
-        currentBlock_.instList_.add(new IRStoreInst(rhsValue, resultPtr));
+        IRValue rhsValue;
+        if (!isResultVoid) {
+            rhsValue = getValueResult(node.rhs_.isLeftValue_);
+            currentBlock_.instList_.add(new IRStoreInst(rhsValue, resultPtr));
+        }
         currentBlock_.instList_.add(new IRJumpInst(end));
+        submitBlock();
         currentBlock_ = end;
-        IRLocalVar newVar = IRLocalVar.newLocalVar(IRType.toIRType(node.lhs_.type_));
-        currentBlock_.instList_.add(new IRLoadInst(newVar, resultPtr));
-        currentBlock_.result_ = newVar;
+        if (!isResultVoid) {
+            IRLocalVar newVar = IRLocalVar.newLocalVar(IRType.toIRType(node.lhs_.type_));
+            currentBlock_.instList_.add(new IRLoadInst(newVar, resultPtr));
+            currentBlock_.result_ = newVar;
+        }
     }
 
     @Override
     public void visit(UnaryExprNode node) {
         node.expr_.accept(this);
         if (node.op_.equals("++") || node.op_.equals("--")) {
-            IRLocalVar tmp = IRLocalVar.newLocalVar(new IRIntType(32));
-            currentBlock_.instList_.add(new IRLoadInst(tmp, currentBlock_.result_));
             IRLocalVar res = IRLocalVar.newLocalVar(new IRIntType(32));
+            currentBlock_.instList_.add(new IRLoadInst(res, currentBlock_.result_));
+            IRLocalVar tmp = IRLocalVar.newLocalVar(new IRIntType(32));
             currentBlock_.instList_.add(
-                    new IRBinaryInst(res, tmp, new IRIntConst(node.op_.equals("++") ? 1 : -1), "add"));
-            currentBlock_.instList_.add(new IRStoreInst(res, currentBlock_.result_));
+                    new IRBinaryInst(tmp, res, new IRIntConst(node.op_.equals("++") ? 1 : -1), "add"));
+            currentBlock_.instList_.add(new IRStoreInst(tmp, currentBlock_.result_));
             currentBlock_.result_ = res;
             return;
         }
@@ -853,8 +864,9 @@ public class IRBuilder implements ASTVisitor {
 
     private IRLocalVar generateArray(ArrayList<IRValue> fixedSizeList, int start, IRPtrType type) {
         IRLocalVar newVar = IRLocalVar.newLocalVar(type);
-        currentBlock_.instList_.add(new IRCallInst(newVar, "builtin.calloc", fixedSizeList.get(start),
-                                                   new IRIntConst(type.getDereferenceType().getSize())));
+        currentBlock_.instList_.add(
+                new IRCallInst(newVar, "builtin.calloc_array", new IRIntConst(type.getDereferenceType().getSize()),
+                               fixedSizeList.get(start)));
         if (start == fixedSizeList.size() - 1) {
             return newVar;
         }
@@ -879,8 +891,7 @@ public class IRBuilder implements ASTVisitor {
         IRLocalVar elemPtr = IRLocalVar.newLocalVar(type.getDereferenceType());
         currentBlock_.instList_.add(new IRGetElementPtrInst(elemPtr, newVar, loopVarValue));
         IRLocalVar subArray = generateArray(fixedSizeList, start + 1, (IRPtrType) type.getDereferenceType());
-        IRLocalVar subArrayHead = new IRLocalVar(subArray.name_, ((IRPtrType) subArray.type_).getDereferenceType());
-        currentBlock_.instList_.add(new IRStoreInst(subArrayHead, elemPtr));
+        currentBlock_.instList_.add(new IRStoreInst(subArray, elemPtr));
         currentBlock_.instList_.add(new IRJumpInst(step));
         submitBlock();
         currentBlock_ = step;

@@ -19,7 +19,7 @@ public class IRBinaryInst extends IRInst {
 
     @Override
     public String toString() {
-        return String.format("%s = %s i32 %s %s", result_, op_, lhs_, rhs_);
+        return String.format("%s = %s %s %s, %s", result_, op_, lhs_.type_, lhs_, rhs_);
     }
 
     @Override

@@ -11,7 +11,7 @@ import util.scope.GlobalScope;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        String input_file_name = "testcases/codegen/t1.mx";
+        String input_file_name = "testcases/codegen/t70.mx";
         FileOutputStream output = new FileOutputStream("my-output/output.txt");
         CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
         try {
