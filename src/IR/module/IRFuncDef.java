@@ -30,7 +30,7 @@ public class IRFuncDef extends IRNode {
                 sb.append(", ");
             }
         }
-        sb.append(") {");
+        sb.append(") {\n");
         for (var block : body_) {
             sb.append(block);
         }

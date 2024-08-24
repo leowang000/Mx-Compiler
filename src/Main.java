@@ -11,9 +11,9 @@ import util.scope.GlobalScope;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        String input_file_name = "testcases/sema/basic-package/basic-1.mx";
+        String input_file_name = "testcases/sema/const-array-package/const-array6.mx";
+        FileOutputStream output = new FileOutputStream("my-output/output.txt");
         CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
-//        CharStream input = CharStreams.fromStream(System.in);
         try {
             MxLexer lexer = new MxLexer(input);
             lexer.removeErrorListeners();
@@ -30,7 +30,7 @@ public class Main {
             IRProgram irProgram = new IRProgram();
             IRBuilder irBuilder = new IRBuilder(globalScope, irProgram);
             irBuilder.visit(ast);
-            System.out.print(irProgram);
+            output.write(irProgram.toString().getBytes());
         } catch (Error err) {
             System.err.println(err);
             throw new RuntimeException();

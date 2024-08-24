@@ -9,7 +9,6 @@ int printf(const char *pattern, ...);
 int scanf(const char *pattern, ...);
 int sprintf(char *dest, const char *pattern, ...);
 int sscanf(const char *src, const char *pattern, ...);
-char *strcat(char *str1, const char *str2);
 int strcmp(const char *str1, const char *str2);
 char *strcpy(char *dest, const char *src);
 size_t strlen(const char *str);
@@ -111,10 +110,6 @@ void *__mx_builtin_malloc_array(size_t type_size, size_t array_size) {
   size_t *res = (size_t *) malloc(type_size * array_size + 4);
   res[0] = array_size;
   return res + 1;
-}
-
-void __mx_builtin_strcat(char *str1, const char *str2) {
-  strcat(str1, str2);
 }
 
 char *__mx_builtin_string_add(const char *str1, const char *str2) {

@@ -5,7 +5,7 @@ SRC_DIR := src
 BIN_DIR := bin
 LIB_DIR := /ulib
 CLASSPATH := $(shell find $(LIB_DIR) -name '*.jar' | tr '\n' ':')$(BIN_DIR)
-MAIN_CLASS := Main
+MAIN_CLASS := Compiler
 
 # Find all Java files
 JAVA_FILES := $(shell find $(SRC_DIR) -name '*.java')
