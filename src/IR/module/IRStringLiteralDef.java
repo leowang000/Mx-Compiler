@@ -2,8 +2,6 @@ package IR.module;
 
 import IR.IRNode;
 import IR.IRVisitor;
-import IR.type.IRIntType;
-import IR.type.IRPtrType;
 import IR.value.var.IRGlobalVar;
 
 public class IRStringLiteralDef extends IRNode {
@@ -14,7 +12,7 @@ public class IRStringLiteralDef extends IRNode {
     public IRStringLiteralDef(IRGlobalVar result, String value) {
         result_ = result;
         value_ = value;
-        printValue_ = value.replace("\n", "\\0A").replace("\\", "\\\\").replace("\"", "\\22");
+        printValue_ = value.replace("\\", "\\\\").replace("\n", "\\0A").replace("\"", "\\22");
     }
 
     @Override

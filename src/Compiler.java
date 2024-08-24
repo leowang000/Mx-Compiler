@@ -29,6 +29,7 @@ public class Compiler {
             IRProgram irProgram = new IRProgram();
             IRBuilder irBuilder = new IRBuilder(globalScope, irProgram);
             irBuilder.visit(ast);
+            System.out.println(irProgram);
         } catch (Error err) {
             System.err.println(err);
             throw new RuntimeException();

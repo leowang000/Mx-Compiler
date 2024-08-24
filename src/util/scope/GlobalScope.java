@@ -101,4 +101,12 @@ public class GlobalScope extends ClassScope {
         }
         return null;
     }
+
+    @Override
+    public IRValue getIRVar(String varName) {
+        if (irVarMap_.containsKey(varName)) {
+            return irVarMap_.get(varName);
+        }
+        return null;
+    }
 }

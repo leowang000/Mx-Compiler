@@ -21,7 +21,7 @@ public class IRBuilder implements ASTVisitor {
     private final GlobalScope gScope_;
     private final IRProgram irProgram_;
     private IRBasicBlock currentBlock_, initBlock_, loopEnd_, loopNext_;
-    private boolean endBlock_;
+    private boolean endBlock_, visitMemberFunction_;
     private int forCnt_, whileCnt_, ifCnt_, ternaryCnt_, andCnt_, orCnt_, stringCnt_, fStringCnt_, arrayCnt_, newCnt_;
 
     public IRBuilder(GlobalScope gScope, IRProgram irProgram) {
@@ -33,6 +33,7 @@ public class IRBuilder implements ASTVisitor {
         loopEnd_ = null;
         loopNext_ = null;
         endBlock_ = false;
+        visitMemberFunction_ = false;
         forCnt_ = 0;
         whileCnt_ = 0;
         ifCnt_ = 0;
@@ -54,6 +55,12 @@ public class IRBuilder implements ASTVisitor {
                 def.accept(this);
             }
         }
+        visitMemberFunction_ = true;
+        for (var def : node.defList_) {
+            if (def instanceof ClassDefNode) {
+                def.accept(this);
+            }
+        }
         for (var def : node.defList_) {
             if (!(def instanceof ClassDefNode)) {
                 def.accept(this);
@@ -66,24 +73,27 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public void visit(ClassDefNode node) {
-        scope_ = new ClassScope(scope_, node.name_);
-        IRStructDef irStructDef = new IRStructDef(node.name_, node.constructor_ != null);
-        ArrayList<IRType> fields = new ArrayList<>();
-        for (var varDef : node.varDefList_) {
-            IRType irType = IRType.toIRType(varDef.type_);
-            for (var pair : varDef.varList_) {
-                fields.add(irType);
-                irStructDef.struct_.varToIdMap_.put(pair.first_, fields.size() - 1);
+        if (!visitMemberFunction_) {
+            IRStructDef irStructDef = new IRStructDef(node.name_, node.constructor_ != null);
+            ArrayList<IRType> fields = new ArrayList<>();
+            for (var varDef : node.varDefList_) {
+                IRType irType = IRType.toIRType(varDef.type_);
+                for (var pair : varDef.varList_) {
+                    fields.add(irType);
+                    irStructDef.struct_.varToIdMap_.put(pair.first_, fields.size() - 1);
+                }
             }
+            irStructDef.struct_.setFields(fields);
+            if (node.constructor_ != null) {
+                irStructDef.memberFuncSet_.add(node.constructor_.name_);
+            }
+            for (var funcDef : node.funcDefList_) {
+                irStructDef.memberFuncSet_.add(funcDef.name_);
+            }
+            irProgram_.structDefMap_.put(node.name_, irStructDef);
+            return;
         }
-        irStructDef.struct_.setFields(fields);
-        if (node.constructor_ != null) {
-            irStructDef.memberFuncSet_.add(node.constructor_.name_);
-        }
-        for (var funcDef : node.funcDefList_) {
-            irStructDef.memberFuncSet_.add(funcDef.name_);
-        }
-        irProgram_.structDefMap_.put(node.name_, irStructDef);
+        scope_ = new ClassScope(scope_, node.name_);
         if (node.constructor_ != null) {
             node.constructor_.accept(this);
         }
@@ -108,7 +118,6 @@ public class IRBuilder implements ASTVisitor {
         for (var stmt : node.stmtList_) {
             stmt.accept(this);
         }
-        funcDef.body_.add(currentBlock_);
         irProgram_.funcDeclList_.add(funcDecl);
         irProgram_.funcDefMap_.put(funcName, funcDef);
         scope_ = scope_.parent_;
@@ -346,10 +355,12 @@ public class IRBuilder implements ASTVisitor {
         loopEnd_ = end;
         currentBlock_.instList_.add(new IRJumpInst(cond));
         submitBlock();
+        currentBlock_ = cond;
         node.cond_.accept(this);
         IRValue value = getValueResult(node.cond_.isLeftValue_);
         currentBlock_.instList_.add(new IRBrInst(value, body, end));
         submitBlock();
+        currentBlock_ = body;
         scope_ = new LoopScope(scope_);
         endBlock_ = false;
         for (var stmt : node.body_) {
@@ -593,7 +604,8 @@ public class IRBuilder implements ASTVisitor {
         IRLocalVar newVar = IRLocalVar.newLocalVar(new IRPtrType(IRType.toIRType(node.type_)));
         node.class_.accept(this);
         IRValue clas = getValueResult(node.class_.isLeftValue_);
-        int id = getCurrentStructDef().struct_.varToIdMap_.get(node.member_);
+        int id = irProgram_.structDefMap_.get(
+                ((IRStructType) ((IRPtrType) clas.type_).base_).name_).struct_.varToIdMap_.get(node.member_);
         currentBlock_.instList_.add(new IRGetElementPtrInst(newVar, clas, id));
         currentBlock_.result_ = newVar;
     }
@@ -791,6 +803,7 @@ public class IRBuilder implements ASTVisitor {
             newVar = IRLocalVar.newLocalVar(new IRPtrType(IRType.toIRType(node.type_)));
             currentBlock_.instList_.add(
                     new IRGetElementPtrInst((IRLocalVar) newVar, currentBlock_.belong_.args_.get(0), id));
+            currentBlock_.result_ = newVar;
             return;
         }
         currentBlock_.result_ = newVar;

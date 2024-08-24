@@ -68,14 +68,14 @@ public class Scope {
         return parent_.getVarType(varName);
     }
 
+    public FuncType getFuncType(String funcName) {
+        return parent_.getFuncType(funcName);
+    }
+
     public IRValue getIRVar(String varName) {
         if (irVarMap_.containsKey(varName)) {
             return irVarMap_.get(varName);
         }
         return parent_.getIRVar(varName);
-    }
-
-    public FuncType getFuncType(String funcName) {
-        return parent_.getFuncType(funcName);
     }
 }
