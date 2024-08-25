@@ -50,17 +50,13 @@ public class IRStructType extends IRType {
         if (fields_.isEmpty()) {
             return 1;
         }
-        return (offset_.get(offset_.size() - 1) + fields_.get(fields_.size() - 1).getSize() + 3) / 4 * 4;
+        return 4 * fields_.size();
     }
 
     private static ArrayList<Integer> getOffset(ArrayList<IRType> fields) {
         ArrayList<Integer> res = new ArrayList<>();
-        int offset = 0;
-        for (var type : fields) {
-            int sz = type.getSize();
-            offset = (offset + sz - 1) / sz * sz;
-            res.add(offset);
-            offset += sz;
+        for (int i = 0; i < fields.size(); i++) {
+            res.add(i * 4);
         }
         return res;
     }
