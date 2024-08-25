@@ -12,7 +12,25 @@ public class IRStringLiteralDef extends IRNode {
     public IRStringLiteralDef(IRGlobalVar result, String value) {
         result_ = result;
         value_ = value;
-        printValue_ = value.replace("\\", "\\\\").replace("\n", "\\0A").replace("\"", "\\22");
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        while (i < value.length()) {
+            char ch = value.charAt(i++);
+            switch (ch) {
+                case '\\':
+                    sb.append("\\\\");
+                    break;
+                case '\n':
+                    sb.append("\\0A");
+                    break;
+                case '\"':
+                    sb.append("\\22");
+                    break;
+                default:
+                    sb.append(ch);
+            }
+        }
+        printValue_ = sb.toString();
     }
 
     @Override

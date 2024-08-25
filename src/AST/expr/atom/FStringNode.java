@@ -31,8 +31,28 @@ public class FStringNode extends AtomExprNode {
     }
 
     public static String getFString(String str, int begin, int end) {
-        return str.substring(begin, str.length() + end).replace("\\\\", "\\").replace("\\n", "\n").replace("\\\"", "\"")
-                .replace("$$", "$");
+        String tmp = str.substring(begin, str.length() + end).replace("$$", "$");
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        while (i < tmp.length()) {
+            char ch = tmp.charAt(i++);
+            if (ch == '\\') {
+                switch (tmp.charAt(i++)) {
+                    case '\\':
+                        sb.append('\\');
+                        break;
+                    case 'n':
+                        sb.append('\n');
+                        break;
+                    case '\"':
+                        sb.append('\"');
+                        break;
+                }
+                continue;
+            }
+            sb.append(ch);
+        }
+        return sb.toString();
     }
 
     @Override
