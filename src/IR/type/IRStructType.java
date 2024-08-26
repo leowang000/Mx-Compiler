@@ -48,7 +48,7 @@ public class IRStructType extends IRType {
     @Override
     public int getSize() {
         if (fields_.isEmpty()) {
-            return 1;
+            return 4;
         }
         return 4 * fields_.size();
     }

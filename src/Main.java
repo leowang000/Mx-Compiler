@@ -1,7 +1,11 @@
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 import AST.module.ProgramNode;
 import IR.module.IRProgram;
+import asm.module.ASMProgram;
+import backend.ASMBuilder;
+import backend.StackManager;
 import frontend.*;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
@@ -11,7 +15,7 @@ import util.scope.GlobalScope;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        String input_file_name = "testcases/codegen/t70.mx";
+        String input_file_name = "testcases/codegen/t10.mx";
         FileOutputStream output = new FileOutputStream("my-output/output.txt");
         CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
         try {
@@ -22,15 +26,18 @@ public class Main {
             parser.removeErrorListeners();
             parser.addErrorListener(new MxErrorListener());
             ParseTree parseTreeRoot = parser.program();
-            ASTBuilder astBuilder = new ASTBuilder();
-            ProgramNode ast = (ProgramNode) astBuilder.visit(parseTreeRoot);
+            ProgramNode ast = (ProgramNode) new ASTBuilder().visit(parseTreeRoot);
             GlobalScope globalScope = new GlobalScope();
             new SymbolCollector(globalScope).visit(ast);
             new SemanticChecker(globalScope).visit(ast);
             IRProgram irProgram = new IRProgram();
             IRBuilder irBuilder = new IRBuilder(globalScope, irProgram);
             irBuilder.visit(ast);
-            output.write(irProgram.toString().getBytes());
+            StackManager stackManager = new StackManager();
+            stackManager.visit(irProgram);
+            ASMProgram asmProgram = new ASMProgram();
+            new ASMBuilder(asmProgram).visit(irProgram);
+            output.write(asmProgram.toString().getBytes());
         } catch (Error err) {
             System.err.println(err);
             throw new RuntimeException();

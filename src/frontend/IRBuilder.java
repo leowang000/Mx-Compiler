@@ -20,30 +20,15 @@ public class IRBuilder implements ASTVisitor {
     private Scope scope_;
     private final GlobalScope gScope_;
     private final IRProgram irProgram_;
-    private IRBasicBlock currentBlock_, initBlock_, loopEnd_, loopNext_;
-    private boolean endBlock_, visitMemberFunction_;
-    private int forCnt_, whileCnt_, ifCnt_, ternaryCnt_, andCnt_, orCnt_, stringCnt_, fStringCnt_, arrayCnt_, newCnt_;
+    private IRBasicBlock currentBlock_ = null, initBlock_ = null, loopEnd_ = null, loopNext_ = null;
+    private boolean endBlock_ = false, visitMemberFunction_ = false;
+    private int forCnt_ = 0, whileCnt_ = 0, ifCnt_ = 0, ternaryCnt_ = 0, andCnt_ = 0, orCnt_ = 0, stringCnt_ = 0,
+            fStringCnt_ = 0, arrayCnt_ = 0, newCnt_ = 0;
 
     public IRBuilder(GlobalScope gScope, IRProgram irProgram) {
         scope_ = gScope;
         gScope_ = gScope;
         irProgram_ = irProgram;
-        currentBlock_ = null;
-        initBlock_ = null;
-        loopEnd_ = null;
-        loopNext_ = null;
-        endBlock_ = false;
-        visitMemberFunction_ = false;
-        forCnt_ = 0;
-        whileCnt_ = 0;
-        ifCnt_ = 0;
-        ternaryCnt_ = 0;
-        andCnt_ = 0;
-        orCnt_ = 0;
-        stringCnt_ = 0;
-        fStringCnt_ = 0;
-        arrayCnt_ = 0;
-        newCnt_ = 0;
     }
 
     @Override

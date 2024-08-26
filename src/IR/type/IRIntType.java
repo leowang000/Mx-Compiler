@@ -26,6 +26,6 @@ public class IRIntType extends IRType {
 
     @Override
     public int getSize() {
-        return (len_ + 7) / 8;
+        return 4;
     }
 }
