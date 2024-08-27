@@ -16,7 +16,7 @@ public class ASMSection extends ASMNode {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(".section ").append(name_).append(":\n");
+        sb.append(".section ").append(name_).append("\n");
         for (var block : blockList_) {
             sb.append(block);
         }

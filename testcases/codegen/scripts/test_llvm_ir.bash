@@ -10,9 +10,9 @@
 # The script will
 # 1. Get an temporary directory
 # 2. Execute <compiler> < <testcase> > "$TEMPDIR/output.ll"
-# 3. Get the test.in and test.ans from <testcase> using sed
+# 3. Get the test.mx and test.ans from <testcase> using sed
 # 4. Execute clang -S --target=riscv32-unknown-elf
-# 5. Execute ravel --input-file="$TEMPDIR/test.in" --output-file="$TEMPDIR/test.out" "$TEMPDIR/builtin.s" "$TEMPDIR/output.s" > "$TEMPDIR/ravel_output.txt"
+# 5. Execute ravel --input-file="$TEMPDIR/test.mx" --output-file="$TEMPDIR/test.out" "$TEMPDIR/builtin.s" "$TEMPDIR/output.s" > "$TEMPDIR/ravel_output.txt"
 # 6. Compare the output and exit code
 
 # NOTE: You should have ravel installed in your system.
@@ -133,7 +133,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# 3. Get the test.in and test.ans from <testcase> using sed
+# 3. Get the test.mx and test.ans from <testcase> using sed
 sed -n '/=== input ===/,/=== end ===/{//!p}' $TESTCASE > "$TEMPDIR/test.in"
 if [ $? -ne 0 ]; then
     echo "Error: Failed to get input from $TESTCASE." >&2

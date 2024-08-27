@@ -2,6 +2,8 @@
 	.attribute	4, 16
 	.attribute	5, "rv32i2p1_m2p0_a2p1_c2p0_zmmul1p0"
 	.file	"builtin.c"
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
 	.globl	print                           # -- Begin function print
 	.p2align	1
 	.type	print,@function
@@ -16,6 +18,9 @@ print:                                  # @print
 .Lfunc_end0:
 	.size	print, .Lfunc_end0-print
                                         # -- End function
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
 	.globl	println                         # -- Begin function println
 	.p2align	1
 	.type	println,@function
@@ -30,6 +35,9 @@ println:                                # @println
 .Lfunc_end1:
 	.size	println, .Lfunc_end1-println
                                         # -- End function
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
 	.globl	printInt                        # -- Begin function printInt
 	.p2align	1
 	.type	printInt,@function
@@ -44,6 +52,9 @@ printInt:                               # @printInt
 .Lfunc_end2:
 	.size	printInt, .Lfunc_end2-printInt
                                         # -- End function
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
 	.globl	printlnInt                      # -- Begin function printlnInt
 	.p2align	1
 	.type	printlnInt,@function
@@ -58,6 +69,9 @@ printlnInt:                             # @printlnInt
 .Lfunc_end3:
 	.size	printlnInt, .Lfunc_end3-printlnInt
                                         # -- End function
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
 	.globl	getString                       # -- Begin function getString
 	.p2align	1
 	.type	getString,@function
@@ -81,6 +95,9 @@ getString:                              # @getString
 .Lfunc_end4:
 	.size	getString, .Lfunc_end4-getString
                                         # -- End function
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
 	.globl	getInt                          # -- Begin function getInt
 	.p2align	1
 	.type	getInt,@function
@@ -99,6 +116,9 @@ getInt:                                 # @getInt
 .Lfunc_end5:
 	.size	getInt, .Lfunc_end5-getInt
                                         # -- End function
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
 	.globl	toString                        # -- Begin function toString
 	.p2align	1
 	.type	toString,@function
@@ -125,10 +145,13 @@ toString:                               # @toString
 .Lfunc_end6:
 	.size	toString, .Lfunc_end6-toString
                                         # -- End function
-	.globl	__mx_array_copy                 # -- Begin function __mx_array_copy
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
+	.globl	array.copy                      # -- Begin function array.copy
 	.p2align	1
-	.type	__mx_array_copy,@function
-__mx_array_copy:                        # @__mx_array_copy
+	.type	array.copy,@function
+array.copy:                             # @array.copy
 # %bb.0:
 	addi	sp, sp, -32
 	sw	ra, 28(sp)                      # 4-byte Folded Spill
@@ -166,8 +189,8 @@ __mx_array_copy:                        # @__mx_array_copy
 	j	.LBB7_6
 .LBB7_5:                                #   in Loop: Header=BB7_6 Depth=1
 	sw	a0, 0(s0)
-	addi	s0, s0, 4
 	addi	s1, s1, -1
+	addi	s0, s0, 4
 	addi	s5, s5, 4
 	beqz	s1, .LBB7_8
 .LBB7_6:                                # =>This Inner Loop Header: Depth=1
@@ -176,7 +199,7 @@ __mx_array_copy:                        # @__mx_array_copy
 # %bb.7:                                #   in Loop: Header=BB7_6 Depth=1
 	mv	a1, s3
 	mv	a2, s4
-	call	__mx_array_copy
+	call	array.copy
 	j	.LBB7_5
 .LBB7_8:
 	addi	a0, s2, 4
@@ -191,42 +214,54 @@ __mx_array_copy:                        # @__mx_array_copy
 	addi	sp, sp, 32
 	ret
 .Lfunc_end7:
-	.size	__mx_array_copy, .Lfunc_end7-__mx_array_copy
+	.size	array.copy, .Lfunc_end7-array.copy
                                         # -- End function
-	.globl	__mx_array_size                 # -- Begin function __mx_array_size
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
+	.globl	array.size                      # -- Begin function array.size
 	.p2align	1
-	.type	__mx_array_size,@function
-__mx_array_size:                        # @__mx_array_size
+	.type	array.size,@function
+array.size:                             # @array.size
 # %bb.0:
 	lw	a0, -4(a0)
 	ret
 .Lfunc_end8:
-	.size	__mx_array_size, .Lfunc_end8-__mx_array_size
+	.size	array.size, .Lfunc_end8-array.size
                                         # -- End function
-	.globl	__mx_string_length              # -- Begin function __mx_string_length
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
+	.globl	string.length                   # -- Begin function string.length
 	.p2align	1
-	.type	__mx_string_length,@function
-__mx_string_length:                     # @__mx_string_length
+	.type	string.length,@function
+string.length:                          # @string.length
 # %bb.0:
 	tail	strlen
 .Lfunc_end9:
-	.size	__mx_string_length, .Lfunc_end9-__mx_string_length
+	.size	string.length, .Lfunc_end9-string.length
                                         # -- End function
-	.globl	__mx_string_ord                 # -- Begin function __mx_string_ord
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
+	.globl	string.ord                      # -- Begin function string.ord
 	.p2align	1
-	.type	__mx_string_ord,@function
-__mx_string_ord:                        # @__mx_string_ord
+	.type	string.ord,@function
+string.ord:                             # @string.ord
 # %bb.0:
 	add	a0, a0, a1
 	lbu	a0, 0(a0)
 	ret
 .Lfunc_end10:
-	.size	__mx_string_ord, .Lfunc_end10-__mx_string_ord
+	.size	string.ord, .Lfunc_end10-string.ord
                                         # -- End function
-	.globl	__mx_string_parseInt            # -- Begin function __mx_string_parseInt
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
+	.globl	string.parseInt                 # -- Begin function string.parseInt
 	.p2align	1
-	.type	__mx_string_parseInt,@function
-__mx_string_parseInt:                   # @__mx_string_parseInt
+	.type	string.parseInt,@function
+string.parseInt:                        # @string.parseInt
 # %bb.0:
 	addi	sp, sp, -16
 	sw	ra, 12(sp)                      # 4-byte Folded Spill
@@ -239,12 +274,15 @@ __mx_string_parseInt:                   # @__mx_string_parseInt
 	addi	sp, sp, 16
 	ret
 .Lfunc_end11:
-	.size	__mx_string_parseInt, .Lfunc_end11-__mx_string_parseInt
+	.size	string.parseInt, .Lfunc_end11-string.parseInt
                                         # -- End function
-	.globl	__mx_string_substring           # -- Begin function __mx_string_substring
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
+	.globl	string.substring                # -- Begin function string.substring
 	.p2align	1
-	.type	__mx_string_substring,@function
-__mx_string_substring:                  # @__mx_string_substring
+	.type	string.substring,@function
+string.substring:                       # @string.substring
 # %bb.0:
 	addi	sp, sp, -16
 	sw	ra, 12(sp)                      # 4-byte Folded Spill
@@ -258,7 +296,7 @@ __mx_string_substring:                  # @__mx_string_substring
 	call	malloc
 	add	a1, a0, s1
 	blez	s1, .LBB12_3
-# %bb.1:
+# %bb.1:                                # %.preheader
 	add	s0, s0, s2
 	mv	a2, a0
 .LBB12_2:                               # =>This Inner Loop Header: Depth=1
@@ -276,12 +314,15 @@ __mx_string_substring:                  # @__mx_string_substring
 	addi	sp, sp, 16
 	ret
 .Lfunc_end12:
-	.size	__mx_string_substring, .Lfunc_end12-__mx_string_substring
+	.size	string.substring, .Lfunc_end12-string.substring
                                         # -- End function
-	.globl	__mx_builtin_bool_to_string     # -- Begin function __mx_builtin_bool_to_string
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
+	.globl	builtin.bool_to_string          # -- Begin function builtin.bool_to_string
 	.p2align	1
-	.type	__mx_builtin_bool_to_string,@function
-__mx_builtin_bool_to_string:            # @__mx_builtin_bool_to_string
+	.type	builtin.bool_to_string,@function
+builtin.bool_to_string:                 # @builtin.bool_to_string
 # %bb.0:
 	bnez	a0, .LBB13_2
 # %bb.1:
@@ -293,22 +334,28 @@ __mx_builtin_bool_to_string:            # @__mx_builtin_bool_to_string
 	addi	a0, a0, %lo(.L.str.4)
 	ret
 .Lfunc_end13:
-	.size	__mx_builtin_bool_to_string, .Lfunc_end13-__mx_builtin_bool_to_string
+	.size	builtin.bool_to_string, .Lfunc_end13-builtin.bool_to_string
                                         # -- End function
-	.globl	__mx_builtin_calloc             # -- Begin function __mx_builtin_calloc
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
+	.globl	builtin.calloc                  # -- Begin function builtin.calloc
 	.p2align	1
-	.type	__mx_builtin_calloc,@function
-__mx_builtin_calloc:                    # @__mx_builtin_calloc
+	.type	builtin.calloc,@function
+builtin.calloc:                         # @builtin.calloc
 # %bb.0:
 	li	a1, 1
 	tail	calloc
 .Lfunc_end14:
-	.size	__mx_builtin_calloc, .Lfunc_end14-__mx_builtin_calloc
+	.size	builtin.calloc, .Lfunc_end14-builtin.calloc
                                         # -- End function
-	.globl	__mx_builtin_calloc_array       # -- Begin function __mx_builtin_calloc_array
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
+	.globl	builtin.calloc_array            # -- Begin function builtin.calloc_array
 	.p2align	1
-	.type	__mx_builtin_calloc_array,@function
-__mx_builtin_calloc_array:              # @__mx_builtin_calloc_array
+	.type	builtin.calloc_array,@function
+builtin.calloc_array:                   # @builtin.calloc_array
 # %bb.0:
 	addi	sp, sp, -16
 	sw	ra, 12(sp)                      # 4-byte Folded Spill
@@ -326,21 +373,27 @@ __mx_builtin_calloc_array:              # @__mx_builtin_calloc_array
 	addi	sp, sp, 16
 	ret
 .Lfunc_end15:
-	.size	__mx_builtin_calloc_array, .Lfunc_end15-__mx_builtin_calloc_array
+	.size	builtin.calloc_array, .Lfunc_end15-builtin.calloc_array
                                         # -- End function
-	.globl	__mx_builtin_malloc             # -- Begin function __mx_builtin_malloc
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
+	.globl	builtin.malloc                  # -- Begin function builtin.malloc
 	.p2align	1
-	.type	__mx_builtin_malloc,@function
-__mx_builtin_malloc:                    # @__mx_builtin_malloc
+	.type	builtin.malloc,@function
+builtin.malloc:                         # @builtin.malloc
 # %bb.0:
 	tail	malloc
 .Lfunc_end16:
-	.size	__mx_builtin_malloc, .Lfunc_end16-__mx_builtin_malloc
+	.size	builtin.malloc, .Lfunc_end16-builtin.malloc
                                         # -- End function
-	.globl	__mx_builtin_malloc_array       # -- Begin function __mx_builtin_malloc_array
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
+	.globl	builtin.malloc_array            # -- Begin function builtin.malloc_array
 	.p2align	1
-	.type	__mx_builtin_malloc_array,@function
-__mx_builtin_malloc_array:              # @__mx_builtin_malloc_array
+	.type	builtin.malloc_array,@function
+builtin.malloc_array:                   # @builtin.malloc_array
 # %bb.0:
 	addi	sp, sp, -16
 	sw	ra, 12(sp)                      # 4-byte Folded Spill
@@ -357,12 +410,15 @@ __mx_builtin_malloc_array:              # @__mx_builtin_malloc_array
 	addi	sp, sp, 16
 	ret
 .Lfunc_end17:
-	.size	__mx_builtin_malloc_array, .Lfunc_end17-__mx_builtin_malloc_array
+	.size	builtin.malloc_array, .Lfunc_end17-builtin.malloc_array
                                         # -- End function
-	.globl	__mx_builtin_string_add         # -- Begin function __mx_builtin_string_add
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
+	.globl	builtin.string_add              # -- Begin function builtin.string_add
 	.p2align	1
-	.type	__mx_builtin_string_add,@function
-__mx_builtin_string_add:                # @__mx_builtin_string_add
+	.type	builtin.string_add,@function
+builtin.string_add:                     # @builtin.string_add
 # %bb.0:
 	addi	sp, sp, -32
 	sw	ra, 28(sp)                      # 4-byte Folded Spill
@@ -398,12 +454,15 @@ __mx_builtin_string_add:                # @__mx_builtin_string_add
 	addi	sp, sp, 32
 	ret
 .Lfunc_end18:
-	.size	__mx_builtin_string_add, .Lfunc_end18-__mx_builtin_string_add
+	.size	builtin.string_add, .Lfunc_end18-builtin.string_add
                                         # -- End function
-	.globl	__mx_builtin_string_eq          # -- Begin function __mx_builtin_string_eq
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
+	.globl	builtin.string_eq               # -- Begin function builtin.string_eq
 	.p2align	1
-	.type	__mx_builtin_string_eq,@function
-__mx_builtin_string_eq:                 # @__mx_builtin_string_eq
+	.type	builtin.string_eq,@function
+builtin.string_eq:                      # @builtin.string_eq
 # %bb.0:
 	addi	sp, sp, -16
 	sw	ra, 12(sp)                      # 4-byte Folded Spill
@@ -413,12 +472,15 @@ __mx_builtin_string_eq:                 # @__mx_builtin_string_eq
 	addi	sp, sp, 16
 	ret
 .Lfunc_end19:
-	.size	__mx_builtin_string_eq, .Lfunc_end19-__mx_builtin_string_eq
+	.size	builtin.string_eq, .Lfunc_end19-builtin.string_eq
                                         # -- End function
-	.globl	__mx_builtin_string_ge          # -- Begin function __mx_builtin_string_ge
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
+	.globl	builtin.string_ge               # -- Begin function builtin.string_ge
 	.p2align	1
-	.type	__mx_builtin_string_ge,@function
-__mx_builtin_string_ge:                 # @__mx_builtin_string_ge
+	.type	builtin.string_ge,@function
+builtin.string_ge:                      # @builtin.string_ge
 # %bb.0:
 	addi	sp, sp, -16
 	sw	ra, 12(sp)                      # 4-byte Folded Spill
@@ -428,12 +490,15 @@ __mx_builtin_string_ge:                 # @__mx_builtin_string_ge
 	addi	sp, sp, 16
 	ret
 .Lfunc_end20:
-	.size	__mx_builtin_string_ge, .Lfunc_end20-__mx_builtin_string_ge
+	.size	builtin.string_ge, .Lfunc_end20-builtin.string_ge
                                         # -- End function
-	.globl	__mx_builtin_string_geq         # -- Begin function __mx_builtin_string_geq
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
+	.globl	builtin.string_geq              # -- Begin function builtin.string_geq
 	.p2align	1
-	.type	__mx_builtin_string_geq,@function
-__mx_builtin_string_geq:                # @__mx_builtin_string_geq
+	.type	builtin.string_geq,@function
+builtin.string_geq:                     # @builtin.string_geq
 # %bb.0:
 	addi	sp, sp, -16
 	sw	ra, 12(sp)                      # 4-byte Folded Spill
@@ -444,12 +509,15 @@ __mx_builtin_string_geq:                # @__mx_builtin_string_geq
 	addi	sp, sp, 16
 	ret
 .Lfunc_end21:
-	.size	__mx_builtin_string_geq, .Lfunc_end21-__mx_builtin_string_geq
+	.size	builtin.string_geq, .Lfunc_end21-builtin.string_geq
                                         # -- End function
-	.globl	__mx_builtin_string_le          # -- Begin function __mx_builtin_string_le
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
+	.globl	builtin.string_le               # -- Begin function builtin.string_le
 	.p2align	1
-	.type	__mx_builtin_string_le,@function
-__mx_builtin_string_le:                 # @__mx_builtin_string_le
+	.type	builtin.string_le,@function
+builtin.string_le:                      # @builtin.string_le
 # %bb.0:
 	addi	sp, sp, -16
 	sw	ra, 12(sp)                      # 4-byte Folded Spill
@@ -459,12 +527,15 @@ __mx_builtin_string_le:                 # @__mx_builtin_string_le
 	addi	sp, sp, 16
 	ret
 .Lfunc_end22:
-	.size	__mx_builtin_string_le, .Lfunc_end22-__mx_builtin_string_le
+	.size	builtin.string_le, .Lfunc_end22-builtin.string_le
                                         # -- End function
-	.globl	__mx_builtin_string_leq         # -- Begin function __mx_builtin_string_leq
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
+	.globl	builtin.string_leq              # -- Begin function builtin.string_leq
 	.p2align	1
-	.type	__mx_builtin_string_leq,@function
-__mx_builtin_string_leq:                # @__mx_builtin_string_leq
+	.type	builtin.string_leq,@function
+builtin.string_leq:                     # @builtin.string_leq
 # %bb.0:
 	addi	sp, sp, -16
 	sw	ra, 12(sp)                      # 4-byte Folded Spill
@@ -474,12 +545,15 @@ __mx_builtin_string_leq:                # @__mx_builtin_string_leq
 	addi	sp, sp, 16
 	ret
 .Lfunc_end23:
-	.size	__mx_builtin_string_leq, .Lfunc_end23-__mx_builtin_string_leq
+	.size	builtin.string_leq, .Lfunc_end23-builtin.string_leq
                                         # -- End function
-	.globl	__mx_builtin_string_ne          # -- Begin function __mx_builtin_string_ne
+	.option	pop
+	.option	push
+	.option	arch, +a, +c, +m, +zmmul
+	.globl	builtin.string_ne               # -- Begin function builtin.string_ne
 	.p2align	1
-	.type	__mx_builtin_string_ne,@function
-__mx_builtin_string_ne:                 # @__mx_builtin_string_ne
+	.type	builtin.string_ne,@function
+builtin.string_ne:                      # @builtin.string_ne
 # %bb.0:
 	addi	sp, sp, -16
 	sw	ra, 12(sp)                      # 4-byte Folded Spill
@@ -489,8 +563,9 @@ __mx_builtin_string_ne:                 # @__mx_builtin_string_ne
 	addi	sp, sp, 16
 	ret
 .Lfunc_end24:
-	.size	__mx_builtin_string_ne, .Lfunc_end24-__mx_builtin_string_ne
+	.size	builtin.string_ne, .Lfunc_end24-builtin.string_ne
                                         # -- End function
+	.option	pop
 	.type	.L.str,@object                  # @.str
 	.section	.rodata.str1.1,"aMS",@progbits,1
 .L.str:
@@ -524,4 +599,3 @@ __mx_builtin_string_ne:                 # @__mx_builtin_string_ne
 
 	.ident	"Ubuntu clang version 20.0.0 (++20240817032242+76161451f5ca-1~exp1~20240817152407.1871)"
 	.section	".note.GNU-stack","",@progbits
-	.addrsig

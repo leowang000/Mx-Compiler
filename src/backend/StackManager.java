@@ -5,7 +5,6 @@ import IR.inst.*;
 import IR.module.*;
 import IR.type.IRPtrType;
 import IR.value.var.IRLocalVar;
-import asm.util.Register;
 
 public class StackManager implements IRVisitor {
     private IRFuncDef belong_ = null;
@@ -60,6 +59,7 @@ public class StackManager implements IRVisitor {
 
     @Override
     public void visit(IRAllocaInst node) {
+        node.result_.isAllocaResult_ = true;
         addLocalVar(node.result_, ((IRPtrType) node.result_.type_).getDereferenceType().getSize());
     }
 

@@ -14,6 +14,7 @@ import asm.module.ASMProgram;
 import asm.util.MemAddr;
 
 public class ASMBuilder implements IRVisitor {
+    private final boolean needLongBranch = false;
     private final ASMProgram asmProgram_;
     private ASMBlock currentBlock_ = null;
     private IRFuncDef belong_ = null;
@@ -49,6 +50,7 @@ public class ASMBuilder implements IRVisitor {
     public void visit(IRFuncDef node) {
         belong_ = node;
         currentBlock_ = new ASMBlock(node.name_);
+        currentBlock_.info_ = "\n\t.globl " + node.name_;
         currentBlock_.instList_.add(new ASMBinaryImmInst("addi", "sp", "sp", -node.stackSize_));
         currentBlock_.instList_.add(new ASMSwInst("ra", "sp", node.stackSize_ - 4));
         isFirstBlock_ = true;
@@ -115,10 +117,23 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(IRBrInst node) {
-        loadVar("t0", node.cond_);
-        currentBlock_.instList_.add(new ASMBranchInst("bne", "t0", "x0", node.trueBlock_.label_));
-        currentBlock_.instList_.add(new ASMJInst(node.falseBlock_.label_));
-        asmProgram_.data_.blockList_.add(currentBlock_);
+        if (needLongBranch) {
+            int id = ASMBranchInst.cnt_++;
+            String label = ".tmp_" + id;
+            loadVar("t0", node.cond_);
+            currentBlock_.instList_.add(new ASMBranchInst("bne", "t0", "x0", label));
+            currentBlock_.instList_.add(new ASMJInst(node.falseBlock_.label_));
+            asmProgram_.text_.blockList_.add(currentBlock_);
+            currentBlock_ = new ASMBlock(label);
+            currentBlock_.instList_.add(new ASMJInst(node.trueBlock_.label_));
+            asmProgram_.text_.blockList_.add(currentBlock_);
+        }
+        else {
+            loadVar("t0", node.cond_);
+            currentBlock_.instList_.add(new ASMBranchInst("bne", "t0", "x0", node.trueBlock_.label_));
+            currentBlock_.instList_.add(new ASMJInst(node.falseBlock_.label_));
+            asmProgram_.text_.blockList_.add(currentBlock_);
+        }
     }
 
     @Override
@@ -126,15 +141,17 @@ public class ASMBuilder implements IRVisitor {
         for (int i = 0; i < Math.min(node.args_.size(), 8); i++) {
             storeRegisterA(i);
         }
-        // TODO: arg must not be a0-a7
         for (int i = 0; i < node.args_.size(); i++) {
             if (i < 8) {
-                loadVar("a" + i, node.args_.get(i));
+                loadVar("s" + (i + 1), node.args_.get(i));
             }
             else {
                 loadVar("t0", node.args_.get(i));
                 currentBlock_.instList_.add(new ASMSwInst("t0", "sp", 4 * (i - 8)));
             }
+        }
+        for (int i = 0; i < node.args_.size() && i < 8; i++) {
+            currentBlock_.instList_.add(new ASMUnaryInst("mv", "a" + i, "s" + (i + 1)));
         }
         currentBlock_.instList_.add(new ASMCallInst(node.funcName_));
         if (node.result_ != null) {
@@ -147,17 +164,17 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(IRGetElementPtrInst node) {
-        int offset = getAddr("t0", node.ptr_).offset_;
+        MemAddr addr = loadPtrAddr("t0", node.ptr_);
         if (node.id2_ == -1) {
             loadVar("t1", node.id1_);
             currentBlock_.instList_.add(
                     new ASMLiInst("t2", ((IRPtrType) node.result_.type_).getDereferenceType().getSize()));
             currentBlock_.instList_.add(new ASMBinaryInst("mul", "t1", "t1", "t2"));
-            currentBlock_.instList_.add(new ASMBinaryImmInst("slli", "t0", "t1", 2));
+            currentBlock_.instList_.add(new ASMBinaryInst("add", "t0", "t0", "t1"));
         }
         else {
-            offset += 4 * node.id2_;
-            currentBlock_.instList_.add(new ASMBinaryImmInst("addi", "t0", "t0", offset));
+            addr.offset_ += 4 * node.id2_;
+            currentBlock_.instList_.add(new ASMBinaryImmInst("addi", "t0", addr.base_.name_, addr.offset_));
         }
         storeRegisterIntoLocalVar("t0", node.result_);
     }
@@ -183,11 +200,11 @@ public class ASMBuilder implements IRVisitor {
                 break;
             case "sle":
                 currentBlock_.instList_.add(new ASMBinaryInst("sgt", "t0", "t0", "t1"));
-                currentBlock_.instList_.add(new ASMUnaryInst("snez", "t0", "t0"));
+                currentBlock_.instList_.add(new ASMUnaryInst("seqz", "t0", "t0"));
                 break;
             case "sge":
                 currentBlock_.instList_.add(new ASMBinaryInst("slt", "t0", "t0", "t1"));
-                currentBlock_.instList_.add(new ASMUnaryInst("snez", "t0", "t0"));
+                currentBlock_.instList_.add(new ASMUnaryInst("seqz", "t0", "t0"));
                 break;
         }
         storeRegisterIntoLocalVar("t0", node.result_);
@@ -201,9 +218,9 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(IRLoadInst node) {
-        MemAddr addr = getAddr("t0", node.pointer_);
-        currentBlock_.instList_.add(new ASMLwInst("t0", addr));
-        storeRegisterIntoLocalVar("t0", node.result_);
+        MemAddr addr = loadPtrAddr("t0", node.pointer_);
+        currentBlock_.instList_.add(new ASMLwInst("t1", addr));
+        storeRegisterIntoLocalVar("t1", node.result_);
     }
 
     @Override
@@ -216,6 +233,7 @@ public class ASMBuilder implements IRVisitor {
         }
         currentBlock_.instList_.add(new ASMLwInst("ra", "sp", belong_.stackSize_ - 4));
         currentBlock_.instList_.add(new ASMBinaryImmInst("addi", "sp", "sp", belong_.stackSize_));
+        currentBlock_.instList_.add(new ASMRetInst());
         asmProgram_.text_.blockList_.add(currentBlock_);
     }
 
@@ -225,7 +243,7 @@ public class ASMBuilder implements IRVisitor {
     @Override
     public void visit(IRStoreInst node) {
         loadVar("t0", node.value_);
-        MemAddr addr = getAddr("t1", node.pointer_);
+        MemAddr addr = loadPtrAddr("t1", node.pointer_);
         currentBlock_.instList_.add(new ASMSwInst("t0", addr));
     }
 
@@ -237,21 +255,19 @@ public class ASMBuilder implements IRVisitor {
         currentBlock_.instList_.add(new ASMSwInst("a" + i, "sp", belong_.stackSize_ - 8 - 4 * i));
     }
 
-    private MemAddr getAddr(String rd, IRValue value) {
+    private MemAddr loadPtrAddr(String rd, IRValue value) {
         if (value instanceof IRGlobalVar) {
             currentBlock_.instList_.add(new ASMLaInst(rd, ((IRGlobalVar) value).name_));
             return new MemAddr(rd, 0);
         }
         IRLocalVar localVar = (IRLocalVar) value;
-        if (!localVar.isAnonymous_) {
+        if (localVar.register_ != null) {
+            return new MemAddr(localVar.register_, 0);
+        }
+        if (localVar.isAllocaResult_) {
             return new MemAddr("sp", localVar.stackOffset_);
         }
-        if (localVar.register_ != null) {
-            currentBlock_.instList_.add(new ASMBinaryImmInst("addi", rd, localVar.register_, 0));
-        }
-        else {
-            currentBlock_.instList_.add(new ASMLwInst(rd, "sp", localVar.stackOffset_));
-        }
+        currentBlock_.instList_.add(new ASMLwInst(rd, "sp", localVar.stackOffset_));
         return new MemAddr(rd, 0);
     }
 
@@ -273,15 +289,15 @@ public class ASMBuilder implements IRVisitor {
             return;
         }
         IRLocalVar localVar = (IRLocalVar) value;
-        if (!localVar.isAnonymous_) {
-            currentBlock_.instList_.add(new ASMBinaryImmInst("addi", rd, "sp", localVar.stackOffset_));
-        }
         if (localVar.register_ != null) {
-            currentBlock_.instList_.add(new ASMBinaryImmInst("addi", rd, localVar.register_, 0));
+            currentBlock_.instList_.add(new ASMUnaryInst("mv", rd, localVar.register_));
+            return;
         }
-        else {
-            currentBlock_.instList_.add(new ASMLwInst(rd, "sp", localVar.stackOffset_));
+        if (localVar.isAllocaResult_) {
+            currentBlock_.instList_.add(new ASMBinaryImmInst("addi", rd, "sp", localVar.stackOffset_));
+            return;
         }
+        currentBlock_.instList_.add(new ASMLwInst(rd, "sp", localVar.stackOffset_));
     }
 
     private void storeRegisterIntoLocalVar(String rs, IRLocalVar localVar) {

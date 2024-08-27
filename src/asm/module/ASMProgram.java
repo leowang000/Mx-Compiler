@@ -6,9 +6,9 @@ public class ASMProgram extends ASMNode {
     public ASMSection text_, data_, rodata_;
 
     public ASMProgram() {
-        text_ = new ASMSection("text");
-        data_ = new ASMSection("data");
-        rodata_ = new ASMSection("rodata");
+        text_ = new ASMSection(".text");
+        data_ = new ASMSection(".data");
+        rodata_ = new ASMSection(".rodata");
     }
 
     @Override

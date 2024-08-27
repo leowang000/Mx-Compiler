@@ -21,7 +21,6 @@ public class IRFuncDef extends IRNode {
         returnType_ = returnType;
         args_ = new ArrayList<>();
         body_ = new ArrayList<>();
-        stackSize_ = 4;
         localVarSet_ = new HashSet<>();
     }
 

@@ -8,7 +8,7 @@ public class ASMAscizInst extends ASMInst {
         value_ = value;
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < value.length(); i++) {
-            char ch = value.charAt(i++);
+            char ch = value.charAt(i);
             switch (ch) {
                 case '\\':
                     sb.append("\\\\");

@@ -15,8 +15,9 @@ import util.scope.GlobalScope;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        String input_file_name = "testcases/codegen/t10.mx";
-        FileOutputStream output = new FileOutputStream("my-output/output.txt");
+        String input_file_name = "test/test.mx";
+        FileOutputStream irOutput = new FileOutputStream("test/output.ll");
+        FileOutputStream asmOutput = new FileOutputStream("test/output.s");
         CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
         try {
             MxLexer lexer = new MxLexer(input);
@@ -33,11 +34,12 @@ public class Main {
             IRProgram irProgram = new IRProgram();
             IRBuilder irBuilder = new IRBuilder(globalScope, irProgram);
             irBuilder.visit(ast);
+            irOutput.write(irProgram.toString().getBytes());
             StackManager stackManager = new StackManager();
             stackManager.visit(irProgram);
             ASMProgram asmProgram = new ASMProgram();
             new ASMBuilder(asmProgram).visit(irProgram);
-            output.write(asmProgram.toString().getBytes());
+            asmOutput.write(asmProgram.toString().getBytes());
         } catch (Error err) {
             System.err.println(err);
             throw new RuntimeException();

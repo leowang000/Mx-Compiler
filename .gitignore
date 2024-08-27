@@ -1,7 +1,9 @@
 **/.idea/
 bin/
-my-output/
+compiler-debugger/
 out/
 ravel/
+REIMU/
+test/
 tutorial/
 Mx-Compiler.iml

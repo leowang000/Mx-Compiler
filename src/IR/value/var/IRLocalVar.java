@@ -6,20 +6,14 @@ import asm.util.Register;
 
 public class IRLocalVar extends IRValue {
     public String name_, register_ = null;
-    public boolean isAnonymous_;
+    public boolean isAllocaResult_;
     public int stackOffset_ = 0;
     public static int cnt_ = 0;
 
     public IRLocalVar(String name, IRType type) {
         super(type);
         name_ = name;
-        try {
-            Integer.parseInt(name_);
-            isAnonymous_ = true;
-        }
-        catch (NumberFormatException e) {
-            isAnonymous_ = false;
-        }
+        isAllocaResult_ = false;
     }
 
     @Override
