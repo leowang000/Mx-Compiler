@@ -36,8 +36,8 @@ public class Compiler {
             stackManager.visit(irProgram);
             ASMProgram asmProgram = new ASMProgram();
             new ASMBuilder(asmProgram).visit(irProgram);
-//            String builtin = Files.readString(Paths.get("src/builtin/builtin.s"));
-//            System.out.println(builtin);
+            String builtin = Files.readString(Paths.get("src/builtin/builtin.s"));
+            System.out.println(builtin);
             System.out.print(asmProgram);
         } catch (Error err) {
             System.err.println(err);
