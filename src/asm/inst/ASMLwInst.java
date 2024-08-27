@@ -12,11 +12,6 @@ public class ASMLwInst extends ASMInst {
         addr_ = new MemAddr(base, offset);
     }
 
-    public ASMLwInst(String rd, MemAddr addr) {
-        rd_ = new Register(rd);
-        addr_ = addr;
-    }
-
     @Override
     public String toString() {
         return String.format("lw\t%s, %s", rd_, addr_);

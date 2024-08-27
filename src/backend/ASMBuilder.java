@@ -305,14 +305,24 @@ public class ASMBuilder implements IRVisitor {
     }
 
     private void addAddi(String rd, String rs, int imm, String tmp) {
-        currentBlock_.instList_.add(new ASMLiInst(tmp, imm));
-        currentBlock_.instList_.add(new ASMBinaryInst("add", rd, rs, tmp));
+        if (imm >= -2048 && imm <= 2047) {
+            currentBlock_.instList_.add(new ASMBinaryImmInst("addi", rd, rs, imm));
+        }
+        else {
+            currentBlock_.instList_.add(new ASMLiInst(tmp, imm));
+            currentBlock_.instList_.add(new ASMBinaryInst("add", rd, rs, tmp));
+        }
     }
 
     private void addSw(String rs, String base, int imm, String tmp) {
-        currentBlock_.instList_.add(new ASMLiInst(tmp, imm));
-        currentBlock_.instList_.add(new ASMBinaryInst("add", tmp, base, tmp));
-        currentBlock_.instList_.add(new ASMSwInst(rs, tmp, 0));
+        if (imm >= -2048 && imm <= 2047) {
+            currentBlock_.instList_.add(new ASMSwInst(rs, base, imm));
+        }
+        else {
+            currentBlock_.instList_.add(new ASMLiInst(tmp, imm));
+            currentBlock_.instList_.add(new ASMBinaryInst("add", tmp, base, tmp));
+            currentBlock_.instList_.add(new ASMSwInst(rs, tmp, 0));
+        }
     }
 
     private void addSw(String rs, MemAddr addr, String tmp) {
@@ -320,9 +330,14 @@ public class ASMBuilder implements IRVisitor {
     }
 
     private void addLw(String rd, String base, int imm, String tmp) {
-        currentBlock_.instList_.add(new ASMLiInst(tmp, imm));
-        currentBlock_.instList_.add(new ASMBinaryInst("add", tmp, base, tmp));
-        currentBlock_.instList_.add(new ASMLwInst(rd, tmp, 0));
+        if (imm >= -2048 && imm <= 2047) {
+            currentBlock_.instList_.add(new ASMLwInst(rd, base, imm));
+        }
+        else {
+            currentBlock_.instList_.add(new ASMLiInst(tmp, imm));
+            currentBlock_.instList_.add(new ASMBinaryInst("add", tmp, base, tmp));
+            currentBlock_.instList_.add(new ASMLwInst(rd, tmp, 0));
+        }
     }
 
     private void addLw(String rd, MemAddr addr, String tmp) {
