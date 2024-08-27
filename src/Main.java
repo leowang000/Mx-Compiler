@@ -1,5 +1,7 @@
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import AST.module.ProgramNode;
 import IR.module.IRProgram;
@@ -15,7 +17,7 @@ import util.scope.GlobalScope;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        String input_file_name = "testcases/sema/ternary-package/ternary-expression-5.mx";
+        String input_file_name = "testcases/codegen/shortest_path/dijkstra.mx";
         FileOutputStream irOutput = new FileOutputStream("test/output.ll");
         FileOutputStream asmOutput = new FileOutputStream("test/output.s");
         CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
