@@ -15,7 +15,7 @@ import util.scope.GlobalScope;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        String input_file_name = "test/test.mx";
+        String input_file_name = "testcases/sema/ternary-package/ternary-expression-5.mx";
         FileOutputStream irOutput = new FileOutputStream("test/output.ll");
         FileOutputStream asmOutput = new FileOutputStream("test/output.s");
         CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));

@@ -66,6 +66,12 @@ public class Type {
             return true;
         }
         Type otherType = (Type) obj;
+        if (name_.equals("void") && otherType.name_.equals("void")) {
+            return true;
+        }
+        if (name_.equals("void") || otherType.name_.equals("void")) {
+            return false;
+        }
         if ((name_.equals("null") && otherType.name_.equals("null")) ||
             (name_.equals("null") && !isBuiltInType(otherType)) ||
             (otherType.name_.equals("null") && !isBuiltInType(this))) {

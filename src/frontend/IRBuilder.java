@@ -40,6 +40,11 @@ public class IRBuilder implements ASTVisitor {
                 def.accept(this);
             }
         }
+        for (var def : node.defList_) {
+            if (def instanceof VarDefNode) {
+                def.accept(this);
+            }
+        }
         visitMemberFunction_ = true;
         for (var def : node.defList_) {
             if (def instanceof ClassDefNode) {
@@ -47,7 +52,7 @@ public class IRBuilder implements ASTVisitor {
             }
         }
         for (var def : node.defList_) {
-            if (!(def instanceof ClassDefNode)) {
+            if (def instanceof FuncDefNode) {
                 def.accept(this);
             }
         }
@@ -873,7 +878,7 @@ public class IRBuilder implements ASTVisitor {
         currentBlock_.instList_.add(new IRBrInst(condValue, body, end));
         submitBlock();
         currentBlock_ = body;
-        IRLocalVar elemPtr = IRLocalVar.newLocalVar(type.getDereferenceType());
+        IRLocalVar elemPtr = IRLocalVar.newLocalVar(type);
         currentBlock_.instList_.add(new IRGetElementPtrInst(elemPtr, newVar, loopVarValue));
         IRLocalVar subArray = generateArray(fixedSizeList, start + 1, (IRPtrType) type.getDereferenceType());
         currentBlock_.instList_.add(new IRStoreInst(subArray, elemPtr));
@@ -897,7 +902,7 @@ public class IRBuilder implements ASTVisitor {
                 new IRCallInst(newVar, "builtin.malloc_array", new IRIntConst(type.getDereferenceType().getSize()),
                                new IRIntConst(node.elemList_.size())));
         for (int i = 0; i < node.elemList_.size(); i++) {
-            IRLocalVar elemPtr = IRLocalVar.newLocalVar(type.getDereferenceType());
+            IRLocalVar elemPtr = IRLocalVar.newLocalVar(type);
             currentBlock_.instList_.add(new IRGetElementPtrInst(elemPtr, newVar, new IRIntConst(i)));
             if (node.elemList_.get(i) instanceof ArrayLiteralNode) {
                 IRLocalVar elemValue = initArrayLiteral((ArrayLiteralNode) node.elemList_.get(i),
