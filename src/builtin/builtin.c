@@ -54,6 +54,7 @@ void *__mx_array_copy(void *arr, size_t type_size, size_t dim) {
   size_t array_size = ((size_t *) arr)[-1];
   if (dim == 1) {
     size_t *res = (size_t *) malloc(type_size * array_size + 4);
+    memcpy(res, ((size_t *) arr) - 1, type_size * array_size + 4);
     return res + 1;
   }
   size_t *res = (size_t *) malloc(4 * array_size + 4);

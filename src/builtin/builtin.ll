@@ -73,66 +73,69 @@ define dso_local noundef ptr @toString(i32 noundef %0) local_unnamed_addr #0 {
 declare dso_local i32 @sprintf(ptr noundef, ptr noundef, ...) local_unnamed_addr #1
 
 ; Function Attrs: nounwind
-define dso_local ptr @array.copy(ptr nocapture noundef readonly %0, i32 noundef %1, i32 noundef %2) local_unnamed_addr #0 {
+define dso_local ptr @array.copy(ptr noundef %0, i32 noundef %1, i32 noundef %2) local_unnamed_addr #0 {
   %4 = load i32, ptr %0, align 4, !tbaa !6
   %5 = icmp eq i32 %4, 0
-  br i1 %5, label %39, label %6
+  br i1 %5, label %40, label %6
 
 6:                                                ; preds = %3
   %7 = getelementptr inbounds i8, ptr %0, i32 -4
   %8 = load i32, ptr %7, align 4, !tbaa !6
   %9 = icmp eq i32 %2, 1
-  br i1 %9, label %10, label %14
+  br i1 %9, label %10, label %15
 
 10:                                               ; preds = %6
   %11 = mul i32 %8, %1
   %12 = add i32 %11, 4
   %13 = tail call ptr @malloc(i32 noundef %12) #5
-  br label %36
+  %14 = tail call ptr @memcpy(ptr noundef %13, ptr noundef nonnull %7, i32 noundef %12) #5
+  br label %37
 
-14:                                               ; preds = %6
-  %15 = shl i32 %8, 2
-  %16 = add i32 %15, 4
-  %17 = tail call ptr @malloc(i32 noundef %16) #5
-  store i32 %8, ptr %17, align 4, !tbaa !6
-  %18 = getelementptr inbounds i8, ptr %17, i32 4
-  %19 = icmp eq i32 %8, 0
-  br i1 %19, label %36, label %20
+15:                                               ; preds = %6
+  %16 = shl i32 %8, 2
+  %17 = add i32 %16, 4
+  %18 = tail call ptr @malloc(i32 noundef %17) #5
+  store i32 %8, ptr %18, align 4, !tbaa !6
+  %19 = getelementptr inbounds i8, ptr %18, i32 4
+  %20 = icmp eq i32 %8, 0
+  br i1 %20, label %37, label %21
 
-20:                                               ; preds = %14
-  %21 = add i32 %2, -1
-  br label %22
+21:                                               ; preds = %15
+  %22 = add i32 %2, -1
+  br label %23
 
-22:                                               ; preds = %20, %31
-  %23 = phi i32 [ 0, %20 ], [ %34, %31 ]
-  %24 = getelementptr inbounds i32, ptr %0, i32 %23
-  %25 = load i32, ptr %24, align 4, !tbaa !6
-  %26 = icmp eq i32 %25, 0
-  br i1 %26, label %31, label %27
+23:                                               ; preds = %21, %32
+  %24 = phi i32 [ 0, %21 ], [ %35, %32 ]
+  %25 = getelementptr inbounds i32, ptr %0, i32 %24
+  %26 = load i32, ptr %25, align 4, !tbaa !6
+  %27 = icmp eq i32 %26, 0
+  br i1 %27, label %32, label %28
 
-27:                                               ; preds = %22
-  %28 = inttoptr i32 %25 to ptr
-  %29 = tail call ptr @array.copy(ptr noundef nonnull %28, i32 noundef %1, i32 noundef %21) #7
-  %30 = ptrtoint ptr %29 to i32
-  br label %31
+28:                                               ; preds = %23
+  %29 = inttoptr i32 %26 to ptr
+  %30 = tail call ptr @array.copy(ptr noundef nonnull %29, i32 noundef %1, i32 noundef %22) #7
+  %31 = ptrtoint ptr %30 to i32
+  br label %32
 
-31:                                               ; preds = %22, %27
-  %32 = phi i32 [ %30, %27 ], [ 0, %22 ]
-  %33 = getelementptr inbounds i32, ptr %18, i32 %23
-  store i32 %32, ptr %33, align 4, !tbaa !6
-  %34 = add nuw i32 %23, 1
-  %35 = icmp eq i32 %34, %8
-  br i1 %35, label %36, label %22, !llvm.loop !10
+32:                                               ; preds = %23, %28
+  %33 = phi i32 [ %31, %28 ], [ 0, %23 ]
+  %34 = getelementptr inbounds i32, ptr %19, i32 %24
+  store i32 %33, ptr %34, align 4, !tbaa !6
+  %35 = add nuw i32 %24, 1
+  %36 = icmp eq i32 %35, %8
+  br i1 %36, label %37, label %23, !llvm.loop !10
 
-36:                                               ; preds = %31, %14, %10
-  %37 = phi ptr [ %13, %10 ], [ %17, %14 ], [ %17, %31 ]
-  %38 = getelementptr inbounds i8, ptr %37, i32 4
-  br label %39
+37:                                               ; preds = %32, %15, %10
+  %38 = phi ptr [ %13, %10 ], [ %18, %15 ], [ %18, %32 ]
+  %39 = getelementptr inbounds i8, ptr %38, i32 4
+  br label %40
 
-39:                                               ; preds = %3, %36
-  %40 = phi ptr [ %38, %36 ], [ null, %3 ]
-  ret ptr %40
+40:                                               ; preds = %3, %37
+  %41 = phi ptr [ %39, %37 ], [ null, %3 ]
+  ret ptr %41
 }
+
+declare dso_local ptr @memcpy(ptr noundef, ptr noundef, i32 noundef) local_unnamed_addr #1
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(argmem: read)
 define dso_local i32 @array.size(ptr nocapture noundef readonly %0) local_unnamed_addr #3 {

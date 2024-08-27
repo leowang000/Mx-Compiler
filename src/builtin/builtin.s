@@ -171,10 +171,15 @@ array.copy:                             # @array.copy
 	li	a0, 1
 	bne	a2, a0, .LBB7_3
 # %bb.2:
-	mul	a0, s1, s3
-	addi	a0, a0, 4
+	addi	s0, s5, -4
+	mul	s1, s1, s3
+	addi	s1, s1, 4
+	mv	a0, s1
 	call	malloc
 	mv	s2, a0
+	mv	a1, s0
+	mv	a2, s1
+	call	memcpy
 	j	.LBB7_8
 .LBB7_3:
 	slli	a0, s1, 2
