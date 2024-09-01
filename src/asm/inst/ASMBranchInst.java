@@ -5,7 +5,6 @@ import asm.util.Register;
 public class ASMBranchInst extends ASMInst {
     public String op_, dest_;
     public Register rs1_, rs2_;
-    public static int cnt_ = 0;
 
     public ASMBranchInst(String op, String rs1, String rs2, String dest) {
         op_ = op;

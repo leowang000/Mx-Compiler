@@ -14,7 +14,6 @@ import asm.module.ASMProgram;
 import asm.util.MemAddr;
 
 public class ASMBuilder implements IRVisitor {
-    private final boolean needLongBranch = true;
     private final ASMProgram asmProgram_;
     private ASMBlock currentBlock_ = null;
     private IRFuncDef belong_ = null;
@@ -117,23 +116,10 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(IRBrInst node) {
-        if (needLongBranch) {
-            int id = ASMBranchInst.cnt_++;
-            String label = ".tmp_" + id;
-            loadVar("t0", node.cond_);
-            currentBlock_.instList_.add(new ASMBranchInst("bne", "t0", "x0", label));
-            currentBlock_.instList_.add(new ASMJInst(node.falseBlock_.label_));
-            asmProgram_.text_.blockList_.add(currentBlock_);
-            currentBlock_ = new ASMBlock(label);
-            currentBlock_.instList_.add(new ASMJInst(node.trueBlock_.label_));
-            asmProgram_.text_.blockList_.add(currentBlock_);
-        }
-        else {
-            loadVar("t0", node.cond_);
-            currentBlock_.instList_.add(new ASMBranchInst("bne", "t0", "x0", node.trueBlock_.label_));
-            currentBlock_.instList_.add(new ASMJInst(node.falseBlock_.label_));
-            asmProgram_.text_.blockList_.add(currentBlock_);
-        }
+        loadVar("t0", node.cond_);
+        currentBlock_.instList_.add(new ASMBranchInst("bne", "t0", "x0", node.trueBlock_.label_));
+        currentBlock_.instList_.add(new ASMJInst(node.falseBlock_.label_));
+        asmProgram_.text_.blockList_.add(currentBlock_);
     }
 
     @Override
@@ -219,7 +205,7 @@ public class ASMBuilder implements IRVisitor {
     @Override
     public void visit(IRLoadInst node) {
         MemAddr addr = loadPtrAddr("t0", node.pointer_);
-        addLw("t1", addr, "t6");
+        addLw("t1", addr.base_.name_, addr.offset_, "t6");
         storeRegisterIntoLocalVar("t1", node.result_);
     }
 
@@ -244,7 +230,7 @@ public class ASMBuilder implements IRVisitor {
     public void visit(IRStoreInst node) {
         loadVar("t0", node.value_);
         MemAddr addr = loadPtrAddr("t1", node.pointer_);
-        addSw("t0", addr, "t6");
+        addSw("t0", addr.base_.name_, addr.offset_, "t6");
     }
 
     private void loadRegisterA(int i) {
@@ -325,10 +311,6 @@ public class ASMBuilder implements IRVisitor {
         }
     }
 
-    private void addSw(String rs, MemAddr addr, String tmp) {
-        addSw(rs, addr.base_.name_, addr.offset_, tmp);
-    }
-
     private void addLw(String rd, String base, int imm, String tmp) {
         if (imm >= -2048 && imm <= 2047) {
             currentBlock_.instList_.add(new ASMLwInst(rd, base, imm));
@@ -338,9 +320,5 @@ public class ASMBuilder implements IRVisitor {
             currentBlock_.instList_.add(new ASMBinaryInst("add", tmp, base, tmp));
             currentBlock_.instList_.add(new ASMLwInst(rd, tmp, 0));
         }
-    }
-
-    private void addLw(String rd, MemAddr addr, String tmp) {
-        addLw(rd, addr.base_.name_, addr.offset_, tmp);
     }
 }
