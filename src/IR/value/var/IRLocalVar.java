@@ -6,14 +6,13 @@ import asm.util.Register;
 
 public class IRLocalVar extends IRValue {
     public String name_, register_ = null;
-    public boolean isAllocaResult_;
+    public boolean isAllocaResult_ = false;
     public int stackOffset_ = 0;
     public static int cnt_ = 0;
 
     public IRLocalVar(String name, IRType type) {
         super(type);
         name_ = name;
-        isAllocaResult_ = false;
     }
 
     @Override

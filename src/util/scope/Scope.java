@@ -12,18 +12,12 @@ import util.type.Type;
 
 public class Scope {
     public Scope parent_;
-    public HashMap<String, Type> varDefMap_;
-    public HashMap<String, IRValue> irVarMap_;
-    private static final HashMap<String, Integer> varCntMap_;
-
-    static {
-        varCntMap_ = new HashMap<>();
-    }
+    public HashMap<String, Type> varDefMap_ = new HashMap<>();
+    public HashMap<String, IRValue> irVarMap_ = new HashMap<>();
+    private static final HashMap<String, Integer> varCntMap_ = new HashMap<>();
 
     public Scope(Scope parent) {
         parent_ = parent;
-        varDefMap_ = new HashMap<>();
-        irVarMap_ = new HashMap<>();
     }
 
     public void addVar(String varName, Type type, Position pos) {

@@ -7,15 +7,12 @@ import IR.value.IRValue;
 
 public class IRStructType extends IRType {
     public String name_;
-    public ArrayList<IRType> fields_;
-    public ArrayList<Integer> offset_;
-    public HashMap<String, Integer> varToIdMap_;
+    public ArrayList<IRType> fields_ = new ArrayList<>();
+    public ArrayList<Integer> offset_ = new ArrayList<>();
+    public HashMap<String, Integer> varToIdMap_ = new HashMap<>();
 
     public IRStructType(String name) {
         name_ = name;
-        fields_ = new ArrayList<>();
-        offset_ = new ArrayList<>();
-        varToIdMap_ = new HashMap<>();
     }
 
     @Override

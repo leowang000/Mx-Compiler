@@ -10,12 +10,11 @@ import IR.type.IRType;
 public class IRFuncDecl extends IRNode {
     public String name_;
     public IRType returnType_;
-    public ArrayList<IRType> argTypeList_;
+    public ArrayList<IRType> argTypeList_ = new ArrayList<>();
 
     public IRFuncDecl(String name, IRType returnType, IRType... argTypes) {
         name_ = name;
         returnType_ = returnType;
-        argTypeList_ = new ArrayList<>();
         argTypeList_.addAll(Arrays.asList(argTypes));
     }
 

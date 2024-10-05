@@ -17,7 +17,7 @@ public class Compiler {
     public static void main(String[] args) throws Exception {
         CharStream input = CharStreams.fromStream(System.in);
         try {
-            // program -> AST
+            // Mx* -> AST
             MxLexer lexer = new MxLexer(input);
             lexer.removeErrorListeners();
             lexer.addErrorListener(new MxErrorListener());
@@ -34,7 +34,8 @@ public class Compiler {
             new IRBuilder(globalScope, irProgram).visit(ast);
             new UnusedFunctionRemover().visit(irProgram);
             new CFGBuilder().visit(irProgram);
-            // llvm IR -> asm
+            new DominanceTreeBuilder().visit(irProgram);
+            // llvm IR -> riscv32 asm
             new StackManager().visit(irProgram);
             ASMProgram asmProgram = new ASMProgram();
             new ASMBuilder(asmProgram).visit(irProgram);

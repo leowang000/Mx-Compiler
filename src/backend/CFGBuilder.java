@@ -47,10 +47,10 @@ public class CFGBuilder implements IRVisitor {
 
     @Override
     public void visit(IRBrInst node) {
-        currentBlock_.succ_.add(node.trueBlock_);
-        currentBlock_.succ_.add(node.falseBlock_);
-        node.trueBlock_.pred_.add(currentBlock_);
-        node.falseBlock_.pred_.add(currentBlock_);
+        currentBlock_.succs_.add(node.trueBlock_);
+        currentBlock_.succs_.add(node.falseBlock_);
+        node.trueBlock_.preds_.add(currentBlock_);
+        node.falseBlock_.preds_.add(currentBlock_);
     }
 
     @Override
@@ -64,8 +64,8 @@ public class CFGBuilder implements IRVisitor {
 
     @Override
     public void visit(IRJumpInst node) {
-        currentBlock_.succ_.add(node.destBlock_);
-        node.destBlock_.pred_.add(currentBlock_);
+        currentBlock_.succs_.add(node.destBlock_);
+        node.destBlock_.preds_.add(currentBlock_);
     }
 
     @Override

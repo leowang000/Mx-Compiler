@@ -35,6 +35,7 @@ public class Main {
             new IRBuilder(globalScope, irProgram).visit(ast);
             new UnusedFunctionRemover().visit(irProgram);
             new CFGBuilder().visit(irProgram);
+            new DominanceTreeBuilder().visit(irProgram);
             // llvm IR -> riscv32 asm
             new StackManager().visit(irProgram);
             ASMProgram asmProgram = new ASMProgram();

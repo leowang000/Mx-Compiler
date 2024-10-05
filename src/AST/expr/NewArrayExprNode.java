@@ -9,13 +9,12 @@ import util.error.SemanticError;
 import util.type.Type;
 
 public class NewArrayExprNode extends ExprNode {
-    public ArrayList<ExprNode> fixedSizeList_;
+    public ArrayList<ExprNode> fixedSizeList_ = new ArrayList<>();
     public ArrayLiteralNode array_;
 
     public NewArrayExprNode(Position pos, Type type, ArrayLiteralNode array) {
         super(pos, false);
         type_ = type;
-        fixedSizeList_ = new ArrayList<>();
         array_ = array;
     }
 

@@ -13,7 +13,7 @@ import util.error.*;
 import util.type.*;
 
 public class GlobalScope extends ClassScope {
-    HashMap<String, ClassType> classDefMap_;
+    private final HashMap<String, ClassType> classDefMap_ = new HashMap<>();
 
     public GlobalScope() {
         super(null, null);
@@ -24,7 +24,6 @@ public class GlobalScope extends ClassScope {
         funcDefMap_.put("getString", new FuncType(new Type("string")));
         funcDefMap_.put("getInt", new FuncType(new Type("int")));
         funcDefMap_.put("toString", new FuncType(new Type("string"), new Type("int")));
-        classDefMap_ = new HashMap<>();
         classDefMap_.put("bool", new ClassType());
         classDefMap_.put("int", new ClassType());
         HashMap<String, FuncType> stringFuncMap = new HashMap<>();

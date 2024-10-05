@@ -8,11 +8,10 @@ import util.error.SemanticError;
 import util.type.Type;
 
 public class ArrayLiteralNode extends AtomExprNode {
-    public ArrayList<AtomExprNode> elemList_;
+    public ArrayList<AtomExprNode> elemList_ = new ArrayList<>();
 
     public ArrayLiteralNode(Position pos) {
         super(pos, false);
-        elemList_ = new ArrayList<>();
     }
 
     @Override

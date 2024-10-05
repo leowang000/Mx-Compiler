@@ -8,12 +8,11 @@ import IR.type.IRStructType;
 
 public class IRStructDef extends IRNode {
     public IRStructType struct_;
-    public HashSet<String> memberFuncSet_;
+    public HashSet<String> memberFuncSet_ = new HashSet<>();
     public boolean hasConstructor_;
 
     public IRStructDef(String name, boolean hasConstructor) {
         struct_ = new IRStructType(name);
-        memberFuncSet_ = new HashSet<>();
         hasConstructor_ = hasConstructor;
     }
 

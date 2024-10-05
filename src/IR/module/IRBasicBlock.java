@@ -1,24 +1,24 @@
 package IR.module;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import IR.IRNode;
 import IR.IRVisitor;
 import IR.inst.IRInst;
-import IR.value.IRValue;
 
 public class IRBasicBlock extends IRNode {
     public String label_;
-    public ArrayList<IRInst> instList_;
+    public ArrayList<IRInst> instList_ = new ArrayList<>();
     public IRFuncDef belong_;
-    public ArrayList<IRBasicBlock> pred_, succ_; // CFG
+    public HashSet<IRBasicBlock> preds_ = new HashSet<>(), succs_ = new HashSet<>(); // CFG
+    public IRBasicBlock idom_ = null;
+    public ArrayList<IRBasicBlock> domChildren_ = new ArrayList<>();
+    public HashSet<IRBasicBlock> domBoundary_ = new HashSet<>();
 
     public IRBasicBlock(String label, IRFuncDef belong) {
         label_ = label;
-        instList_ = new ArrayList<>();
         belong_ = belong;
-        pred_ = new ArrayList<>();
-        succ_ = new ArrayList<>();
     }
 
     @Override

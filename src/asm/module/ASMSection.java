@@ -6,11 +6,10 @@ import asm.ASMNode;
 
 public class ASMSection extends ASMNode {
     public String name_;
-    public ArrayList<ASMBlock> blockList_;
+    public ArrayList<ASMBlock> blockList_ = new ArrayList<>();
 
     public ASMSection(String name) {
         name_ = name;
-        blockList_ = new ArrayList<>();
     }
 
     @Override

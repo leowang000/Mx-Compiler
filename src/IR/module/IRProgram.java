@@ -8,22 +8,15 @@ import IR.IRVisitor;
 import IR.type.*;
 
 public class IRProgram extends IRNode {
-    public HashMap<String, IRStructDef> structDefMap_;
-    public ArrayList<IRGlobalVarDef> globalVarList_;
-    public ArrayList<IRStringLiteralDef> stringLiteralList_;
-    public ArrayList<IRStringLiteralDef> fStringList_;
-    public ArrayList<IRGlobalVarDef> arrayLiteralList_;
-    public ArrayList<IRFuncDecl> funcDeclList_;
-    public HashMap<String, IRFuncDef> funcDefMap_;
+    public HashMap<String, IRStructDef> structDefMap_ = new HashMap<>();
+    public ArrayList<IRGlobalVarDef> globalVarList_ = new ArrayList<>();
+    public ArrayList<IRStringLiteralDef> stringLiteralList_ = new ArrayList<>();
+    public ArrayList<IRStringLiteralDef> fStringList_ = new ArrayList<>();
+    public ArrayList<IRGlobalVarDef> arrayLiteralList_ = new ArrayList<>();
+    public ArrayList<IRFuncDecl> funcDeclList_ = new ArrayList<>();
+    public HashMap<String, IRFuncDef> funcDefMap_ = new HashMap<>();
 
     public IRProgram() {
-        structDefMap_ = new HashMap<>();
-        globalVarList_ = new ArrayList<>();
-        stringLiteralList_ = new ArrayList<>();
-        fStringList_ = new ArrayList<>();
-        arrayLiteralList_ = new ArrayList<>();
-        funcDeclList_ = new ArrayList<>();
-        funcDefMap_ = new HashMap<>();
         funcDeclList_.add(new IRFuncDecl("print", new IRVoidType(), new IRPtrType(new IRIntType(8))));
         funcDeclList_.add(new IRFuncDecl("println", new IRVoidType(), new IRPtrType(new IRIntType(8))));
         funcDeclList_.add(new IRFuncDecl("printInt", new IRVoidType(), new IRIntType(32)));

@@ -10,16 +10,14 @@ import util.scope.ClassScope;
 public class ClassDefNode extends ASTNode {
     public String name_;
     public ConstructorDefNode constructor_;
-    public ArrayList<FuncDefNode> funcDefList_;
-    public ArrayList<VarDefNode> varDefList_;
+    public ArrayList<FuncDefNode> funcDefList_ = new ArrayList<>();
+    public ArrayList<VarDefNode> varDefList_ = new ArrayList<>();
     public ClassScope scope_ = null;
 
     public ClassDefNode(Position pos, String className, ConstructorDefNode constructor) {
         super(pos);
         name_ = className;
         constructor_ = constructor;
-        funcDefList_ = new ArrayList<>();
-        varDefList_ = new ArrayList<>();
     }
 
     @Override

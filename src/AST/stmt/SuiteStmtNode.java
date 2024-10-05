@@ -7,11 +7,10 @@ import AST.ASTVisitor;
 import util.Position;
 
 public class SuiteStmtNode extends StmtNode {
-    public ArrayList<StmtNode> stmtList_;
+    public ArrayList<StmtNode> stmtList_ = new ArrayList<>();
 
     public SuiteStmtNode(Position pos) {
         super(pos);
-        stmtList_ = new ArrayList<>();
     }
 
     @Override

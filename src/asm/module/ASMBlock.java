@@ -6,13 +6,11 @@ import asm.ASMNode;
 import asm.inst.ASMInst;
 
 public class ASMBlock extends ASMNode {
-    public String label_, info_;
-    public ArrayList<ASMInst> instList_;
+    public String label_, info_ = null;
+    public ArrayList<ASMInst> instList_ = new ArrayList<>();
 
     public ASMBlock(String label) {
         label_ = label;
-        instList_ = new ArrayList<>();
-        info_ = null;
     }
 
     @Override

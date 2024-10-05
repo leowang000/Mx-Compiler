@@ -9,14 +9,12 @@ import util.error.SemanticError;
 import util.type.Type;
 
 public class FStringNode extends AtomExprNode {
-    public ArrayList<String> strList_;
-    public ArrayList<ExprNode> exprList_;
+    public ArrayList<String> strList_ = new ArrayList<>();
+    public ArrayList<ExprNode> exprList_ = new ArrayList<>();
 
     public FStringNode(Position pos) {
         super(pos, false);
         type_ = new Type("string");
-        strList_ = new ArrayList<>();
-        exprList_ = new ArrayList<>();
     }
 
     @Override

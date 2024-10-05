@@ -8,7 +8,7 @@ import util.Position;
 
 public class ForStmtNode extends StmtNode {
     public StmtNode init_;
-    public ArrayList<StmtNode> body_;
+    public ArrayList<StmtNode> body_ = new ArrayList<>();
     public ExprNode cond_, step_;
 
     public ForStmtNode(Position pos, StmtNode init, ExprNode cond, ExprNode step) {
@@ -16,7 +16,6 @@ public class ForStmtNode extends StmtNode {
         init_ = init;
         cond_ = cond;
         step_ = step;
-        body_ = new ArrayList<>();
     }
 
     @Override

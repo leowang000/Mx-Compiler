@@ -9,12 +9,11 @@ import util.type.Type;
 
 public class ClassScope extends Scope {
     public String name_;
-    public HashMap<String, FuncType> funcDefMap_;
+    public HashMap<String, FuncType> funcDefMap_ = new HashMap<>();
 
     public ClassScope(Scope parent, String name) {
         super(parent);
         name_ = name;
-        funcDefMap_ = new HashMap<>();
     }
 
     @Override

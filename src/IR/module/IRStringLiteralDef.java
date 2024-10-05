@@ -7,7 +7,7 @@ import IR.value.var.IRGlobalVar;
 public class IRStringLiteralDef extends IRNode {
     public IRGlobalVar result_;
     public String value_;
-    private String printValue_;
+    private final String printValue_;
 
     public IRStringLiteralDef(IRGlobalVar result, String value) {
         result_ = result;

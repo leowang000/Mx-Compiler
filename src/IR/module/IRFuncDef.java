@@ -11,17 +11,14 @@ import IR.value.var.IRLocalVar;
 public class IRFuncDef extends IRNode {
     public String name_;
     public IRType returnType_;
-    public ArrayList<IRLocalVar> args_;
-    public ArrayList<IRBasicBlock> body_;
+    public ArrayList<IRLocalVar> args_ = new ArrayList<>();
+    public ArrayList<IRBasicBlock> body_ = new ArrayList<>();
     public int stackSize_ = 0, maxFuncArgCnt_ = 0;
-    public HashSet<IRLocalVar> localVarSet_;
+    public HashSet<IRLocalVar> localVarSet_ = new HashSet<>();
 
     public IRFuncDef(String name, IRType returnType) {
         name_ = name;
         returnType_ = returnType;
-        args_ = new ArrayList<>();
-        body_ = new ArrayList<>();
-        localVarSet_ = new HashSet<>();
     }
 
     @Override

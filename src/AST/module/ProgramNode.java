@@ -7,11 +7,10 @@ import AST.ASTVisitor;
 import util.Position;
 
 public class ProgramNode extends ASTNode {
-    public ArrayList<ASTNode> defList_;
+    public ArrayList<ASTNode> defList_ = new ArrayList<>();
 
     public ProgramNode(Position pos) {
         super(pos);
-        defList_ = new ArrayList<>();
     }
 
     @Override

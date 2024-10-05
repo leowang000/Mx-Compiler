@@ -7,12 +7,11 @@ import util.Position;
 
 public class FuncCallExprNode extends ExprNode {
     public ExprNode funcName_;
-    public ArrayList<ExprNode> args_;
+    public ArrayList<ExprNode> args_ = new ArrayList<>();
 
     public FuncCallExprNode(Position pos, ExprNode funcName) {
         super(pos, false);
         funcName_ = funcName;
-        args_ = new ArrayList<>();
     }
 
     @Override

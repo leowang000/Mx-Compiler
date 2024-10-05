@@ -10,11 +10,10 @@ import util.Pair;
 
 public class IRPhiInst extends IRInst {
     public IRLocalVar result_;
-    public ArrayList<Pair<IRValue, IRBasicBlock>> infoList_;
+    public ArrayList<Pair<IRValue, IRBasicBlock>> infoList_ = new ArrayList<>();
 
     public IRPhiInst(IRLocalVar result) {
         result_ = result;
-        infoList_ = new ArrayList<>();
     }
 
     @Override

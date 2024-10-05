@@ -9,12 +9,11 @@ import util.Position;
 
 public class ConstructorDefNode extends ASTNode {
     public String name_;
-    public ArrayList<StmtNode> stmtList_;
+    public ArrayList<StmtNode> stmtList_ = new ArrayList<>();
 
     public ConstructorDefNode(Position pos, String className) {
         super(pos);
         name_ = className;
-        stmtList_ = new ArrayList<>();
     }
 
     @Override
