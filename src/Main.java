@@ -13,11 +13,12 @@ import util.scope.GlobalScope;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        String input_file_name = "test/test.mx";
+        String input_file_name = "testcases/codegen/e1.mx";
         FileOutputStream irOutput = new FileOutputStream("test/output.ll");
         FileOutputStream asmOutput = new FileOutputStream("test/output.s");
         CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
         try {
+            // Mx* -> AST
             MxLexer lexer = new MxLexer(input);
             lexer.removeErrorListeners();
             lexer.addErrorListener(new MxErrorListener());
@@ -29,12 +30,16 @@ public class Main {
             GlobalScope globalScope = new GlobalScope();
             new SymbolCollector(globalScope).visit(ast);
             new SemanticChecker(globalScope).visit(ast);
+            // AST -> llvm IR
             IRProgram irProgram = new IRProgram();
             new IRBuilder(globalScope, irProgram).visit(ast);
+            new UnusedFunctionRemover().visit(irProgram);
             new CFGBuilder().visit(irProgram);
+            // llvm IR -> riscv32 asm
             new StackManager().visit(irProgram);
             ASMProgram asmProgram = new ASMProgram();
             new ASMBuilder(asmProgram).visit(irProgram);
+            // output
             irOutput.write(irProgram.toString().getBytes());
             asmOutput.write(asmProgram.toString().getBytes());
         } catch (Error err) {

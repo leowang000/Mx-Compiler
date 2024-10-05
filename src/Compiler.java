@@ -17,6 +17,7 @@ public class Compiler {
     public static void main(String[] args) throws Exception {
         CharStream input = CharStreams.fromStream(System.in);
         try {
+            // program -> AST
             MxLexer lexer = new MxLexer(input);
             lexer.removeErrorListeners();
             lexer.addErrorListener(new MxErrorListener());
@@ -28,14 +29,17 @@ public class Compiler {
             GlobalScope globalScope = new GlobalScope();
             new SymbolCollector(globalScope).visit(ast);
             new SemanticChecker(globalScope).visit(ast);
+            // AST -> llvm IR
             IRProgram irProgram = new IRProgram();
             new IRBuilder(globalScope, irProgram).visit(ast);
+            new UnusedFunctionRemover().visit(irProgram);
             new CFGBuilder().visit(irProgram);
+            // llvm IR -> asm
             new StackManager().visit(irProgram);
             ASMProgram asmProgram = new ASMProgram();
             new ASMBuilder(asmProgram).visit(irProgram);
-            String builtin = Files.readString(Paths.get("src/builtin/builtin.s"));
-            System.out.println(builtin);
+            // output
+            System.out.println(Files.readString(Paths.get("src/builtin/builtin.s")));
             System.out.print(asmProgram);
         } catch (Error err) {
             System.err.println(err);
