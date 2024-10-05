@@ -11,11 +11,14 @@ public class IRBasicBlock extends IRNode {
     public String label_;
     public ArrayList<IRInst> instList_;
     public IRFuncDef belong_;
+    public ArrayList<IRBasicBlock> pred_, succ_; // CFG
 
     public IRBasicBlock(String label, IRFuncDef belong) {
         label_ = label;
         instList_ = new ArrayList<>();
         belong_ = belong;
+        pred_ = new ArrayList<>();
+        succ_ = new ArrayList<>();
     }
 
     @Override

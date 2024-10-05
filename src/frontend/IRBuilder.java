@@ -21,7 +21,7 @@ public class IRBuilder implements ASTVisitor {
     private final GlobalScope gScope_;
     private final IRProgram irProgram_;
     private IRBasicBlock currentBlock_ = null, initBlock_ = null, loopEnd_ = null, loopNext_ = null;
-    private IRValue result = null;
+    private IRValue result_ = null;
     private boolean endBlock_ = false, visitMemberFunction_ = false;
     private int forCnt_ = 0, whileCnt_ = 0, ifCnt_ = 0, ternaryCnt_ = 0, andCnt_ = 0, orCnt_ = 0, stringCnt_ = 0,
             fStringCnt_ = 0, arrayCnt_ = 0, newCnt_ = 0;
@@ -300,7 +300,7 @@ public class IRBuilder implements ASTVisitor {
             return;
         }
         node.expr_.accept(this);
-        if (result == null) {
+        if (result_ == null) {
             currentBlock_.instList_.add(new IRRetInst(null));
             submitBlock();
             return;
@@ -372,17 +372,17 @@ public class IRBuilder implements ASTVisitor {
         IRValue index = getValueResult(node.index_.isLeftValue_);
         IRLocalVar newVar = IRLocalVar.newLocalVar(array.type_);
         currentBlock_.instList_.add(new IRGetElementPtrInst(newVar, array, index));
-        result = newVar;
+        result_ = newVar;
     }
 
     @Override
     public void visit(AssignExprNode node) {
         node.lhs_.accept(this);
-        IRValue lhs = result;
+        IRValue lhs = result_;
         node.rhs_.accept(this);
         IRValue rhs = getValueResult(node.rhs_.isLeftValue_);
         currentBlock_.instList_.add(new IRStoreInst(rhs, lhs));
-        result = null;
+        result_ = null;
     }
 
     @Override
@@ -407,7 +407,7 @@ public class IRBuilder implements ASTVisitor {
             currentBlock_ = end;
             IRLocalVar newVar = IRLocalVar.newLocalVar(new IRIntType(1));
             currentBlock_.instList_.add(new IRLoadInst(newVar, resultPtr));
-            result = newVar;
+            result_ = newVar;
             return;
         }
         if (node.op_.equals("||")) {
@@ -430,7 +430,7 @@ public class IRBuilder implements ASTVisitor {
             currentBlock_ = end;
             IRLocalVar newVar = IRLocalVar.newLocalVar(new IRIntType(1));
             currentBlock_.instList_.add(new IRLoadInst(newVar, resultPtr));
-            result = newVar;
+            result_ = newVar;
             return;
         }
         IRLocalVar newVar = null;
@@ -540,7 +540,7 @@ public class IRBuilder implements ASTVisitor {
                 }
                 break;
         }
-        result = newVar;
+        result_ = newVar;
     }
 
     @Override
@@ -583,7 +583,7 @@ public class IRBuilder implements ASTVisitor {
                 (node.type_.equals(new Type("void")) ? null : IRLocalVar.newLocalVar(IRType.toIRType(node.type_)));
         callInst.result_ = newVar;
         currentBlock_.instList_.add(callInst);
-        result = newVar;
+        result_ = newVar;
     }
 
     @Override
@@ -594,7 +594,7 @@ public class IRBuilder implements ASTVisitor {
                 ((IRStructType) ((IRPtrType) clas.type_).base_).name_).struct_.varToIdMap_.get(node.member_);
         IRLocalVar newVar = IRLocalVar.newLocalVar(new IRPtrType(IRType.toIRType(node.type_)));
         currentBlock_.instList_.add(new IRGetElementPtrInst(newVar, clas, id));
-        result = newVar;
+        result_ = newVar;
     }
 
     @Override
@@ -607,14 +607,14 @@ public class IRBuilder implements ASTVisitor {
                 fixedSizeList.add(getValueResult(sz.isLeftValue_));
             }
             IRLocalVar res = generateArray(fixedSizeList, 0, (IRPtrType) type);
-            result = res;
+            result_ = res;
             return;
         }
         node.array_.accept(this);
         IRLocalVar newVar = IRLocalVar.newLocalVar(type);
-        currentBlock_.instList_.add(new IRCallInst(newVar, "array.copy", result, new IRIntConst(
+        currentBlock_.instList_.add(new IRCallInst(newVar, "array.copy", result_, new IRIntConst(
                 IRType.toIRType(new Type(node.type_.name_, 0)).getSize()), new IRIntConst(node.type_.dim_)));
-        result = newVar;
+        result_ = newVar;
     }
 
     @Override
@@ -631,7 +631,7 @@ public class IRBuilder implements ASTVisitor {
             currentBlock_.instList_.add(
                     new IRCallInst(newVar, "builtin.calloc", new IRIntConst(struct.struct_.getSize())));
         }
-        result = newVar;
+        result_ = newVar;
     }
 
     @Override
@@ -643,11 +643,11 @@ public class IRBuilder implements ASTVisitor {
     public void visit(PreUnaryExprNode node) {
         node.expr_.accept(this);
         IRLocalVar tmp1 = IRLocalVar.newLocalVar(new IRIntType(32));
-        currentBlock_.instList_.add(new IRLoadInst(tmp1, result));
+        currentBlock_.instList_.add(new IRLoadInst(tmp1, result_));
         IRLocalVar tmp2 = IRLocalVar.newLocalVar(new IRIntType(32));
         currentBlock_.instList_.add(
                 new IRBinaryInst(tmp2, tmp1, new IRIntConst(node.op_.equals("++") ? 1 : -1), "add"));
-        currentBlock_.instList_.add(new IRStoreInst(tmp2, result));
+        currentBlock_.instList_.add(new IRStoreInst(tmp2, result_));
     }
 
     @Override
@@ -688,7 +688,7 @@ public class IRBuilder implements ASTVisitor {
         if (!isResultVoid) {
             IRLocalVar newVar = IRLocalVar.newLocalVar(IRType.toIRType(node.lhs_.type_));
             currentBlock_.instList_.add(new IRLoadInst(newVar, resultPtr));
-            result = newVar;
+            result_ = newVar;
         }
     }
 
@@ -697,12 +697,12 @@ public class IRBuilder implements ASTVisitor {
         node.expr_.accept(this);
         if (node.op_.equals("++") || node.op_.equals("--")) {
             IRLocalVar res = IRLocalVar.newLocalVar(new IRIntType(32));
-            currentBlock_.instList_.add(new IRLoadInst(res, result));
+            currentBlock_.instList_.add(new IRLoadInst(res, result_));
             IRLocalVar tmp = IRLocalVar.newLocalVar(new IRIntType(32));
             currentBlock_.instList_.add(
                     new IRBinaryInst(tmp, res, new IRIntConst(node.op_.equals("++") ? 1 : -1), "add"));
-            currentBlock_.instList_.add(new IRStoreInst(tmp, result));
-            result = res;
+            currentBlock_.instList_.add(new IRStoreInst(tmp, result_));
+            result_ = res;
             return;
         }
         IRLocalVar newVar = null;
@@ -725,7 +725,7 @@ public class IRBuilder implements ASTVisitor {
                 currentBlock_.instList_.add(new IRBinaryInst(newVar, new IRBoolConst(true), expr, "xor"));
                 break;
         }
-        result = newVar;
+        result_ = newVar;
     }
 
     @Override
@@ -740,12 +740,12 @@ public class IRBuilder implements ASTVisitor {
         currentBlock_ = oldCurrent;
         IRLocalVar newVar = IRLocalVar.newLocalVar(type);
         currentBlock_.instList_.add(new IRLoadInst(newVar, arrayDef));
-        result = newVar;
+        result_ = newVar;
     }
 
     @Override
     public void visit(BoolLiteralNode node) {
-        result = new IRBoolConst(node.value_);
+        result_ = new IRBoolConst(node.value_);
     }
 
     @Override
@@ -784,7 +784,7 @@ public class IRBuilder implements ASTVisitor {
             currentBlock_.instList_.add(
                     new IRCallInst((IRLocalVar) newVar, "builtin.string_add", tmp, strList.get(i + 1)));
         }
-        result = newVar;
+        result_ = newVar;
     }
 
     @Override
@@ -798,27 +798,27 @@ public class IRBuilder implements ASTVisitor {
             }
         }
         if (newVar instanceof IRLocalVar) {
-            result = newVar;
+            result_ = newVar;
             return;
         }
         if (id != -1) {
             newVar = IRLocalVar.newLocalVar(new IRPtrType(IRType.toIRType(node.type_)));
             currentBlock_.instList_.add(
                     new IRGetElementPtrInst((IRLocalVar) newVar, currentBlock_.belong_.args_.get(0), id));
-            result = newVar;
+            result_ = newVar;
             return;
         }
-        result = newVar;
+        result_ = newVar;
     }
 
     @Override
     public void visit(IntLiteralNode node) {
-        result = new IRIntConst(node.value_);
+        result_ = new IRIntConst(node.value_);
     }
 
     @Override
     public void visit(NullLiteralNode node) {
-        result = new IRNullConst();
+        result_ = new IRNullConst();
     }
 
     @Override
@@ -826,12 +826,12 @@ public class IRBuilder implements ASTVisitor {
         int id = stringCnt_++;
         IRGlobalVar newVar = new IRGlobalVar("string." + id, new IRPtrType(new IRIntType(8)));
         irProgram_.stringLiteralList_.add(new IRStringLiteralDef(newVar, node.value_));
-        result = newVar;
+        result_ = newVar;
     }
 
     @Override
     public void visit(ThisNode node) {
-        result = currentBlock_.belong_.args_.get(0);
+        result_ = currentBlock_.belong_.args_.get(0);
     }
 
     private void addVarAndAssign(String varName, IRLocalVar value) {
@@ -846,10 +846,10 @@ public class IRBuilder implements ASTVisitor {
 
     private IRValue getValueResult(boolean isLeftValue) {
         if (!isLeftValue) {
-            return result;
+            return result_;
         }
-        IRLocalVar newVar = IRLocalVar.newLocalVar(((IRPtrType) result.type_).getDereferenceType());
-        currentBlock_.instList_.add(new IRLoadInst(newVar, result));
+        IRLocalVar newVar = IRLocalVar.newLocalVar(((IRPtrType) result_.type_).getDereferenceType());
+        currentBlock_.instList_.add(new IRLoadInst(newVar, result_));
         return newVar;
     }
 
@@ -916,7 +916,7 @@ public class IRBuilder implements ASTVisitor {
                 continue;
             }
             node.elemList_.get(i).accept(this);
-            currentBlock_.instList_.add(new IRStoreInst(result, elemPtr));
+            currentBlock_.instList_.add(new IRStoreInst(result_, elemPtr));
         }
         return newVar;
     }
