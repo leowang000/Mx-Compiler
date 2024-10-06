@@ -35,12 +35,15 @@ public class Compiler {
             new UnusedFunctionRemover().visit(irProgram);
             new CFGBuilder().visit(irProgram);
             new DominanceTreeBuilder().visit(irProgram);
+            new AllocaEliminator().visit(irProgram);
             // llvm IR -> riscv32 asm
             new StackManager().visit(irProgram);
             ASMProgram asmProgram = new ASMProgram();
             new ASMBuilder(asmProgram).visit(irProgram);
             // output
-            System.out.println(Files.readString(Paths.get("src/builtin/builtin.s")));
+            if (args.length > 0 && args[0].equals("-output-builtin")) {
+                System.out.println(Files.readString(Paths.get("src/builtin/builtin.s")));
+            }
             System.out.print(asmProgram);
         } catch (Error err) {
             System.err.println(err);

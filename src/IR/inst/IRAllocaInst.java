@@ -10,6 +10,7 @@ public class IRAllocaInst extends IRInst {
 
     public IRAllocaInst(IRLocalVar result) {
         result_ = result;
+        result_.isAllocaResult_ = true;
     }
 
     @Override

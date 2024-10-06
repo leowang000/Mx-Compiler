@@ -210,6 +210,9 @@ public class ASMBuilder implements IRVisitor {
     }
 
     @Override
+    public void visit(IRMoveInst node) {}
+
+    @Override
     public void visit(IRPhiInst node) {}
 
     @Override

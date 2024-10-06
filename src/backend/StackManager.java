@@ -59,7 +59,6 @@ public class StackManager implements IRVisitor {
 
     @Override
     public void visit(IRAllocaInst node) {
-        node.result_.isAllocaResult_ = true;
         addLocalVar(node.result_, ((IRPtrType) node.result_.type_).getDereferenceType().getSize());
     }
 
@@ -96,6 +95,9 @@ public class StackManager implements IRVisitor {
     public void visit(IRLoadInst node) {
         addLocalVar(node.result_, 4);
     }
+
+    @Override
+    public void visit(IRMoveInst node) {}
 
     @Override
     public void visit(IRPhiInst node) {}

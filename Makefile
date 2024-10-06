@@ -25,7 +25,7 @@ $(BIN_DIR)/%.class: $(SRC_DIR)/%.java
 
 # Run target
 run: build
-	java -cp $(CLASSPATH) $(MAIN_CLASS)
+	java -cp $(CLASSPATH) $(MAIN_CLASS) -output-builtin
 
 # Clean build artifacts
 clean:

@@ -22,6 +22,7 @@ public interface IRVisitor {
     void visit(IRIcmpInst node);
     void visit(IRJumpInst node);
     void visit(IRLoadInst node);
+    void visit(IRMoveInst node);
     void visit(IRPhiInst node);
     void visit(IRRetInst node);
     void visit(IRSelectInst node);

@@ -83,6 +83,9 @@ public class UnusedFunctionRemover implements IRVisitor {
     public void visit(IRLoadInst node) {}
 
     @Override
+    public void visit(IRMoveInst node) {}
+
+    @Override
     public void visit(IRPhiInst node) {}
 
     @Override
