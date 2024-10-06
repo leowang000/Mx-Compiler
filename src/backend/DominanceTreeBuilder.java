@@ -15,8 +15,12 @@ public class DominanceTreeBuilder {
         ArrayList<IRBasicBlock> postOrder = new ArrayList<>();
         HashSet<IRBasicBlock> visited = new HashSet<>();
         getPostOrder(node.body_.get(0), postOrder, visited);
-        ArrayList<BitSet> doms = new ArrayList<>(Collections.nCopies(node.body_.size(), new BitSet(node.body_.size())));
-        doms.get(0).set(0);
+        ArrayList<BitSet> doms = new ArrayList<>();
+        for (int i = 0; i < node.body_.size(); i++) {
+            BitSet tmp = new BitSet(node.body_.size());
+            tmp.set(0, node.body_.size());
+            doms.add(tmp);
+        }
         HashMap<IRBasicBlock, Integer> blockIdMap = new HashMap<>();
         for (int i = 0; i < node.body_.size(); i++) {
             blockIdMap.put(node.body_.get(i), i);
@@ -27,9 +31,11 @@ public class DominanceTreeBuilder {
                 IRBasicBlock block = postOrder.get(i);
                 int blockId = blockIdMap.get(block);
                 BitSet intersect = new BitSet(node.body_.size());
-                intersect.set(0, node.body_.size());
-                for (var pred : block.preds_) {
-                    intersect.and(doms.get(blockIdMap.get(pred)));
+                if (!block.preds_.isEmpty()) {
+                    intersect.set(0, node.body_.size());
+                    for (var pred : block.preds_) {
+                        intersect.and(doms.get(blockIdMap.get(pred)));
+                    }
                 }
                 intersect.set(blockId);
                 if (!doms.get(blockId).equals(intersect)) {
