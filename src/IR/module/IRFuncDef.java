@@ -1,7 +1,6 @@
 package IR.module;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 
 import IR.IRNode;
 import IR.IRVisitor;
@@ -13,8 +12,7 @@ public class IRFuncDef extends IRNode {
     public IRType returnType_;
     public ArrayList<IRLocalVar> args_ = new ArrayList<>();
     public ArrayList<IRBasicBlock> body_ = new ArrayList<>();
-    public int stackSize_ = 0, maxFuncArgCnt_ = 0;
-    public HashSet<IRLocalVar> localVarSet_ = new HashSet<>();
+    public int stackSize_ = 0;
 
     public IRFuncDef(String name, IRType returnType) {
         name_ = name;

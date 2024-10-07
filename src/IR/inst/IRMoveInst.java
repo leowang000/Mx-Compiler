@@ -15,7 +15,7 @@ public class IRMoveInst extends IRInst {
 
     @Override
     public String toString() {
-        return String.format("%s = %s", dest_, src_);
+        return String.format("%s\t<= %s", dest_, src_);
     }
 
     @Override

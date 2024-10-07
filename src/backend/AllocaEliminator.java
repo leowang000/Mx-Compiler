@@ -10,12 +10,11 @@ import IR.value.IRValue;
 import IR.value.var.IRLocalVar;
 
 public class AllocaEliminator implements IRVisitor {
-    private HashMap<IRBasicBlock, HashMap<IRLocalVar, IRPhiInst>> blockPhiMap_;
-    private HashMap<IRLocalVar, HashSet<IRBasicBlock>> defBlockMap_;
-    private HashMap<IRLocalVar, Stack<IRValue>> allocaValueMap_;
+    private HashMap<IRLocalVar, HashSet<IRBasicBlock>> defBlockMap_ = null;
+    private HashMap<IRLocalVar, Stack<IRValue>> allocaValueMap_ = null;
     private final Stack<HashMap<IRLocalVar, Integer>> defCntMap_ = new Stack<>();
-    private HashMap<IRLocalVar, IRValue> valueMap_;
-    private ArrayList<IRInst> newInstList_;
+    private HashMap<IRLocalVar, IRValue> valueMap_ = null;
+    private ArrayList<IRInst> newInstList_ = null;
     private int phi_cnt_ = 0;
 
     @Override
@@ -36,10 +35,6 @@ public class AllocaEliminator implements IRVisitor {
     }
 
     private void initialize(IRFuncDef node) {
-        blockPhiMap_ = new HashMap<>();
-        for (var block : node.body_) {
-            blockPhiMap_.put(block, new HashMap<>());
-        }
         defBlockMap_ = new HashMap<>();
         allocaValueMap_ = new HashMap<>();
         valueMap_ = new HashMap<>();
@@ -72,13 +67,12 @@ public class AllocaEliminator implements IRVisitor {
     }
 
     private void putPhi(IRBasicBlock block, IRLocalVar localVar) {
-        for (var boundary : block.domBoundary_) {
-            HashMap<IRLocalVar, IRPhiInst> tmp = blockPhiMap_.get(boundary);
-            if (!tmp.containsKey(localVar)) {
+        for (var frontier : block.domFrontiers_) {
+            if (!frontier.phiMap_.containsKey(localVar)) {
                 IRLocalVar phiResult = new IRLocalVar(String.format("phi.%s.%d", localVar.name_, phi_cnt_++),
                                                       ((IRPtrType) localVar.type_).getDereferenceType());
-                tmp.put(localVar, new IRPhiInst(phiResult, boundary));
-                putPhi(boundary, localVar);
+                frontier.phiMap_.put(localVar, new IRPhiInst(phiResult, frontier));
+                putPhi(frontier, localVar);
             }
         }
     }
@@ -95,8 +89,8 @@ public class AllocaEliminator implements IRVisitor {
     @Override
     public void visit(IRBasicBlock node) {
         defCntMap_.push(new HashMap<>());
-        newInstList_ = new ArrayList<>(blockPhiMap_.get(node).values());
-        for (var entry : blockPhiMap_.get(node).entrySet()) {
+        newInstList_ = new ArrayList<>();
+        for (var entry : node.phiMap_.entrySet()) {
             updateAllocaValue(entry.getKey(), entry.getValue().result_);
         }
         for (var inst : node.instList_) {
@@ -104,10 +98,12 @@ public class AllocaEliminator implements IRVisitor {
         }
         node.instList_ = newInstList_;
         for (var succ : node.succs_) {
-            HashMap<IRLocalVar, IRPhiInst> succPhiMap = blockPhiMap_.get(succ);
-            succPhiMap.entrySet().removeIf(entry -> !allocaValueMap_.containsKey(entry.getKey()));
-            for (var entry : succPhiMap.entrySet()) {
-                entry.getValue().info_.put(node, getCurrentValue(entry.getKey()));
+            succ.phiMap_.entrySet().removeIf(entry -> !allocaValueMap_.containsKey(entry.getKey()));
+            for (var entry : succ.phiMap_.entrySet()) {
+                IRValue curValue = getCurrentValue(entry.getKey());
+                if (curValue != null) {
+                    entry.getValue().info_.put(node, curValue);
+                }
             }
         }
         for (var child : node.domChildren_) {
@@ -186,9 +182,6 @@ public class AllocaEliminator implements IRVisitor {
         node.value_ = getSubstitution(node.value_);
         newInstList_.add(node);
     }
-
-    @Override
-    public void visit(IRSelectInst node) {}
 
     @Override
     public void visit(IRStoreInst node) {

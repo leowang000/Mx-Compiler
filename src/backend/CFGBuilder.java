@@ -81,8 +81,5 @@ public class CFGBuilder implements IRVisitor {
     public void visit(IRRetInst node) {}
 
     @Override
-    public void visit(IRSelectInst node) {}
-
-    @Override
     public void visit(IRStoreInst node) {}
 }

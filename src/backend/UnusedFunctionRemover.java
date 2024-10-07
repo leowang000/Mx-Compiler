@@ -8,13 +8,8 @@ import IR.inst.*;
 import IR.module.*;
 
 public class UnusedFunctionRemover implements IRVisitor {
-    private final HashSet<String> usedFuncSet_;
-    private HashMap<String, IRFuncDef> funcDefMap_;
-
-    public UnusedFunctionRemover() {
-        usedFuncSet_ = new HashSet<>();
-        funcDefMap_ = new HashMap<>();
-    }
+    private final HashSet<String> usedFuncSet_ = new HashSet<>();
+    private HashMap<String, IRFuncDef> funcDefMap_ = new HashMap<>();
 
     @Override
     public void visit(IRProgram node) {
@@ -90,9 +85,6 @@ public class UnusedFunctionRemover implements IRVisitor {
 
     @Override
     public void visit(IRRetInst node) {}
-
-    @Override
-    public void visit(IRSelectInst node) {}
 
     @Override
     public void visit(IRStoreInst node) {}

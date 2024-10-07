@@ -1,5 +1,7 @@
 package backend;
 
+import java.util.HashSet;
+
 import IR.IRVisitor;
 import IR.inst.*;
 import IR.module.*;
@@ -7,7 +9,9 @@ import IR.type.IRPtrType;
 import IR.value.var.IRLocalVar;
 
 public class StackManager implements IRVisitor {
-    private IRFuncDef belong_ = null;
+    private IRFuncDef curFuncDef_ = null;
+    private int maxFuncArgCnt_ = 0;
+    private HashSet<IRLocalVar> localVarSet_ = null;
 
     @Override
     public void visit(IRProgram node) {
@@ -21,15 +25,15 @@ public class StackManager implements IRVisitor {
 
     @Override
     public void visit(IRFuncDef node) {
-        belong_ = node;
+        curFuncDef_ = node;
+        maxFuncArgCnt_ = 0;
+        localVarSet_ = new HashSet<>();
         for (var block : node.body_) {
             block.accept(this);
         }
-        node.stackSize_ =
-                (4 * Math.min(8, node.maxFuncArgCnt_) + 4 + node.stackSize_ + 4 * Math.max(node.maxFuncArgCnt_ - 8, 0) +
-                 15) / 16 * 16;
-        for (var localVar : node.localVarSet_) {
-            localVar.stackOffset_ += 4 * Math.max(node.maxFuncArgCnt_ - 8, 0);
+        node.stackSize_ = (4 * maxFuncArgCnt_ + node.stackSize_ + 19) / 16 * 16;
+        for (var localVar : localVarSet_) {
+            localVar.stackOffset_ += 4 * Math.max(maxFuncArgCnt_ - 8, 0);
         }
         for (int i = 0; i < node.args_.size(); i++) {
             if (i < 8) {
@@ -55,6 +59,9 @@ public class StackManager implements IRVisitor {
         for (var inst : node.instList_) {
             inst.accept(this);
         }
+        for (var inst : node.moveList_) {
+            inst.accept(this);
+        }
     }
 
     @Override
@@ -72,7 +79,7 @@ public class StackManager implements IRVisitor {
 
     @Override
     public void visit(IRCallInst node) {
-        belong_.maxFuncArgCnt_ = Math.max(belong_.maxFuncArgCnt_, node.args_.size());
+        maxFuncArgCnt_ = Math.max(maxFuncArgCnt_, node.args_.size());
         if (node.result_ != null) {
             addLocalVar(node.result_, 4);
         }
@@ -97,7 +104,9 @@ public class StackManager implements IRVisitor {
     }
 
     @Override
-    public void visit(IRMoveInst node) {}
+    public void visit(IRMoveInst node) {
+        addLocalVar(node.dest_, 4);
+    }
 
     @Override
     public void visit(IRPhiInst node) {}
@@ -106,14 +115,13 @@ public class StackManager implements IRVisitor {
     public void visit(IRRetInst node) {}
 
     @Override
-    public void visit(IRSelectInst node) {}
-
-    @Override
     public void visit(IRStoreInst node) {}
 
     private void addLocalVar(IRLocalVar localVar, int size) {
-        localVar.stackOffset_ = belong_.stackSize_;
-        belong_.stackSize_ += size;
-        belong_.localVarSet_.add(localVar);
+        if (!localVarSet_.contains(localVar)) {
+            localVar.stackOffset_ = curFuncDef_.stackSize_;
+            curFuncDef_.stackSize_ += size;
+            localVarSet_.add(localVar);
+        }
     }
 }

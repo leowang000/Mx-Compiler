@@ -1,5 +1,7 @@
 package backend;
 
+import java.util.*;
+
 import IR.IRVisitor;
 import IR.inst.*;
 import IR.module.*;
@@ -79,9 +81,12 @@ public class ASMBuilder implements IRVisitor {
     @Override
     public void visit(IRBasicBlock node) {
         if (!isFirstBlock_) {
-            currentBlock_ = new ASMBlock(node.label_);
+            currentBlock_ = new ASMBlock(".L." + node.label_);
         }
         for (var inst : node.instList_) {
+            if (inst == node.instList_.get(node.instList_.size() - 1)) {
+                processIRMoveInst(node.moveList_);
+            }
             inst.accept(this);
         }
     }
@@ -117,14 +122,14 @@ public class ASMBuilder implements IRVisitor {
     @Override
     public void visit(IRBrInst node) {
         loadVar("t0", node.cond_);
-        currentBlock_.instList_.add(new ASMBranchInst("bne", "t0", "x0", node.trueBlock_.label_));
-        currentBlock_.instList_.add(new ASMJInst(node.falseBlock_.label_));
+        currentBlock_.instList_.add(new ASMBranchInst("bne", "t0", "x0", ".L." + node.trueBlock_.label_));
+        currentBlock_.instList_.add(new ASMJInst(".L." + node.falseBlock_.label_));
         asmProgram_.text_.blockList_.add(currentBlock_);
     }
 
     @Override
     public void visit(IRCallInst node) {
-        for (int i = 0; i < Math.min(node.args_.size(), 8); i++) {
+        for (int i = 0; i < Math.min(belong_.args_.size(), 8); i++) {
             storeRegisterA(i);
         }
         for (int i = 0; i < node.args_.size(); i++) {
@@ -143,7 +148,7 @@ public class ASMBuilder implements IRVisitor {
         if (node.result_ != null) {
             storeRegisterIntoLocalVar("a0", node.result_);
         }
-        for (int i = 0; i < Math.min(node.args_.size(), 8); i++) {
+        for (int i = 0; i < Math.min(belong_.args_.size(), 8); i++) {
             loadRegisterA(i);
         }
     }
@@ -154,9 +159,9 @@ public class ASMBuilder implements IRVisitor {
         if (node.id2_ == -1) {
             loadVar("t1", node.id1_);
             currentBlock_.instList_.add(
-                    new ASMLiInst("t2", ((IRPtrType) node.result_.type_).getDereferenceType().getSize()));
+                new ASMLiInst("t2", ((IRPtrType) node.result_.type_).getDereferenceType().getSize()));
             currentBlock_.instList_.add(new ASMBinaryInst("mul", "t1", "t1", "t2"));
-            currentBlock_.instList_.add(new ASMBinaryInst("add", "t0", "t0", "t1"));
+            currentBlock_.instList_.add(new ASMBinaryInst("add", "t0", addr.base_.name_, "t1"));
         }
         else {
             addr.offset_ += 4 * node.id2_;
@@ -198,7 +203,7 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(IRJumpInst node) {
-        currentBlock_.instList_.add(new ASMJInst(node.destBlock_.label_));
+        currentBlock_.instList_.add(new ASMJInst(".L." + node.destBlock_.label_));
         asmProgram_.text_.blockList_.add(currentBlock_);
     }
 
@@ -225,9 +230,6 @@ public class ASMBuilder implements IRVisitor {
         currentBlock_.instList_.add(new ASMRetInst());
         asmProgram_.text_.blockList_.add(currentBlock_);
     }
-
-    @Override
-    public void visit(IRSelectInst node) {}
 
     @Override
     public void visit(IRStoreInst node) {
@@ -323,5 +325,89 @@ public class ASMBuilder implements IRVisitor {
             currentBlock_.instList_.add(new ASMBinaryInst("add", tmp, base, tmp));
             currentBlock_.instList_.add(new ASMLwInst(rd, tmp, 0));
         }
+    }
+
+    static class Node {
+        public IRValue value_;
+        Node from_ = null;
+        public ArrayList<Node> to_ = new ArrayList<>();
+
+        public Node(IRValue value) {
+            value_ = value;
+        }
+    }
+
+    private void processIRMoveInst(ArrayList<IRMoveInst> irMoveList) {
+        HashMap<IRValue, Node> nodes = new HashMap<>();
+        for (var irInst : irMoveList) {
+            if (!nodes.containsKey(irInst.src_)) {
+                nodes.put(irInst.src_, new Node(irInst.src_));
+            }
+            if (!nodes.containsKey(irInst.dest_)) {
+                nodes.put(irInst.dest_, new Node(irInst.dest_));
+            }
+        }
+        for (var irInst : irMoveList) {
+            nodes.get(irInst.dest_).from_ = nodes.get(irInst.src_);
+            nodes.get(irInst.src_).to_.add(nodes.get(irInst.dest_));
+        }
+        ArrayList<ArrayList<Node>> cycles = new ArrayList<>();
+        HashSet<Node> srcNodes = new HashSet<>();
+        HashSet<Node> visited = new HashSet<>();
+        for (var node : nodes.values()) {
+            if (visited.contains(node) || !node.to_.isEmpty()) {
+                continue;
+            }
+            HashSet<Node> currentRoundVisited = new HashSet<>();
+            Node cur = node;
+            while (cur.from_ != null && !visited.contains(cur)) {
+                visited.add(cur);
+                currentRoundVisited.add(cur);
+                cur = cur.from_;
+            }
+            if (cur.from_ == null) {
+                srcNodes.add(cur);
+            }
+            if (!currentRoundVisited.contains(cur)) {
+                continue;
+            }
+            ArrayList<Node> cycle = new ArrayList<>(List.of(cur));
+            Node cycleEntry = cur;
+            cur = cur.from_;
+            while (cur != cycleEntry) {
+                cycle.add(cur);
+                cur = cur.from_;
+            }
+            cycles.add(cycle);
+        }
+        for (var node : srcNodes) {
+            for (var to : node.to_) {
+                visit(to);
+            }
+        }
+        for (var cycle : cycles) {
+            for (var node : cycle) {
+                for (var to : node.to_) {
+                    visit(to);
+                }
+            }
+            if (cycle.size() == 1) {
+                continue;
+            }
+            loadVar("t1", cycle.get(0).value_);
+            for (int i = 0; i < cycle.size() - 1; i++) {
+                loadVar("t0", cycle.get(i + 1).value_);
+                storeRegisterIntoLocalVar("t0", (IRLocalVar) cycle.get(i).value_);
+            }
+            storeRegisterIntoLocalVar("t1", (IRLocalVar) cycle.get(cycle.size() - 1).value_);
+        }
+    }
+
+    private void visit(Node node) {
+        for (var to : node.to_) {
+            visit(to);
+        }
+        loadVar("t0", node.from_.value_);
+        storeRegisterIntoLocalVar("t0", (IRLocalVar) node.value_);
     }
 }

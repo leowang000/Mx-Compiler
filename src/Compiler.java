@@ -1,3 +1,5 @@
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -34,13 +36,14 @@ public class Compiler {
             new IRBuilder(globalScope, irProgram).visit(ast);
             new UnusedFunctionRemover().visit(irProgram);
             new CFGBuilder().visit(irProgram);
-            new DominanceTreeBuilder().visit(irProgram);
+            new DominatorTreeBuilder().visit(irProgram);
             new AllocaEliminator().visit(irProgram);
             if (args.length > 0 && args[0].equals("-emit-llvm")) {
                 System.out.print(irProgram);
                 return;
             }
             // llvm IR -> riscv32 asm
+            new PhiResolver().visit(irProgram);
             new StackManager().visit(irProgram);
             ASMProgram asmProgram = new ASMProgram();
             new ASMBuilder(asmProgram).visit(irProgram);

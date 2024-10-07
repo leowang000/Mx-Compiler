@@ -4,7 +4,7 @@ import java.util.*;
 
 import IR.module.*;
 
-public class DominanceTreeBuilder {
+public class DominatorTreeBuilder {
     public void visit(IRProgram node) {
         for (var funcDef : node.funcDefMap_.values()) {
             visit(funcDef);
@@ -66,7 +66,7 @@ public class DominanceTreeBuilder {
             union.set(i);
             union.xor(doms.get(i));
             for (int j = union.nextSetBit(0); j >= 0; j = union.nextSetBit(j + 1)) {
-                node.body_.get(j).domBoundary_.add(block);
+                node.body_.get(j).domFrontiers_.add(block);
             }
         }
     }

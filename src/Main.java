@@ -16,9 +16,10 @@ public class Main {
         try (
             FileOutputStream irOutput = new FileOutputStream("test/output.ll");
             FileOutputStream irOptimizedOutput = new FileOutputStream("test/output-optimized.ll");
+            FileOutputStream irNoPhiOutput = new FileOutputStream("test/output-no-phi.ll");
             FileOutputStream asmOutput = new FileOutputStream("test/output.s")
         ) {
-            String input_file_name = "testcases/codegen/e1.mx";
+            String input_file_name = "testcases/codegen/t55.mx";
             CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
             // Mx* -> AST
             MxLexer lexer = new MxLexer(input);
@@ -37,17 +38,17 @@ public class Main {
             new IRBuilder(globalScope, irProgram).visit(ast);
             new UnusedFunctionRemover().visit(irProgram);
             new CFGBuilder().visit(irProgram);
-            new DominanceTreeBuilder().visit(irProgram);
+            new DominatorTreeBuilder().visit(irProgram);
             irOutput.write(irProgram.toString().getBytes());
             new AllocaEliminator().visit(irProgram);
             irOptimizedOutput.write(irProgram.toString().getBytes());
-//            // llvm IR -> riscv32 asm
-//            new StackManager().visit(irProgram);
-//            ASMProgram asmProgram = new ASMProgram();
-//            new ASMBuilder(asmProgram).visit(irProgram);
-//            // output
-//            irOutput.write(irProgram.toString().getBytes());
-//            asmOutput.write(asmProgram.toString().getBytes());
+            // llvm IR -> riscv32 asm
+            new PhiResolver().visit(irProgram);
+            irNoPhiOutput.write(irProgram.toString().getBytes());
+            new StackManager().visit(irProgram);
+            ASMProgram asmProgram = new ASMProgram();
+            new ASMBuilder(asmProgram).visit(irProgram);
+            asmOutput.write(asmProgram.toString().getBytes());
         } catch (Error err) {
             err.printStackTrace(System.err);
             throw new RuntimeException();
