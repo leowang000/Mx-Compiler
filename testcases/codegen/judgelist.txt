@@ -8,6 +8,14 @@
 ../optim/pi.mx
 ../optim/segtree.mx
 ../optim/sha_1.mx
+../optim-new/adce-adv.mx
+../optim-new/const.mx
+../optim-new/const-adv.mx
+../optim-new/efficiency.mx
+../optim-new/inline.mx
+../optim-new/inline-adv.mx
+../optim-new/loop-adv.mx
+../optim-new/ssa.mx
 shortest_path/dijkstra.mx
 shortest_path/floyd.mx
 shortest_path/spfa.mx

@@ -8,7 +8,7 @@ import IR.module.*;
 
 public class PhiResolver {
     private IRFuncDef curFuncDef_ = null;
-    private ArrayList<IRBasicBlock> splitBlockList_ = null;
+    private HashMap<IRBasicBlock, ArrayList<IRBasicBlock>> splitBlockMap_ = null;
     private int splitBlockCnt_ = 0;
 
     public void visit(IRProgram node) {
@@ -19,11 +19,19 @@ public class PhiResolver {
 
     public void visit(IRFuncDef node) {
         curFuncDef_ = node;
-        splitBlockList_ = new ArrayList<>();
+        splitBlockMap_ = new HashMap<>();
+        for (var block : node.body_) {
+            splitBlockMap_.put(block, new ArrayList<>());
+        }
         for (var block : node.body_) {
             visit(block);
         }
-        node.body_.addAll(splitBlockList_);
+        ArrayList<IRBasicBlock> newBody = new ArrayList<>();
+        for (var block : node.body_) {
+            newBody.add(block);
+            newBody.addAll(splitBlockMap_.get(block));
+        }
+        node.body_ = newBody;
     }
 
     public void visit(IRBasicBlock node) {
@@ -38,7 +46,7 @@ public class PhiResolver {
                     continue;
                 }
                 IRBasicBlock block = new IRBasicBlock(String.format("split_%d", splitBlockCnt_++), curFuncDef_);
-                splitBlockList_.add(block);
+                splitBlockMap_.get(pred).add(block);
                 block.instList_.add(new IRJumpInst(node));
                 block.preds_.add(pred);
                 block.succs_.add(node);

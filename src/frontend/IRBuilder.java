@@ -266,10 +266,12 @@ public class IRBuilder implements ASTVisitor {
                 break;
             }
         }
+        boolean thenEnds = endBlock_;
         if (!endBlock_) {
             currentBlock_.instList_.add(new IRJumpInst(end));
             submitBlock();
         }
+        boolean elseEnds = false;
         endBlock_ = false;
         scope_ = scope_.parent_;
         if (!node.else_.isEmpty()) {
@@ -282,6 +284,7 @@ public class IRBuilder implements ASTVisitor {
                     break;
                 }
             }
+            elseEnds = endBlock_;
             if (!endBlock_) {
                 currentBlock_.instList_.add(new IRJumpInst(end));
                 submitBlock();
@@ -289,7 +292,12 @@ public class IRBuilder implements ASTVisitor {
             endBlock_ = false;
             scope_ = scope_.parent_;
         }
-        currentBlock_ = end;
+        if (thenEnds && elseEnds) {
+            endBlock_ = true;
+        }
+        else {
+            currentBlock_ = end;
+        }
     }
 
     @Override
