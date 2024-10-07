@@ -36,6 +36,10 @@ public class Compiler {
             new CFGBuilder().visit(irProgram);
             new DominanceTreeBuilder().visit(irProgram);
             new AllocaEliminator().visit(irProgram);
+            if (args.length > 0 && args[0].equals("-emit-llvm")) {
+                System.out.print(irProgram);
+                return;
+            }
             // llvm IR -> riscv32 asm
             new StackManager().visit(irProgram);
             ASMProgram asmProgram = new ASMProgram();
@@ -46,7 +50,7 @@ public class Compiler {
             }
             System.out.print(asmProgram);
         } catch (Error err) {
-            System.err.println(err);
+            err.printStackTrace(System.err);
             throw new RuntimeException();
         }
     }
