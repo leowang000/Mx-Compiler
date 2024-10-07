@@ -5,8 +5,9 @@ import java.util.*;
 import IR.IRVisitor;
 import IR.inst.*;
 import IR.module.*;
-import IR.type.IRPtrType;
+import IR.type.*;
 import IR.value.IRValue;
+import IR.value.constant.*;
 import IR.value.var.IRLocalVar;
 
 public class AllocaEliminator implements IRVisitor {
@@ -100,9 +101,8 @@ public class AllocaEliminator implements IRVisitor {
         for (var succ : node.succs_) {
             succ.phiMap_.entrySet().removeIf(entry -> !allocaValueMap_.containsKey(entry.getKey()));
             for (var entry : succ.phiMap_.entrySet()) {
-                IRValue curValue = getCurrentValue(entry.getKey());
-                if (curValue != null) {
-                    entry.getValue().info_.put(node, curValue);
+                if (!allocaValueMap_.get(entry.getKey()).isEmpty()) {
+                    entry.getValue().info_.put(node, getCurrentValue(entry.getKey()));
                 }
             }
         }
@@ -199,9 +199,18 @@ public class AllocaEliminator implements IRVisitor {
     }
 
     private IRValue getCurrentValue(IRValue value) {
-        if (!isAllocaResult(value) || !allocaValueMap_.containsKey((IRLocalVar) value) ||
-            allocaValueMap_.get((IRLocalVar) value).isEmpty()) {
+        if (!isAllocaResult(value) || !allocaValueMap_.containsKey((IRLocalVar) value)) {
             return null;
+        }
+        if (allocaValueMap_.get((IRLocalVar) value).isEmpty()) {
+            IRType baseType = ((IRPtrType) value.type_).getDereferenceType();
+            if (baseType instanceof IRPtrType) {
+                return new IRNullConst();
+            }
+            if (baseType.equals(new IRIntType(32))) {
+                return new IRIntConst(0);
+            }
+            return new IRBoolConst(false);
         }
         return allocaValueMap_.get((IRLocalVar) value).peek();
     }

@@ -247,6 +247,9 @@ public class ASMBuilder implements IRVisitor {
     }
 
     private MemAddr loadPtrAddr(String rd, IRValue value) {
+        if (value instanceof IRNullConst) {
+            return new MemAddr("x0", 0);
+        }
         if (value instanceof IRGlobalVar) {
             currentBlock_.instList_.add(new ASMLaInst(rd, ((IRGlobalVar) value).name_));
             return new MemAddr(rd, 0);

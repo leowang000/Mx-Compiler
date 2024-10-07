@@ -19,7 +19,7 @@ public class Main {
             FileOutputStream irNoPhiOutput = new FileOutputStream("test/output-no-phi.ll");
             FileOutputStream asmOutput = new FileOutputStream("test/output.s")
         ) {
-            String input_file_name = "testcases/codegen/t55.mx";
+            String input_file_name = "testcases/sema/misc-package/misc-35.mx";
             CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
             // Mx* -> AST
             MxLexer lexer = new MxLexer(input);
