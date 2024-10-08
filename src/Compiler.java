@@ -1,5 +1,7 @@
+import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Scanner;
 
 import AST.module.ProgramNode;
 import IR.module.IRProgram;
@@ -16,7 +18,14 @@ import util.scope.GlobalScope;
 
 public class Compiler {
     public static void main(String[] args) throws Exception {
-        CharStream input = CharStreams.fromStream(System.in);
+        Scanner scanner = new Scanner(System.in);
+        StringBuilder inputString = new StringBuilder();
+        while (scanner.hasNextLine()) {
+            inputString.append(scanner.nextLine()).append("\n");
+        }
+        scanner.close();
+        CharStream input = CharStreams.fromStream(new ByteArrayInputStream(inputString.toString().getBytes()));
+        //CharStream input = CharStreams.fromStream(System.in);
         try {
             // Mx* -> AST
             MxLexer lexer = new MxLexer(input);
@@ -30,6 +39,7 @@ public class Compiler {
             GlobalScope globalScope = new GlobalScope();
             new SymbolCollector(globalScope).visit(ast);
             new SemanticChecker(globalScope).visit(ast);
+            System.err.println(inputString);
             // AST -> llvm IR
             IRProgram irProgram = new IRProgram();
             new IRBuilder(globalScope, irProgram).visit(ast);
@@ -51,7 +61,6 @@ public class Compiler {
                 System.out.println(Files.readString(Paths.get("src/builtin/builtin.s")));
             }
             System.out.print(asmProgram);
-            System.err.print(asmProgram);
         } catch (Error err) {
             err.printStackTrace(System.err);
             throw new RuntimeException();
