@@ -15,14 +15,14 @@ import asm.module.ASMBlock;
 import asm.module.ASMProgram;
 import asm.util.MemAddr;
 
-public class ASMBuilder implements IRVisitor {
+public class NaiveASMBuilder implements IRVisitor {
     private final ASMProgram asmProgram_;
     private ASMBlock currentBlock_ = null;
     private IRFuncDef belong_ = null;
     private boolean isFirstBlock_ = false;
     private int brCnt_ = 0;
 
-    public ASMBuilder(ASMProgram asmProgram) {
+    public NaiveASMBuilder(ASMProgram asmProgram) {
         asmProgram_ = asmProgram;
     }
 

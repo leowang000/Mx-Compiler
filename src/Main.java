@@ -5,6 +5,7 @@ import IR.module.IRProgram;
 import asm.module.ASMProgram;
 import backend.*;
 import frontend.*;
+import middleend.*;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import parser.*;
@@ -19,7 +20,7 @@ public class Main {
             FileOutputStream irNoPhiOutput = new FileOutputStream("test/output-no-phi.ll");
             FileOutputStream asmOutput = new FileOutputStream("test/output.s")
         ) {
-            String input_file_name = "testcases/optim/binary_tree.mx";
+            String input_file_name = "testcases/optim-new/inline.mx";
             CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
             // Mx* -> AST
             MxLexer lexer = new MxLexer(input);
@@ -45,9 +46,9 @@ public class Main {
             // llvm IR -> riscv32 asm
             new PhiResolver().visit(irProgram);
             irNoPhiOutput.write(irProgram.toString().getBytes());
-            new StackManager().visit(irProgram);
+            new NaiveRegAllocator().visit(irProgram);
             ASMProgram asmProgram = new ASMProgram();
-            new ASMBuilder(asmProgram).visit(irProgram);
+            new NaiveASMBuilder(asmProgram).visit(irProgram);
             asmOutput.write(asmProgram.toString().getBytes());
         } catch (Error err) {
             err.printStackTrace(System.err);

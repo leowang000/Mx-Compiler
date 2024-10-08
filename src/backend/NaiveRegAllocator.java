@@ -8,7 +8,7 @@ import IR.module.*;
 import IR.type.IRPtrType;
 import IR.value.var.IRLocalVar;
 
-public class StackManager implements IRVisitor {
+public class NaiveRegAllocator implements IRVisitor {
     private IRFuncDef curFuncDef_ = null;
     private int maxFuncArgCnt_ = 0;
     private HashSet<IRLocalVar> localVarSet_ = null;

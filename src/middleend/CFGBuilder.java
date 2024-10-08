@@ -1,21 +1,17 @@
-package backend;
-
-import java.util.HashMap;
-import java.util.HashSet;
+package middleend;
 
 import IR.IRVisitor;
 import IR.inst.*;
 import IR.module.*;
 
-public class UnusedFunctionRemover implements IRVisitor {
-    private final HashSet<String> usedFuncSet_ = new HashSet<>();
-    private HashMap<String, IRFuncDef> funcDefMap_ = new HashMap<>();
+public class CFGBuilder implements IRVisitor {
+    private IRBasicBlock currentBlock_ = null;
 
     @Override
     public void visit(IRProgram node) {
-        funcDefMap_ = node.funcDefMap_;
-        funcDefMap_.get("main").accept(this);
-        funcDefMap_.entrySet().removeIf(entry -> !usedFuncSet_.contains(entry.getKey()));
+        for (var funcDef : node.funcDefMap_.values()) {
+            funcDef.accept(this);
+        }
     }
 
     @Override
@@ -23,10 +19,6 @@ public class UnusedFunctionRemover implements IRVisitor {
 
     @Override
     public void visit(IRFuncDef node) {
-        if (usedFuncSet_.contains(node.name_)) {
-            return;
-        }
-        usedFuncSet_.add(node.name_);
         for (var block : node.body_) {
             block.accept(this);
         }
@@ -43,9 +35,8 @@ public class UnusedFunctionRemover implements IRVisitor {
 
     @Override
     public void visit(IRBasicBlock node) {
-        for (var inst : node.instList_) {
-            inst.accept(this);
-        }
+        currentBlock_ = node;
+        node.instList_.get(node.instList_.size() - 1).accept(this);
     }
 
     @Override
@@ -55,15 +46,15 @@ public class UnusedFunctionRemover implements IRVisitor {
     public void visit(IRBinaryInst node) {}
 
     @Override
-    public void visit(IRBrInst node) {}
+    public void visit(IRBrInst node) {
+        currentBlock_.succs_.add(node.trueBlock_);
+        currentBlock_.succs_.add(node.falseBlock_);
+        node.trueBlock_.preds_.add(currentBlock_);
+        node.falseBlock_.preds_.add(currentBlock_);
+    }
 
     @Override
-    public void visit(IRCallInst node) {
-        var funcDef = funcDefMap_.get(node.funcName_);
-        if (funcDef != null) {
-            funcDef.accept(this);
-        }
-    }
+    public void visit(IRCallInst node) {}
 
     @Override
     public void visit(IRGetElementPtrInst node) {}
@@ -72,7 +63,10 @@ public class UnusedFunctionRemover implements IRVisitor {
     public void visit(IRIcmpInst node) {}
 
     @Override
-    public void visit(IRJumpInst node) {}
+    public void visit(IRJumpInst node) {
+        currentBlock_.succs_.add(node.destBlock_);
+        node.destBlock_.preds_.add(currentBlock_);
+    }
 
     @Override
     public void visit(IRLoadInst node) {}

@@ -1,5 +1,3 @@
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -8,6 +6,7 @@ import IR.module.IRProgram;
 import asm.module.ASMProgram;
 import backend.*;
 import frontend.*;
+import middleend.*;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 import parser.MxLexer;
@@ -44,9 +43,9 @@ public class Compiler {
             }
             // llvm IR -> riscv32 asm
             new PhiResolver().visit(irProgram);
-            new StackManager().visit(irProgram);
+            new NaiveRegAllocator().visit(irProgram);
             ASMProgram asmProgram = new ASMProgram();
-            new ASMBuilder(asmProgram).visit(irProgram);
+            new NaiveASMBuilder(asmProgram).visit(irProgram);
             // output
             if (args.length > 0 && args[0].equals("-output-builtin")) {
                 System.out.println(Files.readString(Paths.get("src/builtin/builtin.s")));
