@@ -18,14 +18,7 @@ import util.scope.GlobalScope;
 
 public class Compiler {
     public static void main(String[] args) throws Exception {
-        Scanner scanner = new Scanner(System.in);
-        StringBuilder inputString = new StringBuilder();
-        while (scanner.hasNextLine()) {
-            inputString.append(scanner.nextLine()).append("\n");
-        }
-        scanner.close();
-        CharStream input = CharStreams.fromStream(new ByteArrayInputStream(inputString.toString().getBytes()));
-        //CharStream input = CharStreams.fromStream(System.in);
+        CharStream input = CharStreams.fromStream(System.in);
         try {
             // Mx* -> AST
             MxLexer lexer = new MxLexer(input);
@@ -39,7 +32,6 @@ public class Compiler {
             GlobalScope globalScope = new GlobalScope();
             new SymbolCollector(globalScope).visit(ast);
             new SemanticChecker(globalScope).visit(ast);
-            System.err.println(inputString);
             // AST -> llvm IR
             IRProgram irProgram = new IRProgram();
             new IRBuilder(globalScope, irProgram).visit(ast);

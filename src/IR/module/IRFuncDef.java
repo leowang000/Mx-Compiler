@@ -1,6 +1,6 @@
 package IR.module;
 
-import java.util.ArrayList;
+import java.util.*;
 
 import IR.IRNode;
 import IR.IRVisitor;
@@ -40,5 +40,23 @@ public class IRFuncDef extends IRNode {
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
+    }
+
+    public ArrayList<IRBasicBlock> getRPO() {
+        ArrayList<IRBasicBlock> res = new ArrayList<>();
+        HashSet<IRBasicBlock> visited = new HashSet<>();
+        getPostOrder(body_.get(0), res, visited);
+        Collections.reverse(res);
+        return res;
+    }
+
+    public static void getPostOrder(IRBasicBlock node, ArrayList<IRBasicBlock> po, HashSet<IRBasicBlock> visited) {
+        visited.add(node);
+        for (var succ : node.succs_) {
+            if (!visited.contains(succ)) {
+                getPostOrder(succ, po, visited);
+            }
+        }
+        po.add(node);
     }
 }

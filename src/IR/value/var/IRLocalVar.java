@@ -5,8 +5,9 @@ import IR.value.IRValue;
 import asm.util.Register;
 
 public class IRLocalVar extends IRValue {
-    public String name_, register_ = null;
+    public String name_;
     public boolean isAllocaResult_ = false;
+    public String register_ = null;
     public int stackOffset_ = 0;
     public static int cnt_ = 0;
 

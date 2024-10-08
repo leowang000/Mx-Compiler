@@ -84,9 +84,6 @@ public class NaiveASMBuilder implements IRVisitor {
             currentBlock_ = new ASMBlock(".L." + node.label_);
         }
         for (var inst : node.instList_) {
-            if (inst == node.instList_.get(node.instList_.size() - 1)) {
-                processIRMoveInst(node.moveList_);
-            }
             inst.accept(this);
         }
     }
@@ -215,7 +212,10 @@ public class NaiveASMBuilder implements IRVisitor {
     }
 
     @Override
-    public void visit(IRMoveInst node) {}
+    public void visit(IRMoveInst node) {
+        loadVar("t0", node.src_);
+        storeRegisterIntoLocalVar("t0", node.dest_);
+    }
 
     @Override
     public void visit(IRPhiInst node) {}
@@ -328,90 +328,5 @@ public class NaiveASMBuilder implements IRVisitor {
             currentBlock_.instList_.add(new ASMBinaryInst("add", tmp, base, tmp));
             currentBlock_.instList_.add(new ASMLwInst(rd, tmp, 0));
         }
-    }
-
-    static class Node {
-        public IRValue value_;
-        Node from_ = null;
-        public ArrayList<Node> to_ = new ArrayList<>();
-
-        public Node(IRValue value) {
-            value_ = value;
-        }
-    }
-
-    private void processIRMoveInst(ArrayList<IRMoveInst> irMoveList) {
-        HashMap<IRValue, Node> nodes = new HashMap<>();
-        for (var irInst : irMoveList) {
-            if (!nodes.containsKey(irInst.src_)) {
-                nodes.put(irInst.src_, new Node(irInst.src_));
-            }
-            if (!nodes.containsKey(irInst.dest_)) {
-                nodes.put(irInst.dest_, new Node(irInst.dest_));
-            }
-        }
-        for (var irInst : irMoveList) {
-            nodes.get(irInst.dest_).from_ = nodes.get(irInst.src_);
-            nodes.get(irInst.src_).to_.add(nodes.get(irInst.dest_));
-        }
-        ArrayList<ArrayList<Node>> cycles = new ArrayList<>();
-        HashSet<Node> srcNodes = new HashSet<>();
-        HashSet<Node> visited = new HashSet<>();
-        for (var node : nodes.values()) {
-            if (visited.contains(node) || !node.to_.isEmpty()) {
-                continue;
-            }
-            HashSet<Node> currentRoundVisited = new HashSet<>();
-            Node cur = node;
-            while (cur.from_ != null && !visited.contains(cur)) {
-                visited.add(cur);
-                currentRoundVisited.add(cur);
-                cur = cur.from_;
-            }
-            if (cur.from_ == null) {
-                srcNodes.add(cur);
-                continue;
-            }
-            if (!currentRoundVisited.contains(cur)) {
-                continue;
-            }
-            ArrayList<Node> cycle = new ArrayList<>(List.of(cur));
-            Node cycleEntry = cur;
-            cur = cur.from_;
-            while (cur != cycleEntry) {
-                cycle.add(cur);
-                cur = cur.from_;
-            }
-            cycles.add(cycle);
-        }
-        for (var node : srcNodes) {
-            for (var to : node.to_) {
-                visit(to);
-            }
-        }
-        for (var cycle : cycles) {
-            for (var node : cycle) {
-                for (var to : node.to_) {
-                    visit(to);
-                }
-            }
-            if (cycle.size() == 1) {
-                continue;
-            }
-            loadVar("t1", cycle.get(0).value_);
-            for (int i = 0; i < cycle.size() - 1; i++) {
-                loadVar("t0", cycle.get(i + 1).value_);
-                storeRegisterIntoLocalVar("t0", (IRLocalVar) cycle.get(i).value_);
-            }
-            storeRegisterIntoLocalVar("t1", (IRLocalVar) cycle.get(cycle.size() - 1).value_);
-        }
-    }
-
-    private void visit(Node node) {
-        for (var to : node.to_) {
-            visit(to);
-        }
-        loadVar("t0", node.from_.value_);
-        storeRegisterIntoLocalVar("t0", (IRLocalVar) node.value_);
     }
 }

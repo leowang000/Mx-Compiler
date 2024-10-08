@@ -12,9 +12,7 @@ public class DominatorTreeBuilder {
     }
 
     public void visit(IRFuncDef node) {
-        ArrayList<IRBasicBlock> postOrder = new ArrayList<>();
-        HashSet<IRBasicBlock> visited = new HashSet<>();
-        getPostOrder(node.body_.get(0), postOrder, visited);
+        ArrayList<IRBasicBlock> rpo = node.getRPO();
         ArrayList<BitSet> doms = new ArrayList<>();
         for (int i = 0; i < node.body_.size(); i++) {
             BitSet tmp = new BitSet(node.body_.size());
@@ -27,8 +25,7 @@ public class DominatorTreeBuilder {
         }
         while (true) {
             boolean changed = false;
-            for (int i = postOrder.size() - 1; i >= 0; i--) {
-                IRBasicBlock block = postOrder.get(i);
+            for (var block : rpo) {
                 int blockId = blockIdMap.get(block);
                 BitSet intersect = new BitSet(node.body_.size());
                 if (!block.preds_.isEmpty()) {
@@ -69,15 +66,5 @@ public class DominatorTreeBuilder {
                 node.body_.get(j).domFrontiers_.add(block);
             }
         }
-    }
-
-    public void getPostOrder(IRBasicBlock node, ArrayList<IRBasicBlock> postOrder, HashSet<IRBasicBlock> visited) {
-        visited.add(node);
-        for (var succ : node.succs_) {
-            if (!visited.contains(succ)) {
-                getPostOrder(succ, postOrder, visited);
-            }
-        }
-        postOrder.add(node);
     }
 }
