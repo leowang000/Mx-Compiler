@@ -20,6 +20,7 @@ public class ASMBuilder implements IRVisitor {
     private ASMBlock currentBlock_ = null;
     private IRFuncDef belong_ = null;
     private boolean isFirstBlock_ = false;
+    private int brCnt_ = 0;
 
     public ASMBuilder(ASMProgram asmProgram) {
         asmProgram_ = asmProgram;
@@ -121,9 +122,17 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(IRBrInst node) {
+//        loadVar("t0", node.cond_);
+//        currentBlock_.instList_.add(new ASMBranchInst("bne", "t0", "x0", ".L." + node.trueBlock_.label_));
+//        currentBlock_.instList_.add(new ASMJInst(".L." + node.falseBlock_.label_));
+//        asmProgram_.text_.blockList_.add(currentBlock_);
+        String brBlockName = ".L.br_" + (brCnt_++);
         loadVar("t0", node.cond_);
-        currentBlock_.instList_.add(new ASMBranchInst("bne", "t0", "x0", ".L." + node.trueBlock_.label_));
+        currentBlock_.instList_.add(new ASMBranchInst("bne", "t0", "x0", brBlockName));
         currentBlock_.instList_.add(new ASMJInst(".L." + node.falseBlock_.label_));
+        asmProgram_.text_.blockList_.add(currentBlock_);
+        currentBlock_ = new ASMBlock(brBlockName);
+        currentBlock_.instList_.add(new ASMJInst(".L." + node.trueBlock_.label_));
         asmProgram_.text_.blockList_.add(currentBlock_);
     }
 
@@ -370,6 +379,7 @@ public class ASMBuilder implements IRVisitor {
             }
             if (cur.from_ == null) {
                 srcNodes.add(cur);
+                continue;
             }
             if (!currentRoundVisited.contains(cur)) {
                 continue;
