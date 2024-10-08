@@ -51,6 +51,7 @@ public class Compiler {
                 System.out.println(Files.readString(Paths.get("src/builtin/builtin.s")));
             }
             System.out.print(asmProgram);
+            System.err.print(asmProgram);
         } catch (Error err) {
             err.printStackTrace(System.err);
             throw new RuntimeException();
