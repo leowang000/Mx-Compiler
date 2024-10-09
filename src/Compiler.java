@@ -35,16 +35,16 @@ public class Compiler {
             // AST -> llvm IR
             IRProgram irProgram = new IRProgram();
             new IRBuilder(globalScope, irProgram).visit(ast);
-            new UnusedFunctionRemover().visit(irProgram);
-            new CFGBuilder().visit(irProgram);
-            new DominatorTreeBuilder().visit(irProgram);
-            // new AllocaEliminator().visit(irProgram);
+            //new UnusedFunctionRemover().visit(irProgram);
+            //new CFGBuilder().visit(irProgram);
+            //new DominatorTreeBuilder().visit(irProgram);
+            //new AllocaEliminator().visit(irProgram);
             if (args.length > 0 && args[0].equals("-emit-llvm")) {
                 System.out.print(irProgram);
                 return;
             }
             // llvm IR -> riscv32 asm
-            new PhiResolver().visit(irProgram);
+            //new PhiResolver().visit(irProgram);
             new NaiveRegAllocator().visit(irProgram);
             ASMProgram asmProgram = new ASMProgram();
             new NaiveASMBuilder(asmProgram).visit(irProgram);
