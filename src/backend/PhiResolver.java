@@ -17,7 +17,7 @@ public class PhiResolver {
         }
     }
 
-    public void visit(IRFuncDef node) {
+    private void visit(IRFuncDef node) {
         curFuncDef_ = node;
         splitBlockMap_ = new HashMap<>();
         for (var block : node.body_) {
@@ -37,7 +37,7 @@ public class PhiResolver {
         }
     }
 
-    public void visit(IRBasicBlock node) {
+    private void visit(IRBasicBlock node) {
         if (node.phiMap_.isEmpty()) {
             return;
         }

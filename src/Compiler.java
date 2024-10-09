@@ -38,7 +38,7 @@ public class Compiler {
             new UnusedFunctionRemover().visit(irProgram);
             new CFGBuilder().visit(irProgram);
             new DominatorTreeBuilder().visit(irProgram);
-            new AllocaEliminator().visit(irProgram);
+            // new AllocaEliminator().visit(irProgram);
             if (args.length > 0 && args[0].equals("-emit-llvm")) {
                 System.out.print(irProgram);
                 return;
