@@ -1,7 +1,6 @@
 package IR.inst;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 
 import IR.IRVisitor;
 import IR.value.IRValue;
@@ -41,5 +40,19 @@ public class IRCallInst extends IRInst {
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public HashSet<IRLocalVar> getUse() {
+        HashSet<IRLocalVar> use = new HashSet<>();
+        for (var arg : args_) {
+            addVar(use, arg);
+        }
+        return use;
+    }
+
+    @Override
+    public HashSet<IRLocalVar> getDef() {
+        return result_ == null ? new HashSet<>() : new HashSet<>(List.of(result_));
     }
 }

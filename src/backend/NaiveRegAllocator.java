@@ -7,6 +7,7 @@ import IR.inst.*;
 import IR.module.*;
 import IR.type.IRPtrType;
 import IR.value.var.IRLocalVar;
+import asm.util.Register;
 
 public class NaiveRegAllocator implements IRVisitor {
     private IRFuncDef curFuncDef_ = null;
@@ -31,13 +32,13 @@ public class NaiveRegAllocator implements IRVisitor {
         for (var block : node.body_) {
             block.accept(this);
         }
-        node.stackSize_ = (4 * maxFuncArgCnt_ + node.stackSize_ + 19) / 16 * 16;
+        node.stackSize_ = (4 * maxFuncArgCnt_ + 4 + node.stackSize_ + 15) / 16 * 16;
         for (var localVar : localVarSet_) {
             localVar.stackOffset_ += 4 * Math.max(maxFuncArgCnt_ - 8, 0);
         }
         for (int i = 0; i < node.args_.size(); i++) {
             if (i < 8) {
-                node.args_.get(i).register_ = "a" + i;
+                node.args_.get(i).register_ = new Register("a" + i);
             }
             else {
                 node.args_.get(i).stackOffset_ = node.stackSize_ + 4 * (i - 8);

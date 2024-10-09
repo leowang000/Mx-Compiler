@@ -10,7 +10,7 @@ import util.scope.GlobalScope;
 import util.type.*;
 
 public class SymbolCollector implements ASTVisitor {
-    private GlobalScope gScope_;
+    private final GlobalScope gScope_;
 
     public SymbolCollector(GlobalScope globalScope) {
         gScope_ = globalScope;

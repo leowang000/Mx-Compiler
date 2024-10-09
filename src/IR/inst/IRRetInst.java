@@ -1,7 +1,10 @@
 package IR.inst;
 
+import java.util.HashSet;
+
 import IR.IRVisitor;
 import IR.value.IRValue;
+import IR.value.var.IRLocalVar;
 
 public class IRRetInst extends IRInst {
     public IRValue value_;
@@ -21,5 +24,17 @@ public class IRRetInst extends IRInst {
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public HashSet<IRLocalVar> getUse() {
+        HashSet<IRLocalVar> use = new HashSet<>();
+        addVar(use, value_);
+        return use;
+    }
+
+    @Override
+    public HashSet<IRLocalVar> getDef() {
+        return new HashSet<>();
     }
 }

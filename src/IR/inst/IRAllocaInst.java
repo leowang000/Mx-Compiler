@@ -1,5 +1,8 @@
 package IR.inst;
 
+import java.util.HashSet;
+import java.util.List;
+
 import IR.IRVisitor;
 import IR.type.IRPtrType;
 import IR.type.IRType;
@@ -21,5 +24,15 @@ public class IRAllocaInst extends IRInst {
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public HashSet<IRLocalVar> getUse() {
+        return new HashSet<>();
+    }
+
+    @Override
+    public HashSet<IRLocalVar> getDef() {
+        return new HashSet<>(List.of(result_));
     }
 }

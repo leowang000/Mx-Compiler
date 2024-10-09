@@ -256,7 +256,7 @@ public class NaiveASMBuilder implements IRVisitor {
         }
         IRLocalVar localVar = (IRLocalVar) value;
         if (localVar.register_ != null) {
-            return new MemAddr(localVar.register_, 0);
+            return new MemAddr(localVar.register_.name_, 0);
         }
         if (localVar.isAllocaResult_) {
             return new MemAddr("sp", localVar.stackOffset_);
@@ -284,7 +284,7 @@ public class NaiveASMBuilder implements IRVisitor {
         }
         IRLocalVar localVar = (IRLocalVar) value;
         if (localVar.register_ != null) {
-            currentBlock_.instList_.add(new ASMUnaryInst("mv", rd, localVar.register_));
+            currentBlock_.instList_.add(new ASMUnaryInst("mv", rd, localVar.register_.name_));
             return;
         }
         if (localVar.isAllocaResult_) {

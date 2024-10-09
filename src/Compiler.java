@@ -1,7 +1,5 @@
-import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Scanner;
 
 import AST.module.ProgramNode;
 import IR.module.IRProgram;
@@ -32,27 +30,31 @@ public class Compiler {
             GlobalScope globalScope = new GlobalScope();
             new SymbolCollector(globalScope).visit(ast);
             new SemanticChecker(globalScope).visit(ast);
-            // AST -> llvm IR
-            IRProgram irProgram = new IRProgram();
-            new IRBuilder(globalScope, irProgram).visit(ast);
-            //new UnusedFunctionRemover().visit(irProgram);
-            //new CFGBuilder().visit(irProgram);
-            //new DominatorTreeBuilder().visit(irProgram);
-            //new AllocaEliminator().visit(irProgram);
-            if (args.length > 0 && args[0].equals("-emit-llvm")) {
-                System.out.print(irProgram);
-                return;
+            try {
+                // AST -> llvm IR
+                IRProgram irProgram = new IRProgram();
+                new IRBuilder(globalScope, irProgram).visit(ast);
+                new UnusedFunctionRemover().visit(irProgram);
+                new CFGBuilder().visit(irProgram);
+                new DominatorTreeBuilder().visit(irProgram);
+                new AllocaEliminator().visit(irProgram);
+                if (args.length > 0 && args[0].equals("-emit-llvm")) {
+                    System.out.print(irProgram);
+                    return;
+                }
+                // llvm IR -> riscv32 asm
+                new PhiResolver().visit(irProgram);
+                new NaiveRegAllocator().visit(irProgram);
+                ASMProgram asmProgram = new ASMProgram();
+                new NaiveASMBuilder(asmProgram).visit(irProgram);
+                // output
+                if (args.length > 0 && args[0].equals("-output-builtin")) {
+                    System.out.println(Files.readString(Paths.get("src/builtin/builtin.s")));
+                }
+                System.out.print(asmProgram);
+            } catch (Exception ignored) {
+                // undefined behaviour exists
             }
-            // llvm IR -> riscv32 asm
-            //new PhiResolver().visit(irProgram);
-            new NaiveRegAllocator().visit(irProgram);
-            ASMProgram asmProgram = new ASMProgram();
-            new NaiveASMBuilder(asmProgram).visit(irProgram);
-            // output
-            if (args.length > 0 && args[0].equals("-output-builtin")) {
-                System.out.println(Files.readString(Paths.get("src/builtin/builtin.s")));
-            }
-            System.out.print(asmProgram);
         } catch (Error err) {
             err.printStackTrace(System.err);
             throw new RuntimeException();

@@ -1,6 +1,6 @@
 package IR.inst;
 
-import java.util.HashMap;
+import java.util.*;
 
 import IR.IRVisitor;
 import IR.module.IRBasicBlock;
@@ -49,5 +49,19 @@ public class IRPhiInst extends IRInst {
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public HashSet<IRLocalVar> getUse() {
+        HashSet<IRLocalVar> use = new HashSet<>();
+        for (var value : info_.values()) {
+            addVar(use, value);
+        }
+        return use;
+    }
+
+    @Override
+    public HashSet<IRLocalVar> getDef() {
+        return new HashSet<>(List.of(result_));
     }
 }

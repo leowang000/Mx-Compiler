@@ -1,5 +1,8 @@
 package IR.inst;
 
+import java.util.HashSet;
+import java.util.List;
+
 import IR.IRVisitor;
 import IR.type.IRPtrType;
 import IR.type.IRStructType;
@@ -39,5 +42,18 @@ public class IRGetElementPtrInst extends IRInst {
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public HashSet<IRLocalVar> getUse() {
+        HashSet<IRLocalVar> use = new HashSet<>();
+        addVar(use, ptr_);
+        addVar(use, id1_);
+        return use;
+    }
+
+    @Override
+    public HashSet<IRLocalVar> getDef() {
+        return new HashSet<>(List.of(result_));
     }
 }

@@ -7,7 +7,6 @@ import IR.inst.*;
 import IR.module.*;
 import IR.type.*;
 import IR.value.IRValue;
-import IR.value.constant.*;
 import IR.value.var.IRLocalVar;
 
 public class AllocaEliminator implements IRVisitor {
@@ -29,13 +28,13 @@ public class AllocaEliminator implements IRVisitor {
     public void visit(IRFuncDecl node) {}
 
     public void visit(IRFuncDef node) {
-        initialize(node);
+        initialize();
         getVarDefs(node);
-        putPhi();
+        insertPhi();
         node.body_.get(0).accept(this);
     }
 
-    private void initialize(IRFuncDef node) {
+    private void initialize() {
         defBlockMap_ = new HashMap<>();
         allocaValueMap_ = new HashMap<>();
         valueMap_ = new HashMap<>();
@@ -58,22 +57,22 @@ public class AllocaEliminator implements IRVisitor {
         }
     }
 
-    private void putPhi() {
+    private void insertPhi() {
         for (var entry : defBlockMap_.entrySet()) {
             IRLocalVar localVar = entry.getKey();
             for (var block : entry.getValue()) {
-                putPhi(block, localVar);
+                insertPhi(block, localVar);
             }
         }
     }
 
-    private void putPhi(IRBasicBlock block, IRLocalVar localVar) {
+    private void insertPhi(IRBasicBlock block, IRLocalVar localVar) {
         for (var frontier : block.domFrontiers_) {
             if (!frontier.phiMap_.containsKey(localVar)) {
                 IRLocalVar phiResult = new IRLocalVar(String.format("phi.%s.%d", localVar.name_, phi_cnt_++),
                                                       ((IRPtrType) localVar.type_).getDereferenceType());
                 frontier.phiMap_.put(localVar, new IRPhiInst(phiResult, frontier));
-                putPhi(frontier, localVar);
+                insertPhi(frontier, localVar);
             }
         }
     }
@@ -101,8 +100,9 @@ public class AllocaEliminator implements IRVisitor {
         for (var succ : node.succs_) {
             succ.phiMap_.entrySet().removeIf(entry -> !allocaValueMap_.containsKey(entry.getKey()));
             for (var entry : succ.phiMap_.entrySet()) {
-                if (!allocaValueMap_.get(entry.getKey()).isEmpty()) {
-                    entry.getValue().info_.put(node, getCurrentValue(entry.getKey()));
+                IRValue curValue = getCurrentValue(entry.getKey());
+                if (curValue != null) {
+                    entry.getValue().info_.put(node, curValue);
                 }
             }
         }
@@ -164,7 +164,11 @@ public class AllocaEliminator implements IRVisitor {
     @Override
     public void visit(IRLoadInst node) {
         if (isAllocaResult(node.pointer_)) {
-            valueMap_.put(node.result_, getCurrentValue(node.pointer_));
+            IRValue curValue = getCurrentValue(node.pointer_);
+            if (curValue == null) {
+                throw new RuntimeException("Undefined behaviour: use of uninitialized variable");
+            }
+            valueMap_.put(node.result_, curValue);
             return;
         }
         node.pointer_ = getSubstitution(node.pointer_);
@@ -199,18 +203,9 @@ public class AllocaEliminator implements IRVisitor {
     }
 
     private IRValue getCurrentValue(IRValue value) {
-        if (!isAllocaResult(value) || !allocaValueMap_.containsKey((IRLocalVar) value)) {
+        if (!isAllocaResult(value) || !allocaValueMap_.containsKey((IRLocalVar) value) ||
+            allocaValueMap_.get((IRLocalVar) value).isEmpty()) {
             return null;
-        }
-        if (allocaValueMap_.get((IRLocalVar) value).isEmpty()) {
-            IRType baseType = ((IRPtrType) value.type_).getDereferenceType();
-            if (baseType instanceof IRPtrType) {
-                return new IRNullConst();
-            }
-            if (baseType.equals(new IRIntType(32))) {
-                return new IRIntConst(0);
-            }
-            return new IRBoolConst(false);
         }
         return allocaValueMap_.get((IRLocalVar) value).peek();
     }

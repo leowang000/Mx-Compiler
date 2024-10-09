@@ -1,5 +1,8 @@
 package IR.inst;
 
+import java.util.HashSet;
+import java.util.List;
+
 import IR.IRVisitor;
 import IR.value.IRValue;
 import IR.value.var.IRLocalVar;
@@ -21,5 +24,17 @@ public class IRMoveInst extends IRInst {
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public HashSet<IRLocalVar> getUse() {
+        HashSet<IRLocalVar> use = new HashSet<>();
+        addVar(use, src_);
+        return use;
+    }
+
+    @Override
+    public HashSet<IRLocalVar> getDef() {
+        return new HashSet<>(List.of(dest_));
     }
 }
