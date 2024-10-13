@@ -45,6 +45,9 @@ public class LinearScanRegAllocator {
     }
 
     private void visit(IRFuncDef node) {
+        for (var block : node.body_) {
+            block.insertMoveInst();
+        }
         getLinearOrderAndMaxFuncArgCnt(node);
         buildInstGraph(node);
         executeLiveAnalysis(node);

@@ -56,6 +56,7 @@ public class NaiveASMBuilder implements IRVisitor {
         addSw("ra", "sp", node.stackSize_ - 4, "t6");
         isFirstBlock_ = true;
         for (var block : node.body_) {
+            block.insertMoveInst();
             block.accept(this);
             isFirstBlock_ = false;
         }
@@ -155,9 +156,7 @@ public class NaiveASMBuilder implements IRVisitor {
         MemAddr addr = loadPtrAddr("t0", node.ptr_);
         if (node.id2_ == -1) {
             loadVar("t1", node.id1_);
-            currentBlock_.instList_.add(
-                new ASMLiInst("t2", ((IRPtrType) node.result_.type_).getDereferenceType().getSize()));
-            currentBlock_.instList_.add(new ASMBinaryInst("mul", "t1", "t1", "t2"));
+            currentBlock_.instList_.add(new ASMBinaryInst("slli", "t1", "t1", "2"));
             currentBlock_.instList_.add(new ASMBinaryInst("add", "t0", addr.base_.name_, "t1"));
         }
         else {

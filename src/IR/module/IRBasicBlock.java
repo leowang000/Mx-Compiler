@@ -5,9 +5,10 @@ import java.util.*;
 import IR.IRNode;
 import IR.IRVisitor;
 import IR.inst.*;
+import IR.type.IRPtrType;
 import IR.value.IRValue;
+import IR.value.constant.IRNullConst;
 import IR.value.var.IRLocalVar;
-import backend.NaiveASMBuilder;
 
 public class IRBasicBlock extends IRNode {
     public String label_;
@@ -83,21 +84,20 @@ public class IRBasicBlock extends IRNode {
         HashSet<Node> srcNodes = new HashSet<>();
         HashSet<Node> visited = new HashSet<>();
         for (var node : nodes.values()) {
-            if (visited.contains(node) || !node.to_.isEmpty()) {
+            if (visited.contains(node)) {
                 continue;
             }
             HashSet<Node> currentRoundVisited = new HashSet<>();
             Node cur = node;
-            while (cur.from_ != null && !visited.contains(cur)) {
+            while (cur != null && !visited.contains(cur)) {
                 visited.add(cur);
                 currentRoundVisited.add(cur);
+                if (cur.from_ == null) {
+                    srcNodes.add(cur);
+                }
                 cur = cur.from_;
             }
-            if (cur.from_ == null) {
-                srcNodes.add(cur);
-                continue;
-            }
-            if (!currentRoundVisited.contains(cur)) {
+            if (cur == null || !currentRoundVisited.contains(cur)) {
                 continue;
             }
             ArrayList<Node> cycle = new ArrayList<>(List.of(cur));
@@ -116,8 +116,11 @@ public class IRBasicBlock extends IRNode {
             }
         }
         for (var cycle : cycles) {
-            for (var node : cycle) {
-                for (var to : node.to_) {
+            for (int i = 0; i < cycle.size(); i++) {
+                for (var to : cycle.get(i).to_) {
+                    if (to == cycle.get(i == 0 ? cycle.size() - 1 : i - 1)) {
+                        continue;
+                    }
                     visit(to, result);
                 }
             }

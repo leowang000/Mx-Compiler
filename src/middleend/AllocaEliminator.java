@@ -69,7 +69,7 @@ public class AllocaEliminator implements IRVisitor {
     private void insertPhi(IRBasicBlock block, IRLocalVar localVar) {
         for (var frontier : block.domFrontiers_) {
             if (!frontier.phiMap_.containsKey(localVar)) {
-                IRLocalVar phiResult = new IRLocalVar(String.format("phi.%s.%d", localVar.name_, phi_cnt_++),
+                IRLocalVar phiResult = new IRLocalVar(String.format("%s.phi.%d", localVar.name_, phi_cnt_++),
                                                       ((IRPtrType) localVar.type_).getDereferenceType());
                 frontier.phiMap_.put(localVar, new IRPhiInst(phiResult, frontier));
                 insertPhi(frontier, localVar);
