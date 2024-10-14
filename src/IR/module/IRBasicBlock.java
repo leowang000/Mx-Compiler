@@ -5,9 +5,7 @@ import java.util.*;
 import IR.IRNode;
 import IR.IRVisitor;
 import IR.inst.*;
-import IR.type.IRPtrType;
 import IR.value.IRValue;
-import IR.value.constant.IRNullConst;
 import IR.value.var.IRLocalVar;
 
 public class IRBasicBlock extends IRNode {

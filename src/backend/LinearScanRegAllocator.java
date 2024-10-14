@@ -27,7 +27,7 @@ public class LinearScanRegAllocator {
 
     static {
         regList_ = new ArrayList<>();
-        for (int i = 3; i <= 6; i++) {
+        for (int i = 2; i <= 6; i++) {
             regList_.add(new Register("t" + i));
         }
         for (int i = 0; i <= 11; i++) {
@@ -180,7 +180,7 @@ public class LinearScanRegAllocator {
     }
 
     private void allocateRegister(IRFuncDef node) {
-        int regCnt = 16 + Math.max(8 - node.args_.size(), 0);
+        int regCnt = 17 + Math.max(8 - node.args_.size(), 0);
         spilledVarSet_ = new HashSet<>();
         PriorityQueue<Map.Entry<IRLocalVar, Interval>> liveIntervals = new PriorityQueue<>((lhs, rhs) -> {
             int compareStart = Integer.compare(lhs.getValue().start_, rhs.getValue().start_);
@@ -197,6 +197,7 @@ public class LinearScanRegAllocator {
         for (int i = 0; i < regCnt; i++) {
             free.add(regList_.get(i));
         }
+        HashSet<Register> used = new HashSet<>();
         while (!liveIntervals.isEmpty()) {
             Map.Entry<IRLocalVar, Interval> cur = liveIntervals.poll();
             Iterator<Map.Entry<IRLocalVar, Interval>> iter = active.iterator();
@@ -210,6 +211,7 @@ public class LinearScanRegAllocator {
             }
             if (active.size() < regCnt) {
                 cur.getKey().register_ = free.iterator().next();
+                used.add(cur.getKey().register_);
                 free.remove(cur.getKey().register_);
                 active.add(cur);
                 return;
@@ -230,16 +232,22 @@ public class LinearScanRegAllocator {
                 active.remove(last);
             }
         }
-        node.stackSize_ = (4 * maxFuncArgCnt_ + 4 + node.stackSize_ + 15) / 16 * 16;
+        node.stackSize_ = (4 * maxFuncArgCnt_ + 4 * used.size() + 4 + node.stackSize_ + 15) / 16 * 16;
         for (var spilledVar : spilledVarSet_) {
             spilledVar.stackOffset_ += 4 * Math.max(maxFuncArgCnt_ - 8, 0);
         }
         for (int i = 0; i < node.args_.size(); i++) {
             if (i < 8) {
-                node.args_.get(i).register_ = regList_.get(23 - i);
+                node.args_.get(i).register_ = regList_.get(24 - i);
             }
             else {
-                node.args_.get(i).stackOffset_ = node.stackSize_ + 4 * (i - 8);
+                node.args_.get(i).stackOffset_ = node.stackSize_ + 4 * i;
+            }
+        }
+        int cnt = 0;
+        for (var usedReg : used) {
+            if (usedReg.name_.charAt(0) == 's') {
+                node.usedSRegisterMap_.put(usedReg, 4 * maxFuncArgCnt_ + 4 * (cnt++));
             }
         }
     }

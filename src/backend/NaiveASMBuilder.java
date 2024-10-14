@@ -1,11 +1,8 @@
 package backend;
 
-import java.util.*;
-
 import IR.IRVisitor;
 import IR.inst.*;
 import IR.module.*;
-import IR.type.IRPtrType;
 import IR.value.IRValue;
 import IR.value.constant.*;
 import IR.value.var.IRGlobalVar;
