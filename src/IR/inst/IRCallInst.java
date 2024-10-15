@@ -43,16 +43,16 @@ public class IRCallInst extends IRInst {
     }
 
     @Override
-    public HashSet<IRLocalVar> getUse() {
-        HashSet<IRLocalVar> use = new HashSet<>();
+    public void getUse() {
         for (var arg : args_) {
-            addVar(use, arg);
+            addUseVar(arg);
         }
-        return use;
     }
 
     @Override
-    public HashSet<IRLocalVar> getDef() {
-        return result_ == null ? new HashSet<>() : new HashSet<>(List.of(result_));
+    public void getDef() {
+        if (result_ != null) {
+            def_.add(result_);
+        }
     }
 }

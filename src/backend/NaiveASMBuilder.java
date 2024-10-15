@@ -153,7 +153,7 @@ public class NaiveASMBuilder implements IRVisitor {
         MemAddr addr = loadPtrAddr("t0", node.ptr_);
         if (node.id2_ == -1) {
             loadVar("t1", node.id1_);
-            currentBlock_.instList_.add(new ASMBinaryInst("slli", "t1", "t1", "2"));
+            currentBlock_.instList_.add(new ASMBinaryImmInst("slli", "t1", "t1", 2));
             currentBlock_.instList_.add(new ASMBinaryInst("add", "t0", addr.base_.name_, "t1"));
         }
         else {
@@ -235,11 +235,11 @@ public class NaiveASMBuilder implements IRVisitor {
     }
 
     private void loadRegisterA(int i) {
-        addLw("a" + i, "sp", belong_.stackSize_ - 8 - 4 * i, "t6");
+        addLw("a" + i, "sp", 4 * (Math.max(belong_.maxFuncArgCnt_ - 8, 0) + i), "t6");
     }
 
     private void storeRegisterA(int i) {
-        addSw("a" + i, "sp", belong_.stackSize_ - 8 - 4 * i, "t6");
+        addSw("a" + i, "sp", 4 * (Math.max(belong_.maxFuncArgCnt_ - 8, 0) + i), "t6");
     }
 
     private MemAddr loadPtrAddr(String rd, IRValue value) {

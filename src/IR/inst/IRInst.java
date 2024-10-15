@@ -8,19 +8,22 @@ import IR.value.IRValue;
 import IR.value.var.IRLocalVar;
 
 public abstract class IRInst extends IRNode {
+    public HashSet<IRLocalVar> use_ = new HashSet<>(), def_ = new HashSet<>();
+    public HashSet<IRLocalVar> in_ = new HashSet<>(), out_ = new HashSet<>();
+
     @Override
     public abstract String toString();
 
     @Override
     public abstract void accept(IRVisitor visitor);
 
-    public abstract HashSet<IRLocalVar> getUse();
+    public abstract void getUse();
 
-    public abstract HashSet<IRLocalVar> getDef();
+    public abstract void getDef();
 
-    public static void addVar(HashSet<IRLocalVar> dest, IRValue value) {
+    void addUseVar(IRValue value) {
         if (value instanceof IRLocalVar) {
-            dest.add((IRLocalVar) value);
+            use_.add((IRLocalVar) value);
         }
     }
 }

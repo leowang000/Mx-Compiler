@@ -18,12 +18,11 @@ public class LinearScanRegAllocator {
     }
 
     private HashMap<IRInst, Integer> linearOrderMap_ = null;
-    private HashMap<IRInst, HashSet<IRLocalVar>> useMap_ = null, defMap_ = null, inMap_ = null, outMap_ = null;
     private HashMap<IRInst, ArrayList<IRInst>> succMap_ = null, predMap_ = null;
     private HashMap<IRLocalVar, Interval> liveIntervalMap_ = null;
     HashSet<IRLocalVar> spilledVarSet_ = null;
-    int maxFuncArgCnt_ = 0;
-    private static final ArrayList<Register> regList_;
+    int maxCallLiveOutCnt_ = 0;
+    public static final ArrayList<Register> regList_;
 
     static {
         regList_ = new ArrayList<>();
@@ -57,14 +56,13 @@ public class LinearScanRegAllocator {
 
     private void getLinearOrderAndMaxFuncArgCnt(IRFuncDef node) {
         linearOrderMap_ = new HashMap<>();
-        maxFuncArgCnt_ = 0;
         ArrayList<IRBasicBlock> rpo = node.getRPO();
         int instId = 0;
         for (var block : rpo) {
             for (var inst : block.instList_) {
                 linearOrderMap_.put(inst, instId++);
                 if (inst instanceof IRCallInst) {
-                    maxFuncArgCnt_ = Math.max(maxFuncArgCnt_, ((IRCallInst) inst).args_.size());
+                    node.maxFuncArgCnt_ = Math.max(node.maxFuncArgCnt_, ((IRCallInst) inst).args_.size());
                 }
             }
         }
@@ -117,35 +115,41 @@ public class LinearScanRegAllocator {
                 }
                 HashSet<IRLocalVar> tmpOut = new HashSet<>();
                 for (var succ : succMap_.get(inst)) {
-                    tmpOut.addAll(inMap_.get(succ));
+                    tmpOut.addAll(succ.in_);
                 }
                 HashSet<IRLocalVar> tmpIn = new HashSet<>(tmpOut);
-                tmpIn.removeAll(defMap_.get(inst));
-                tmpIn.addAll(useMap_.get(inst));
-                tmpIn.removeAll(args);
-                if (tmpIn.size() != inMap_.get(inst).size() || tmpOut.size() != outMap_.get(inst).size()) {
+                tmpIn.removeAll(inst.def_);
+                tmpIn.addAll(inst.use_);
+                tmpIn.removeAll(args); // live in and live out do not contain function arguments
+                if (tmpIn.size() != inst.in_.size() || tmpOut.size() != inst.out_.size()) {
                     changed = true;
                 }
-                inMap_.put(inst, tmpIn);
-                outMap_.put(inst, tmpOut);
+                inst.in_.addAll(tmpIn);
+                inst.out_.addAll(tmpOut);
             }
             if (!changed) {
                 break;
             }
         }
+        maxCallLiveOutCnt_ = 0;
+        for (var block : node.body_) {
+            for (var inst : block.instList_) {
+                if (inst instanceof IRCallInst) {
+                    int cnt = 0;
+                    for (var variable : inst.out_) {
+                        cnt += (variable.register_ != null ? 1 : 0);
+                    }
+                    maxCallLiveOutCnt_ = Math.max(maxCallLiveOutCnt_, cnt);
+                }
+            }
+        }
     }
 
     private void executeLiveAnalysisInit(IRFuncDef node, ArrayList<IRRetInst> exitList) {
-        useMap_ = new HashMap<>();
-        defMap_ = new HashMap<>();
-        inMap_ = new HashMap<>();
-        outMap_ = new HashMap<>();
         for (var block : node.body_) {
             for (var inst : block.instList_) {
-                useMap_.put(inst, inst.getUse());
-                defMap_.put(inst, inst.getDef());
-                inMap_.put(inst, new HashSet<>());
-                outMap_.put(inst, new HashSet<>());
+                inst.getUse();
+                inst.getDef();
                 if (inst instanceof IRRetInst) {
                     exitList.add((IRRetInst) inst);
                 }
@@ -158,7 +162,7 @@ public class LinearScanRegAllocator {
         for (var block : node.body_) {
             for (var inst : block.instList_) {
                 int instOrder = linearOrderMap_.get(inst);
-                for (var localVar : inMap_.get(inst)) {
+                for (var localVar : inst.in_) {
                     if (liveIntervalMap_.containsKey(localVar)) {
                         liveIntervalMap_.get(localVar).end_ = Math.max(liveIntervalMap_.get(localVar).end_, instOrder);
                     }
@@ -166,7 +170,7 @@ public class LinearScanRegAllocator {
                         liveIntervalMap_.put(localVar, new Interval(Integer.MAX_VALUE, instOrder));
                     }
                 }
-                for (var localVar : outMap_.get(inst)) {
+                for (var localVar : inst.out_) {
                     if (liveIntervalMap_.containsKey(localVar)) {
                         liveIntervalMap_.get(localVar).start_ =
                             Math.min(liveIntervalMap_.get(localVar).start_, instOrder);
@@ -197,7 +201,7 @@ public class LinearScanRegAllocator {
         for (int i = 0; i < regCnt; i++) {
             free.add(regList_.get(i));
         }
-        HashSet<Register> used = new HashSet<>();
+        HashSet<Register> usedSRegisters = new HashSet<>();
         while (!liveIntervals.isEmpty()) {
             Map.Entry<IRLocalVar, Interval> cur = liveIntervals.poll();
             Iterator<Map.Entry<IRLocalVar, Interval>> iter = active.iterator();
@@ -211,7 +215,9 @@ public class LinearScanRegAllocator {
             }
             if (active.size() < regCnt) {
                 cur.getKey().register_ = free.iterator().next();
-                used.add(cur.getKey().register_);
+                if (cur.getKey().register_.name_.charAt(0) == 's') {
+                    usedSRegisters.add(cur.getKey().register_);
+                }
                 free.remove(cur.getKey().register_);
                 active.add(cur);
                 return;
@@ -232,9 +238,11 @@ public class LinearScanRegAllocator {
                 active.remove(last);
             }
         }
-        node.stackSize_ = (4 * maxFuncArgCnt_ + 4 * used.size() + 4 + node.stackSize_ + 15) / 16 * 16;
+        node.callLiveOutBegin_ =
+            4 * (Math.max(node.maxFuncArgCnt_ - 8, 0) + Math.min(node.args_.size(), 8) + usedSRegisters.size());
+        node.stackSize_ = (node.callLiveOutBegin_ + 4 * maxCallLiveOutCnt_ + node.stackSize_ + 4 + 15) / 16 * 16;
         for (var spilledVar : spilledVarSet_) {
-            spilledVar.stackOffset_ += 4 * Math.max(maxFuncArgCnt_ - 8, 0);
+            spilledVar.stackOffset_ += node.callLiveOutBegin_ + 4 * maxCallLiveOutCnt_;
         }
         for (int i = 0; i < node.args_.size(); i++) {
             if (i < 8) {
@@ -245,10 +253,9 @@ public class LinearScanRegAllocator {
             }
         }
         int cnt = 0;
-        for (var usedReg : used) {
-            if (usedReg.name_.charAt(0) == 's') {
-                node.usedSRegisterMap_.put(usedReg, 4 * maxFuncArgCnt_ + 4 * (cnt++));
-            }
+        for (var usedSRegister : usedSRegisters) {
+            node.usedSRegisterMap_.put(usedSRegister, 4 * (Math.max(node.maxFuncArgCnt_ - 8, 0) +
+                                                           Math.min(node.args_.size(), 8) + (cnt++)));
         }
     }
 }

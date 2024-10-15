@@ -1,10 +1,7 @@
 package IR.inst;
 
-import java.util.HashSet;
-
 import IR.IRVisitor;
 import IR.value.IRValue;
-import IR.value.var.IRLocalVar;
 
 public class IRStoreInst extends IRInst {
     public IRValue value_, pointer_;
@@ -25,15 +22,11 @@ public class IRStoreInst extends IRInst {
     }
 
     @Override
-    public HashSet<IRLocalVar> getUse() {
-        HashSet<IRLocalVar> use = new HashSet<>();
-        addVar(use, value_);
-        addVar(use, pointer_);
-        return use;
+    public void getUse() {
+        addUseVar(value_);
+        addUseVar(pointer_);
     }
 
     @Override
-    public HashSet<IRLocalVar> getDef() {
-        return new HashSet<>();
-    }
+    public void getDef() {}
 }

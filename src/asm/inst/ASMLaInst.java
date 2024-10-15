@@ -6,6 +6,11 @@ public class ASMLaInst extends ASMInst {
     public Register rd_;
     public String label_;
 
+    public ASMLaInst(Register rd, String label) {
+        rd_ = rd;
+        label_ = label;
+    }
+
     public ASMLaInst(String rd, String label) {
         rd_ = new Register(rd);
         label_ = label;

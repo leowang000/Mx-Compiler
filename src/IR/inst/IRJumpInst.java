@@ -1,10 +1,7 @@
 package IR.inst;
 
-import java.util.HashSet;
-
 import IR.IRVisitor;
 import IR.module.IRBasicBlock;
-import IR.value.var.IRLocalVar;
 
 public class IRJumpInst extends IRInst {
     public IRBasicBlock destBlock_;
@@ -24,12 +21,8 @@ public class IRJumpInst extends IRInst {
     }
 
     @Override
-    public HashSet<IRLocalVar> getUse() {
-        return new HashSet<>();
-    }
+    public void getUse() {}
 
     @Override
-    public HashSet<IRLocalVar> getDef() {
-        return new HashSet<>();
-    }
+    public void getDef() {}
 }

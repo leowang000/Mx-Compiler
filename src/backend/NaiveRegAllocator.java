@@ -11,7 +11,6 @@ import asm.util.Register;
 
 public class NaiveRegAllocator implements IRVisitor {
     private IRFuncDef curFuncDef_ = null;
-    private int maxFuncArgCnt_ = 0;
     private HashSet<IRLocalVar> localVarSet_ = null;
 
     @Override
@@ -27,14 +26,15 @@ public class NaiveRegAllocator implements IRVisitor {
     @Override
     public void visit(IRFuncDef node) {
         curFuncDef_ = node;
-        maxFuncArgCnt_ = 0;
         localVarSet_ = new HashSet<>();
         for (var block : node.body_) {
             block.accept(this);
         }
-        node.stackSize_ = (4 * maxFuncArgCnt_ + 4 + node.stackSize_ + 15) / 16 * 16;
+        node.stackSize_ =
+            (4 * (Math.max(node.maxFuncArgCnt_ - 8, 0) + Math.min(node.args_.size(), 8)) + node.stackSize_ + 4 + 15) /
+            16 * 16;
         for (var localVar : localVarSet_) {
-            localVar.stackOffset_ += 4 * Math.max(maxFuncArgCnt_ - 8, 0);
+            localVar.stackOffset_ += 4 * (Math.max(node.maxFuncArgCnt_ - 8, 0) + Math.min(node.args_.size(), 8));
         }
         for (int i = 0; i < node.args_.size(); i++) {
             if (i < 8) {
@@ -80,7 +80,7 @@ public class NaiveRegAllocator implements IRVisitor {
 
     @Override
     public void visit(IRCallInst node) {
-        maxFuncArgCnt_ = Math.max(maxFuncArgCnt_, node.args_.size());
+        curFuncDef_.maxFuncArgCnt_ = Math.max(curFuncDef_.maxFuncArgCnt_, node.args_.size());
         if (node.result_ != null) {
             addLocalVar(node.result_, 4);
         }

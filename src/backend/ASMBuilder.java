@@ -1,8 +1,15 @@
 package backend;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import IR.IRVisitor;
 import IR.inst.*;
 import IR.module.*;
+import IR.value.IRValue;
+import IR.value.constant.*;
+import IR.value.var.IRGlobalVar;
+import IR.value.var.IRLocalVar;
 import asm.inst.*;
 import asm.module.ASMBlock;
 import asm.module.ASMProgram;
@@ -12,6 +19,15 @@ public class ASMBuilder implements IRVisitor {
     private final ASMProgram asmProgram_;
     private ASMBlock currentBlock_ = null;
     private IRFuncDef belong_ = null;
+    private final Register t0_ = new Register("t0"), t1_ = new Register("t1");
+    private final Register ra_ = new Register("ra"), sp_ = new Register("sp");
+    private static final ArrayList<Register> aRegisterList_ = new ArrayList<>();
+
+    static {
+        for (int i = 0; i <= 7; i++) {
+            aRegisterList_.add(LinearScanRegAllocator.regList_.get(24 - i));
+        }
+    }
 
     public ASMBuilder(ASMProgram asmProgram) {
         asmProgram_ = asmProgram;
@@ -70,8 +86,8 @@ public class ASMBuilder implements IRVisitor {
         if (node == belong_.body_.get(0)) {
             currentBlock_ = new ASMBlock(belong_.name_);
             currentBlock_.info_ = "\n\t.globl" + belong_.name_;
-            addAddiInst("sp", "sp", -belong_.stackSize_);
-            addSwInst("ra", "sp", belong_.stackSize_ - 4);
+            addAddiInst(sp_, sp_, -belong_.stackSize_);
+            addSwInst(sp_, sp_, belong_.stackSize_ - 4);
             for (var sReg : belong_.usedSRegisterMap_.keySet()) {
                 storeSRegister(sReg);
             }
@@ -85,110 +101,329 @@ public class ASMBuilder implements IRVisitor {
     }
 
     @Override
-    public void visit(IRAllocaInst node) {
-
-    }
+    public void visit(IRAllocaInst node) {}
 
     @Override
     public void visit(IRBinaryInst node) {
-
+        Register tmp1 = loadVarHint(t0_, node.lhs_);
+        Register tmp2 = loadVarHint(t1_, node.rhs_);
+        String op;
+        switch (node.op_) {
+            case "sdiv":
+                op = "div";
+                break;
+            case "srem":
+                op = "rem";
+                break;
+            case "shl":
+                op = "sll";
+                break;
+            case "ashr":
+                op = "sra";
+                break;
+            default:
+                op = node.op_;
+        }
+        if (node.result_.register_ != null) {
+            currentBlock_.instList_.add(new ASMBinaryInst(op, node.result_.register_, tmp1, tmp2));
+        }
+        else {
+            currentBlock_.instList_.add(new ASMBinaryInst(op, t0_, tmp1, tmp2));
+            addSwInst(t0_, sp_, node.result_.stackOffset_);
+        }
     }
 
     @Override
     public void visit(IRBrInst node) {
-
+        Register tmp = loadVarHint(t0_, node.cond_);
+        currentBlock_.instList_.add(new ASMUnaryBranchInst("bnez", tmp, ".L." + node.trueBlock_.label_));
+        currentBlock_.instList_.add(new ASMJInst(".L." + node.falseBlock_.label_));
+        asmProgram_.text_.blockList_.add(currentBlock_);
     }
 
     @Override
     public void visit(IRCallInst node) {
-
+        for (int i = 0; i < Math.min(belong_.args_.size(), 8); i++) {
+            storeARegister(aRegisterList_.get(i));
+        }
+        HashMap<Register, Integer> storedCallLiveOutIdMap = new HashMap<>();
+        int cnt = 0;
+        for (var variable : node.out_) {
+            if (variable.register_ != null) {
+                int id = cnt++;
+                storedCallLiveOutIdMap.put(variable.register_, id);
+                storeCallLiveOut(variable.register_, id);
+            }
+        }
+        for (int i = 0; i < node.args_.size(); i++) {
+            if (i < 8) {
+                if (node.args_.get(i) instanceof IRLocalVar && ((IRLocalVar) node.args_.get(i)).register_ != null &&
+                    ((IRLocalVar) node.args_.get(i)).register_.name_.charAt(0) == 'a') {
+                    currentBlock_.instList_.add(
+                        new ASMUnaryInst("mv", aRegisterList_.get(i), ((IRLocalVar) node.args_.get(i)).register_));
+                }
+                else {
+                    loadVar(aRegisterList_.get(i), node.args_.get(i));
+                }
+            }
+            else {
+                Register tmp = loadVarHint(t0_, node.args_.get(i));
+                addSwInst(tmp, sp_, 4 * (i - 8));
+            }
+        }
+        currentBlock_.instList_.add(new ASMCallInst(node.funcName_));
+        if (node.result_ != null) {
+            if (node.result_.register_ != null) {
+                currentBlock_.instList_.add(new ASMUnaryInst("mv", node.result_.register_, aRegisterList_.get(0)));
+            }
+            else {
+                addSwInst(t0_, sp_, node.result_.stackOffset_);
+            }
+        }
+        for (var entry : storedCallLiveOutIdMap.entrySet()) {
+            loadCallLiveOut(entry.getKey(), entry.getValue());
+        }
+        for (int i = 0; i < Math.min(belong_.args_.size(), 8); i++) {
+            loadARegister(aRegisterList_.get(i));
+        }
     }
 
     @Override
     public void visit(IRGetElementPtrInst node) {
-
+        Register rd = (node.result_.register_ != null ? node.result_.register_ : t0_);
+        if (node.id2_ == -1) {
+            Register ptr = loadVarHint(t0_, node.ptr_);
+            Register id = loadVarHint(t1_, node.id1_);
+            currentBlock_.instList_.add(new ASMBinaryImmInst("slli", id, id, 2));
+            currentBlock_.instList_.add(new ASMBinaryInst("add", rd, ptr, id));
+        }
+        else {
+            Register ptr = loadVarHint(t1_, node.ptr_);
+            addAddiInst(rd, ptr, 4 * node.id2_);
+        }
+        if (node.result_.register_ == null) {
+            addSwInst(t0_, sp_, node.result_.stackOffset_);
+        }
     }
 
     @Override
     public void visit(IRIcmpInst node) {
-
+        Register tmp1 = loadVarHint(t0_, node.lhs_);
+        Register tmp2 = loadVarHint(t1_, node.rhs_);
+        Register rd = (node.result_.register_ != null ? node.result_.register_ : t0_);
+        switch (node.cond_) {
+            case "eq":
+                currentBlock_.instList_.add(new ASMBinaryInst("xor", rd, tmp1, tmp2));
+                currentBlock_.instList_.add(new ASMUnaryInst("seqz", rd, rd));
+                break;
+            case "ne":
+                currentBlock_.instList_.add(new ASMBinaryInst("xor", rd, tmp1, tmp2));
+                currentBlock_.instList_.add(new ASMUnaryInst("snez", rd, rd));
+                break;
+            case "slt":
+                currentBlock_.instList_.add(new ASMBinaryInst("slt", rd, tmp1, tmp2));
+                break;
+            case "sgt":
+                currentBlock_.instList_.add(new ASMBinaryInst("slt", rd, tmp2, tmp1));
+                break;
+            case "sle":
+                currentBlock_.instList_.add(new ASMBinaryInst("slt", rd, tmp2, tmp1));
+                currentBlock_.instList_.add(new ASMUnaryInst("seqz", rd, rd));
+                break;
+            case "sge":
+                currentBlock_.instList_.add(new ASMBinaryInst("slt", rd, tmp1, tmp2));
+                currentBlock_.instList_.add(new ASMUnaryInst("seqz", rd, rd));
+                break;
+        }
+        if (node.result_.register_ == null) {
+            addSwInst(t0_, sp_, node.result_.stackOffset_);
+        }
     }
 
     @Override
     public void visit(IRJumpInst node) {
-
+        currentBlock_.instList_.add(new ASMJInst(".L." + node.destBlock_.label_));
+        asmProgram_.text_.blockList_.add(currentBlock_);
     }
 
     @Override
     public void visit(IRLoadInst node) {
-
+        Register ptr = loadVarHint(t0_, node.pointer_);
+        if (node.result_.register_ != null) {
+            addLwInst(node.result_.register_, ptr, 0);
+        }
+        else {
+            addLwInst(t1_, ptr, 0);
+            addSwInst(t1_, sp_, node.result_.stackOffset_);
+        }
     }
 
     @Override
     public void visit(IRMoveInst node) {
-
+        if (node.dest_.register_ != null) {
+            loadVar(node.dest_.register_, node.src_);
+        }
+        else {
+            Register tmp = loadVarHint(t0_, node.src_);
+            addSwInst(tmp, sp_, node.dest_.stackOffset_);
+        }
     }
 
     @Override
-    public void visit(IRPhiInst node) {
-
-    }
+    public void visit(IRPhiInst node) {}
 
     @Override
     public void visit(IRRetInst node) {
-
+        if (node.value_ != null) {
+            loadVar(aRegisterList_.get(0), node.value_);
+        }
+        for (var sReg : belong_.usedSRegisterMap_.keySet()) {
+            loadSRegister(sReg);
+        }
+        addLwInst(ra_, sp_, belong_.stackSize_ - 4);
+        addAddiInst(sp_, sp_, belong_.stackSize_);
+        currentBlock_.instList_.add(new ASMRetInst());
+        asmProgram_.text_.blockList_.add(currentBlock_);
     }
 
     @Override
     public void visit(IRStoreInst node) {
+        Register val = loadVarHint(t0_, node.value_);
+        Register ptr = loadVarHint(t1_, node.pointer_);
+        addSwInst(val, ptr, 0);
+    }
 
+    private void loadVar(Register rd, IRValue value) {
+        if (value instanceof IRIntConst) {
+            currentBlock_.instList_.add(new ASMLiInst(rd, ((IRIntConst) value).value_));
+            return;
+        }
+        if (value instanceof IRBoolConst) {
+            currentBlock_.instList_.add(new ASMLiInst(rd, ((IRBoolConst) value).value_ ? 1 : 0));
+            return;
+        }
+        if (value instanceof IRNullConst) {
+            currentBlock_.instList_.add(new ASMLiInst(rd, 0));
+            return;
+        }
+        if (value instanceof IRGlobalVar) {
+            currentBlock_.instList_.add(new ASMLaInst(rd, ((IRGlobalVar) value).name_));
+            return;
+        }
+        IRLocalVar localVar = (IRLocalVar) value;
+        if (localVar.register_ != null) {
+            currentBlock_.instList_.add(new ASMUnaryInst("mv", rd, localVar.register_));
+            return;
+        }
+        if (localVar.isAllocaResult_) {
+            addAddiInst(rd, sp_, localVar.stackOffset_);
+            return;
+        }
+        addLwInst(rd, sp_, localVar.stackOffset_);
+    }
+
+    private Register loadVarHint(Register hint, IRValue value) {
+        if (value instanceof IRIntConst) {
+            currentBlock_.instList_.add(new ASMLiInst(hint, ((IRIntConst) value).value_));
+            return hint;
+        }
+        if (value instanceof IRBoolConst) {
+            currentBlock_.instList_.add(new ASMLiInst(hint, ((IRBoolConst) value).value_ ? 1 : 0));
+            return hint;
+        }
+        if (value instanceof IRNullConst) {
+            currentBlock_.instList_.add(new ASMLiInst(hint, 0));
+            return hint;
+        }
+        if (value instanceof IRGlobalVar) {
+            currentBlock_.instList_.add(new ASMLaInst(hint, ((IRGlobalVar) value).name_));
+            return hint;
+        }
+        IRLocalVar localVar = (IRLocalVar) value;
+        if (localVar.register_ != null) {
+            return localVar.register_;
+        }
+        if (localVar.isAllocaResult_) {
+            addAddiInst(hint, sp_, localVar.stackOffset_);
+            return hint;
+        }
+        addLwInst(hint, sp_, localVar.stackOffset_);
+        return hint;
+    }
+
+    private void loadCallLiveOut(Register reg, int id) {
+        addLwInst(reg, sp_, belong_.stackSize_ + 4 * id);
+    }
+
+    private void storeCallLiveOut(Register reg, int id) {
+        addSwInst(reg, sp_, belong_.stackSize_ + 4 * id);
     }
 
     private void loadSRegister(Register reg) {
-        addLwInst(reg.name_, "sp", belong_.usedSRegisterMap_.get(reg));
+        addLwInst(reg, sp_, belong_.usedSRegisterMap_.get(reg));
     }
 
     private void storeSRegister(Register reg) {
-        addSwInst(reg.name_, "sp", belong_.usedSRegisterMap_.get(reg));
+        addSwInst(reg, sp_, belong_.usedSRegisterMap_.get(reg));
     }
 
-    private void loadRegisterA(Register reg) {
-        addLwInst(reg.name_, "sp", 4 * (reg.name_.charAt(1) - '0'));
+    private void loadARegister(Register reg) {
+        addLwInst(reg, sp_, 4 * (Math.max(belong_.maxFuncArgCnt_ - 8, 0) + (reg.name_.charAt(1) - '0')));
     }
 
-    private void storeRegisterA(Register reg) {
-        addSwInst(reg.name_, "sp", 4 * (reg.name_.charAt(1) - '0'));
+    private void storeARegister(Register reg) {
+        addSwInst(reg, sp_, 4 * (Math.max(belong_.maxFuncArgCnt_ - 8, 0) + (reg.name_.charAt(1) - '0')));
     }
 
-    private void addAddiInst(String rd, String rs, int imm) { // may use t1
+    private void addAddiInst(Register rd, Register rs, int imm) { // may use t0
         if (imm >= -2048 && imm <= 2047) {
             currentBlock_.instList_.add(new ASMBinaryImmInst("addi", rd, rs, imm));
         }
         else {
-            currentBlock_.instList_.add(new ASMLiInst("t1", imm));
-            currentBlock_.instList_.add(new ASMBinaryInst("add", rd, rs, "t1"));
+            if (rd != rs) {
+                currentBlock_.instList_.add(new ASMLiInst(rd, imm));
+                currentBlock_.instList_.add(new ASMBinaryInst("add", rd, rs, rd));
+            }
+            else {
+                currentBlock_.instList_.add(new ASMLiInst(t0_, imm));
+                currentBlock_.instList_.add(new ASMBinaryInst("add", rd, rs, t0_));
+            }
         }
     }
 
-    private void addSwInst(String rs, String base, int imm) { // may use t1
+    private void addSwInst(Register rs, Register base, int imm) { // may use t0
         if (imm >= -2048 && imm <= 2047) {
             currentBlock_.instList_.add(new ASMSwInst(rs, base, imm));
         }
         else {
-            currentBlock_.instList_.add(new ASMLiInst("t1", imm));
-            currentBlock_.instList_.add(new ASMBinaryInst("add", "t1", base, "t1"));
-            currentBlock_.instList_.add(new ASMSwInst(rs, "t1", 0));
+            if (base != rs) {
+                currentBlock_.instList_.add(new ASMLiInst(rs, imm));
+                currentBlock_.instList_.add(new ASMBinaryInst("add", rs, base, rs));
+                currentBlock_.instList_.add(new ASMSwInst(rs, rs, 0));
+            }
+            else {
+                currentBlock_.instList_.add(new ASMLiInst(t0_, imm));
+                currentBlock_.instList_.add(new ASMBinaryInst("add", rs, base, t0_));
+                currentBlock_.instList_.add(new ASMSwInst(rs, rs, 0));
+            }
         }
     }
 
-    private void addLwInst(String rd, String base, int imm) { // may use t1
+    private void addLwInst(Register rd, Register base, int imm) { // may use t0
         if (imm >= -2048 && imm <= 2047) {
             currentBlock_.instList_.add(new ASMLwInst(rd, base, imm));
         }
         else {
-            currentBlock_.instList_.add(new ASMLiInst("t1", imm));
-            currentBlock_.instList_.add(new ASMBinaryInst("add", "t1", base, "t1"));
-            currentBlock_.instList_.add(new ASMLwInst(rd, "t1", 0));
+            if (rd != base) {
+                currentBlock_.instList_.add(new ASMLiInst(rd, imm));
+                currentBlock_.instList_.add(new ASMBinaryInst("add", rd, base, rd));
+                currentBlock_.instList_.add(new ASMLwInst(rd, rd, 0));
+            }
+            else {
+                currentBlock_.instList_.add(new ASMLiInst(t0_, imm));
+                currentBlock_.instList_.add(new ASMBinaryInst("add", rd, base, t0_));
+                currentBlock_.instList_.add(new ASMLwInst(rd, rd, 0));
+            }
         }
     }
 }

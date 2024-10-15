@@ -52,16 +52,14 @@ public class IRPhiInst extends IRInst {
     }
 
     @Override
-    public HashSet<IRLocalVar> getUse() {
-        HashSet<IRLocalVar> use = new HashSet<>();
+    public void getUse() {
         for (var value : info_.values()) {
-            addVar(use, value);
+            addUseVar(value);
         }
-        return use;
     }
 
     @Override
-    public HashSet<IRLocalVar> getDef() {
-        return new HashSet<>(List.of(result_));
+    public void getDef() {
+        def_.add(result_);
     }
 }

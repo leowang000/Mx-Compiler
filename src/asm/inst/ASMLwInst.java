@@ -7,6 +7,11 @@ public class ASMLwInst extends ASMInst {
     public Register rd_;
     public MemAddr addr_;
 
+    public ASMLwInst(Register rd, Register base, int offset) {
+        rd_ = rd;
+        addr_ = new MemAddr(base, offset);
+    }
+
     public ASMLwInst(String rd, String base, int offset) {
         rd_ = new Register(rd);
         addr_ = new MemAddr(base, offset);

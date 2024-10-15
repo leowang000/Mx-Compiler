@@ -7,6 +7,13 @@ public class ASMBinaryImmInst extends ASMInst {
     public Register rd_, rs_;
     public int imm_;
 
+    public ASMBinaryImmInst(String op, Register rd, Register rs, int imm) {
+        op_ = op;
+        rd_ = rd;
+        rs_ = rs;
+        imm_ = imm;
+    }
+
     public ASMBinaryImmInst(String op, String rd, String rs, int imm) {
         op_ = op;
         rd_ = new Register(rd);
