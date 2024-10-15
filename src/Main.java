@@ -20,7 +20,7 @@ public class Main {
             FileOutputStream irNoPhiOutput = new FileOutputStream("test/output-no-phi.ll");
             FileOutputStream asmOutput = new FileOutputStream("test/output.s")
         ) {
-            String input_file_name = "testcases/codegen/e2.mx";
+            String input_file_name = "test/test.mx";
             CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
             // Mx* -> AST
             MxLexer lexer = new MxLexer(input);
@@ -37,15 +37,15 @@ public class Main {
             // AST -> llvm IR
             IRProgram irProgram = new IRProgram();
             new IRBuilder(globalScope, irProgram).visit(ast);
-            new UnusedFunctionRemover().visit(irProgram);
-            new CFGBuilder().visit(irProgram);
-            new DominatorTreeBuilder().visit(irProgram);
             irOutput.write(irProgram.toString().getBytes());
-            new AllocaEliminator().visit(irProgram);
-            irOptimizedOutput.write(irProgram.toString().getBytes());
-            // llvm IR -> riscv32 asm
-            new PhiResolver().visit(irProgram);
-            irNoPhiOutput.write(irProgram.toString().getBytes());
+//            new UnusedFunctionRemover().visit(irProgram);
+//            new CFGBuilder().visit(irProgram);
+//            new DominatorTreeBuilder().visit(irProgram);
+//            new AllocaEliminator().visit(irProgram);
+//            irOptimizedOutput.write(irProgram.toString().getBytes());
+//            // llvm IR -> riscv32 asm
+//            new PhiResolver().visit(irProgram);
+//            irNoPhiOutput.write(irProgram.toString().getBytes());
             new NaiveRegAllocator().visit(irProgram);
             ASMProgram asmProgram = new ASMProgram();
             new NaiveASMBuilder(asmProgram).visit(irProgram);

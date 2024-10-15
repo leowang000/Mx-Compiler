@@ -309,7 +309,8 @@ public class SemanticChecker implements ASTVisitor {
                     throw new SemanticError("Type Mismatch Error", node.pos_);
                 }
             }
-        } node.type_ = new Type(funcType.returnType_);
+        }
+        node.type_ = new Type(funcType.returnType_);
     }
 
     @Override
