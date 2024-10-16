@@ -20,7 +20,7 @@ public class Main {
             FileOutputStream irNoPhiOutput = new FileOutputStream("test/output-no-phi.ll");
             FileOutputStream asmOutput = new FileOutputStream("test/output.s")
         ) {
-            String input_file_name = "test/test.mx";
+            String input_file_name = "testcases/codegen/t55.mx";
             CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
             // Mx* -> AST
             MxLexer lexer = new MxLexer(input);
@@ -48,7 +48,7 @@ public class Main {
             irNoPhiOutput.write(irProgram.toString().getBytes());
             new NaiveRegAllocator().visit(irProgram);
             ASMProgram asmProgram = new ASMProgram();
-            new NaiveASMBuilder(asmProgram).visit(irProgram);
+            new ASMBuilder(asmProgram).visit(irProgram);
             asmOutput.write(asmProgram.toString().getBytes());
         } catch (Error err) {
             err.printStackTrace(System.err);

@@ -85,9 +85,9 @@ public class ASMBuilder implements IRVisitor {
     public void visit(IRBasicBlock node) {
         if (node == belong_.body_.get(0)) {
             currentBlock_ = new ASMBlock(belong_.name_);
-            currentBlock_.info_ = "\n\t.globl" + belong_.name_;
+            currentBlock_.info_ = "\n\t.globl " + belong_.name_;
             addAddiInst(sp_, sp_, -belong_.stackSize_);
-            addSwInst(sp_, sp_, belong_.stackSize_ - 4);
+            addSwInst(ra_, sp_, belong_.stackSize_ - 4);
             for (var sReg : belong_.usedSRegisterMap_.keySet()) {
                 storeSRegister(sReg);
             }
@@ -128,8 +128,8 @@ public class ASMBuilder implements IRVisitor {
             currentBlock_.instList_.add(new ASMBinaryInst(op, node.result_.register_, tmp1, tmp2));
         }
         else {
-            currentBlock_.instList_.add(new ASMBinaryInst(op, t0_, tmp1, tmp2));
-            addSwInst(t0_, sp_, node.result_.stackOffset_);
+            currentBlock_.instList_.add(new ASMBinaryInst(op, t1_, tmp1, tmp2));
+            addSwInst(t1_, sp_, node.result_.stackOffset_);
         }
     }
 
@@ -159,15 +159,16 @@ public class ASMBuilder implements IRVisitor {
             if (i < 8) {
                 if (node.args_.get(i) instanceof IRLocalVar && ((IRLocalVar) node.args_.get(i)).register_ != null &&
                     ((IRLocalVar) node.args_.get(i)).register_.name_.charAt(0) == 'a') {
-                    currentBlock_.instList_.add(
-                        new ASMUnaryInst("mv", aRegisterList_.get(i), ((IRLocalVar) node.args_.get(i)).register_));
+                    addLwInst(aRegisterList_.get(i), sp_, 4 * (Math.max(belong_.maxFuncArgCnt_ - 8, 0) +
+                                                               (((IRLocalVar) node.args_.get(i)).register_.name_.charAt(
+                                                                   1) - '0')));
                 }
                 else {
                     loadVar(aRegisterList_.get(i), node.args_.get(i));
                 }
             }
             else {
-                Register tmp = loadVarHint(t0_, node.args_.get(i));
+                Register tmp = loadVarHint(t1_, node.args_.get(i));
                 addSwInst(tmp, sp_, 4 * (i - 8));
             }
         }
@@ -177,7 +178,7 @@ public class ASMBuilder implements IRVisitor {
                 currentBlock_.instList_.add(new ASMUnaryInst("mv", node.result_.register_, aRegisterList_.get(0)));
             }
             else {
-                addSwInst(t0_, sp_, node.result_.stackOffset_);
+                addSwInst(aRegisterList_.get(0), sp_, node.result_.stackOffset_);
             }
         }
         for (var entry : storedCallLiveOutIdMap.entrySet()) {
@@ -190,19 +191,19 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(IRGetElementPtrInst node) {
-        Register rd = (node.result_.register_ != null ? node.result_.register_ : t0_);
+        Register rd = (node.result_.register_ != null ? node.result_.register_ : t1_);
         if (node.id2_ == -1) {
             Register ptr = loadVarHint(t0_, node.ptr_);
-            Register id = loadVarHint(t1_, node.id1_);
-            currentBlock_.instList_.add(new ASMBinaryImmInst("slli", id, id, 2));
-            currentBlock_.instList_.add(new ASMBinaryInst("add", rd, ptr, id));
+            loadVar(t1_, node.id1_);
+            currentBlock_.instList_.add(new ASMBinaryImmInst("slli", t1_, t1_, 2));
+            currentBlock_.instList_.add(new ASMBinaryInst("add", rd, ptr, t1_));
         }
         else {
             Register ptr = loadVarHint(t1_, node.ptr_);
             addAddiInst(rd, ptr, 4 * node.id2_);
         }
         if (node.result_.register_ == null) {
-            addSwInst(t0_, sp_, node.result_.stackOffset_);
+            addSwInst(t1_, sp_, node.result_.stackOffset_);
         }
     }
 
@@ -210,7 +211,7 @@ public class ASMBuilder implements IRVisitor {
     public void visit(IRIcmpInst node) {
         Register tmp1 = loadVarHint(t0_, node.lhs_);
         Register tmp2 = loadVarHint(t1_, node.rhs_);
-        Register rd = (node.result_.register_ != null ? node.result_.register_ : t0_);
+        Register rd = (node.result_.register_ != null ? node.result_.register_ : t1_);
         switch (node.cond_) {
             case "eq":
                 currentBlock_.instList_.add(new ASMBinaryInst("xor", rd, tmp1, tmp2));
@@ -236,7 +237,7 @@ public class ASMBuilder implements IRVisitor {
                 break;
         }
         if (node.result_.register_ == null) {
-            addSwInst(t0_, sp_, node.result_.stackOffset_);
+            addSwInst(t1_, sp_, node.result_.stackOffset_);
         }
     }
 
@@ -264,8 +265,8 @@ public class ASMBuilder implements IRVisitor {
             loadVar(node.dest_.register_, node.src_);
         }
         else {
-            Register tmp = loadVarHint(t0_, node.src_);
-            addSwInst(tmp, sp_, node.dest_.stackOffset_);
+            loadVar(t1_, node.src_);
+            addSwInst(t1_, sp_, node.dest_.stackOffset_);
         }
     }
 
@@ -396,16 +397,9 @@ public class ASMBuilder implements IRVisitor {
             currentBlock_.instList_.add(new ASMSwInst(rs, base, imm));
         }
         else {
-            if (base != rs) {
-                currentBlock_.instList_.add(new ASMLiInst(rs, imm));
-                currentBlock_.instList_.add(new ASMBinaryInst("add", rs, base, rs));
-                currentBlock_.instList_.add(new ASMSwInst(rs, rs, 0));
-            }
-            else {
-                currentBlock_.instList_.add(new ASMLiInst(t0_, imm));
-                currentBlock_.instList_.add(new ASMBinaryInst("add", rs, base, t0_));
-                currentBlock_.instList_.add(new ASMSwInst(rs, rs, 0));
-            }
+            currentBlock_.instList_.add(new ASMLiInst(t0_, imm));
+            currentBlock_.instList_.add(new ASMBinaryInst("add", t0_, base, t0_));
+            currentBlock_.instList_.add(new ASMSwInst(rs, t0_, 0));
         }
     }
 

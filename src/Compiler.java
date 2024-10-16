@@ -46,7 +46,7 @@ public class Compiler {
                 new PhiResolver().visit(irProgram);
                 new NaiveRegAllocator().visit(irProgram);
                 ASMProgram asmProgram = new ASMProgram();
-                new NaiveASMBuilder(asmProgram).visit(irProgram);
+                new ASMBuilder(asmProgram).visit(irProgram);
                 // output
                 if (args.length > 0 && args[0].equals("-output-builtin")) {
                     System.out.println(Files.readString(Paths.get("src/builtin/builtin.s")));
