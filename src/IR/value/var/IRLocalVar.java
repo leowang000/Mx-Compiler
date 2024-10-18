@@ -8,8 +8,8 @@ public class IRLocalVar extends IRValue {
     public String name_;
     public boolean isAllocaResult_ = false;
     public Register register_ = null;
-    public int stackOffset_ = 0;
-    public static int cnt_ = 0;
+    public int stackOffset_ = -1;
+    private static int cnt_ = 0;
 
     public IRLocalVar(String name, IRType type) {
         super(type);
@@ -19,6 +19,10 @@ public class IRLocalVar extends IRValue {
     @Override
     public String toString() {
         return "%" + name_;
+    }
+
+    public boolean isUnused() {
+        return register_ == null && stackOffset_ == -1;
     }
 
     public static IRLocalVar newLocalVar(IRType type) {

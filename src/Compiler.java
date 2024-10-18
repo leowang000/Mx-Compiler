@@ -44,7 +44,7 @@ public class Compiler {
                 }
                 // llvm IR -> riscv32 asm
                 new PhiResolver().visit(irProgram);
-                new NaiveRegAllocator().visit(irProgram);
+                new LinearScanRegAllocator().visit(irProgram);
                 ASMProgram asmProgram = new ASMProgram();
                 new ASMBuilder(asmProgram).visit(irProgram);
                 // output

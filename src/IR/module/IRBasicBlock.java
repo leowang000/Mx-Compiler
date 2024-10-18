@@ -56,7 +56,7 @@ public class IRBasicBlock extends IRNode {
 
     private static class Node {
         public IRValue value_;
-        Node from_ = null;
+        public Node from_ = null;
         public ArrayList<Node> to_ = new ArrayList<>();
 
         public Node(IRValue value) {

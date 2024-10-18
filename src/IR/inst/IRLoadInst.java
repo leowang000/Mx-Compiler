@@ -29,5 +29,7 @@ public class IRLoadInst extends IRInst {
     }
 
     @Override
-    public void getDef() {}
+    public void getDef() {
+        def_.add(result_);
+    }
 }

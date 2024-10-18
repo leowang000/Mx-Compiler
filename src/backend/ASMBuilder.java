@@ -1,7 +1,6 @@
 package backend;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 import IR.IRVisitor;
 import IR.inst.*;
@@ -14,6 +13,7 @@ import asm.inst.*;
 import asm.module.ASMBlock;
 import asm.module.ASMProgram;
 import asm.util.Register;
+import util.Pair;
 
 public class ASMBuilder implements IRVisitor {
     private final ASMProgram asmProgram_;
@@ -59,7 +59,6 @@ public class ASMBuilder implements IRVisitor {
     public void visit(IRFuncDef node) {
         belong_ = node;
         for (var block : node.body_) {
-            block.insertMoveInst();
             block.accept(this);
         }
     }
@@ -105,6 +104,9 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(IRBinaryInst node) {
+        if (node.result_.isUnused()) {
+            return;
+        }
         Register tmp1 = loadVarHint(t0_, node.lhs_);
         Register tmp2 = loadVarHint(t1_, node.rhs_);
         String op;
@@ -149,31 +151,30 @@ public class ASMBuilder implements IRVisitor {
         HashMap<Register, Integer> storedCallLiveOutIdMap = new HashMap<>();
         int cnt = 0;
         for (var variable : node.out_) {
-            if (variable.register_ != null) {
+            if (variable != node.result_ && variable.register_ != null) {
                 int id = cnt++;
                 storedCallLiveOutIdMap.put(variable.register_, id);
                 storeCallLiveOut(variable.register_, id);
             }
         }
-        for (int i = 0; i < node.args_.size(); i++) {
-            if (i < 8) {
-                if (node.args_.get(i) instanceof IRLocalVar && ((IRLocalVar) node.args_.get(i)).register_ != null &&
-                    ((IRLocalVar) node.args_.get(i)).register_.name_.charAt(0) == 'a') {
-                    addLwInst(aRegisterList_.get(i), sp_, 4 * (Math.max(belong_.maxFuncArgCnt_ - 8, 0) +
-                                                               (((IRLocalVar) node.args_.get(i)).register_.name_.charAt(
-                                                                   1) - '0')));
-                }
-                else {
-                    loadVar(aRegisterList_.get(i), node.args_.get(i));
-                }
+        for (int i = 8; i < node.args_.size(); i++) {
+            Register tmp = loadVarHint(t1_, node.args_.get(i));
+            addSwInst(tmp, sp_, 4 * (i - 8));
+        }
+        ArrayList<Pair<Register, Register>> mvInstList = new ArrayList<>();
+        for (int i = 0; i < Math.min(node.args_.size(), 8); i++) {
+            if ((node.args_.get(i) instanceof IRLocalVar) && ((IRLocalVar) node.args_.get(i)).register_ != null) {
+                mvInstList.add(new Pair<>(aRegisterList_.get(i), ((IRLocalVar) node.args_.get(i)).register_));
             }
-            else {
-                Register tmp = loadVarHint(t1_, node.args_.get(i));
-                addSwInst(tmp, sp_, 4 * (i - 8));
+        }
+        addCallMvInst(mvInstList);
+        for (int i = 0; i < Math.min(node.args_.size(), 8); i++) {
+            if (!(node.args_.get(i) instanceof IRLocalVar) || ((IRLocalVar) node.args_.get(i)).register_ == null) {
+                loadVar(aRegisterList_.get(i), node.args_.get(i));
             }
         }
         currentBlock_.instList_.add(new ASMCallInst(node.funcName_));
-        if (node.result_ != null) {
+        if (node.result_ != null && !node.result_.isUnused()) {
             if (node.result_.register_ != null) {
                 currentBlock_.instList_.add(new ASMUnaryInst("mv", node.result_.register_, aRegisterList_.get(0)));
             }
@@ -191,6 +192,9 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(IRGetElementPtrInst node) {
+        if (node.result_.isUnused()) {
+            return;
+        }
         Register rd = (node.result_.register_ != null ? node.result_.register_ : t1_);
         if (node.id2_ == -1) {
             Register ptr = loadVarHint(t0_, node.ptr_);
@@ -209,6 +213,9 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(IRIcmpInst node) {
+        if (node.result_.isUnused()) {
+            return;
+        }
         Register tmp1 = loadVarHint(t0_, node.lhs_);
         Register tmp2 = loadVarHint(t1_, node.rhs_);
         Register rd = (node.result_.register_ != null ? node.result_.register_ : t1_);
@@ -249,6 +256,9 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(IRLoadInst node) {
+        if (node.result_.isUnused()) {
+            return;
+        }
         Register ptr = loadVarHint(t0_, node.pointer_);
         if (node.result_.register_ != null) {
             addLwInst(node.result_.register_, ptr, 0);
@@ -261,6 +271,9 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(IRMoveInst node) {
+        if (node.dest_.isUnused()) {
+            return;
+        }
         if (node.dest_.register_ != null) {
             loadVar(node.dest_.register_, node.src_);
         }
@@ -353,11 +366,11 @@ public class ASMBuilder implements IRVisitor {
     }
 
     private void loadCallLiveOut(Register reg, int id) {
-        addLwInst(reg, sp_, belong_.stackSize_ + 4 * id);
+        addLwInst(reg, sp_, belong_.callLiveOutBegin_ + 4 * id);
     }
 
     private void storeCallLiveOut(Register reg, int id) {
-        addSwInst(reg, sp_, belong_.stackSize_ + 4 * id);
+        addSwInst(reg, sp_, belong_.callLiveOutBegin_ + 4 * id);
     }
 
     private void loadSRegister(Register reg) {
@@ -419,5 +432,90 @@ public class ASMBuilder implements IRVisitor {
                 currentBlock_.instList_.add(new ASMLwInst(rd, rd, 0));
             }
         }
+    }
+
+    private static class Node {
+        public Register reg_;
+        public Node from_ = null;
+        public ArrayList<Node> to_ = new ArrayList<>();
+
+        public Node(Register reg) {
+            reg_ = reg;
+        }
+    }
+
+    private void addCallMvInst(ArrayList<Pair<Register, Register>> mvInstList) {
+        HashMap<Register, Node> nodes = new HashMap<>();
+        for (var moveInst : mvInstList) {
+            if (!nodes.containsKey(moveInst.first_)) {
+                nodes.put(moveInst.first_, new Node(moveInst.first_));
+            }
+            if (!nodes.containsKey(moveInst.second_)) {
+                nodes.put(moveInst.second_, new Node(moveInst.second_));
+            }
+        }
+        for (var moveInst : mvInstList) {
+            nodes.get(moveInst.first_).from_ = nodes.get(moveInst.second_);
+            nodes.get(moveInst.second_).to_.add(nodes.get(moveInst.first_));
+        }
+        ArrayList<ArrayList<Node>> cycles = new ArrayList<>();
+        HashSet<Node> srcNodes = new HashSet<>();
+        HashSet<Node> visited = new HashSet<>();
+        for (var node : nodes.values()) {
+            if (visited.contains(node)) {
+                continue;
+            }
+            HashSet<Node> currentRoundVisited = new HashSet<>();
+            Node cur = node;
+            while (cur != null && !visited.contains(cur)) {
+                visited.add(cur);
+                currentRoundVisited.add(cur);
+                if (cur.from_ == null) {
+                    srcNodes.add(cur);
+                }
+                cur = cur.from_;
+            }
+            if (cur == null || !currentRoundVisited.contains(cur)) {
+                continue;
+            }
+            ArrayList<Node> cycle = new ArrayList<>(List.of(cur));
+            Node cycleEntry = cur;
+            cur = cur.from_;
+            while (cur != cycleEntry) {
+                cycle.add(cur);
+                cur = cur.from_;
+            }
+            cycles.add(cycle);
+        }
+        for (var node : srcNodes) {
+            for (var to : node.to_) {
+                addCallMvInst(to);
+            }
+        }
+        for (var cycle : cycles) {
+            for (int i = 0; i < cycle.size(); i++) {
+                for (var to : cycle.get(i).to_) {
+                    if (to == cycle.get(i == 0 ? cycle.size() - 1 : i - 1)) {
+                        continue;
+                    }
+                    addCallMvInst(to);
+                }
+            }
+            if (cycle.size() == 1) {
+                continue;
+            }
+            currentBlock_.instList_.add(new ASMUnaryInst("mv", t0_, cycle.get(0).reg_));
+            for (int i = 0; i < cycle.size() - 1; i++) {
+                currentBlock_.instList_.add(new ASMUnaryInst("mv", cycle.get(i).reg_, cycle.get(i + 1).reg_));
+            }
+            currentBlock_.instList_.add(new ASMUnaryInst("mv", cycle.get(cycle.size() - 1).reg_, t0_));
+        }
+    }
+
+    private void addCallMvInst(Node node) {
+        for (var to : node.to_) {
+            addCallMvInst(to);
+        }
+        currentBlock_.instList_.add(new ASMUnaryInst("mv", node.reg_, node.from_.reg_));
     }
 }

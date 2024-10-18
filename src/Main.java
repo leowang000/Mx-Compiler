@@ -18,9 +18,9 @@ public class Main {
             FileOutputStream irOutput = new FileOutputStream("test/output.ll");
             FileOutputStream irOptimizedOutput = new FileOutputStream("test/output-optimized.ll");
             FileOutputStream irNoPhiOutput = new FileOutputStream("test/output-no-phi.ll");
-            FileOutputStream asmOutput = new FileOutputStream("test/output.s")
+            FileOutputStream asmOutput = new FileOutputStream("test/output.s");
         ) {
-            String input_file_name = "testcases/codegen/t55.mx";
+            String input_file_name = "testcases/optim/sha_1.mx";
             CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
             // Mx* -> AST
             MxLexer lexer = new MxLexer(input);
@@ -46,7 +46,7 @@ public class Main {
             // llvm IR -> riscv32 asm
             new PhiResolver().visit(irProgram);
             irNoPhiOutput.write(irProgram.toString().getBytes());
-            new NaiveRegAllocator().visit(irProgram);
+            new LinearScanRegAllocator().visit(irProgram);
             ASMProgram asmProgram = new ASMProgram();
             new ASMBuilder(asmProgram).visit(irProgram);
             asmOutput.write(asmProgram.toString().getBytes());
