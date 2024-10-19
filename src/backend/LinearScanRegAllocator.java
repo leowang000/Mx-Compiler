@@ -244,6 +244,7 @@ public class LinearScanRegAllocator {
                 }
             }
         }
+        usedSRegisters.clear();
         node.callLiveOutBegin_ =
             4 * (Math.max(node.maxFuncArgCnt_ - 8, 0) + Math.min(node.args_.size(), 8) + usedSRegisters.size());
         node.stackSize_ = (node.callLiveOutBegin_ + 4 * maxCallLiveOutCnt_ + node.stackSize_ + 4 + 15) / 16 * 16;
