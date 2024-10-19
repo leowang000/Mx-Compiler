@@ -87,9 +87,6 @@ public class ASMBuilder implements IRVisitor {
             currentBlock_.info_ = "\n\t.globl " + belong_.name_;
             addAddiInst(sp_, sp_, -belong_.stackSize_);
             addSwInst(ra_, sp_, belong_.stackSize_ - 4);
-            for (var sReg : belong_.usedSRegisterMap_.keySet()) {
-                storeSRegister(sReg);
-            }
         }
         else {
             currentBlock_ = new ASMBlock(".L." + node.label_);
@@ -291,9 +288,6 @@ public class ASMBuilder implements IRVisitor {
         if (node.value_ != null) {
             loadVar(aRegisterList_.get(0), node.value_);
         }
-        for (var sReg : belong_.usedSRegisterMap_.keySet()) {
-            loadSRegister(sReg);
-        }
         addLwInst(ra_, sp_, belong_.stackSize_ - 4);
         addAddiInst(sp_, sp_, belong_.stackSize_);
         currentBlock_.instList_.add(new ASMRetInst());
@@ -371,14 +365,6 @@ public class ASMBuilder implements IRVisitor {
 
     private void storeCallLiveOut(Register reg, int id) {
         addSwInst(reg, sp_, belong_.callLiveOutBegin_ + 4 * id);
-    }
-
-    private void loadSRegister(Register reg) {
-        addLwInst(reg, sp_, belong_.usedSRegisterMap_.get(reg));
-    }
-
-    private void storeSRegister(Register reg) {
-        addSwInst(reg, sp_, belong_.usedSRegisterMap_.get(reg));
     }
 
     private void loadARegister(Register reg) {
