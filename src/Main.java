@@ -37,7 +37,6 @@ public class Main {
             // AST -> llvm IR
             IRProgram irProgram = new IRProgram();
             new IRBuilder(globalScope, irProgram).visit(ast);
-
             irOutput.write(irProgram.toString().getBytes());
             new UnusedFunctionRemover().visit(irProgram);
             new CFGBuilder().visit(irProgram);
@@ -46,7 +45,6 @@ public class Main {
             irOptimizedOutput.write(irProgram.toString().getBytes());
             // llvm IR -> riscv32 asm
             new PhiResolver().visit(irProgram);
-
             irNoPhiOutput.write(irProgram.toString().getBytes());
             new LinearScanRegAllocator().visit(irProgram);
             ASMProgram asmProgram = new ASMProgram();

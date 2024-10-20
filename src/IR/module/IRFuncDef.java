@@ -6,6 +6,7 @@ import IR.IRNode;
 import IR.IRVisitor;
 import IR.type.IRType;
 import IR.value.var.IRLocalVar;
+import asm.util.Register;
 
 public class IRFuncDef extends IRNode {
     public String name_;
@@ -13,6 +14,7 @@ public class IRFuncDef extends IRNode {
     public ArrayList<IRLocalVar> args_ = new ArrayList<>();
     public ArrayList<IRBasicBlock> body_ = new ArrayList<>();
     public int stackSize_ = 0, maxFuncArgCnt_ = 0, callLiveOutBegin_ = 0;
+    public HashMap<Register, Integer> usedSRegisterMap_ = new HashMap<>();
 
     public IRFuncDef(String name, IRType returnType) {
         name_ = name;
