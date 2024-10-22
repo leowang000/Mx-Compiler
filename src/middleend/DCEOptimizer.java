@@ -33,7 +33,7 @@ public class DCEOptimizer {
             Iterator<IRLocalVar> iter = workList.iterator();
             IRLocalVar localVar = iter.next();
             iter.remove();
-            if (!useMap.get(localVar).isEmpty()) {
+            if (useMap.containsKey(localVar) && !useMap.get(localVar).isEmpty()) {
                 continue;
             }
             IRInst def = defMap.get(localVar);
