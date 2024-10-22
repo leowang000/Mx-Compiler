@@ -52,14 +52,10 @@ public class IRPhiInst extends IRInst {
     }
 
     @Override
-    public void getUse() {
+    public void getUseAndDef() {
         for (var value : info_.values()) {
             addUseVar(value);
         }
-    }
-
-    @Override
-    public void getDef() {
         def_.add(result_);
     }
 }

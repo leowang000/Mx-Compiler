@@ -21,8 +21,5 @@ public class IRJumpInst extends IRInst {
     }
 
     @Override
-    public void getUse() {}
-
-    @Override
-    public void getDef() {}
+    public void getUseAndDef() {}
 }

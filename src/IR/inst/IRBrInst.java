@@ -25,10 +25,7 @@ public class IRBrInst extends IRInst {
     }
 
     @Override
-    public void getUse() {
+    public void getUseAndDef() {
         addUseVar(cond_);
     }
-
-    @Override
-    public void getDef() {}
 }

@@ -43,14 +43,10 @@ public class IRCallInst extends IRInst {
     }
 
     @Override
-    public void getUse() {
+    public void getUseAndDef() {
         for (var arg : args_) {
             addUseVar(arg);
         }
-    }
-
-    @Override
-    public void getDef() {
         if (result_ != null) {
             def_.add(result_);
         }

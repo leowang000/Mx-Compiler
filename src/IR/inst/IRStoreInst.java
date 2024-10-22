@@ -22,11 +22,8 @@ public class IRStoreInst extends IRInst {
     }
 
     @Override
-    public void getUse() {
+    public void getUseAndDef() {
         addUseVar(value_);
         addUseVar(pointer_);
     }
-
-    @Override
-    public void getDef() {}
 }

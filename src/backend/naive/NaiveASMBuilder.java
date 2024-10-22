@@ -1,4 +1,4 @@
-package backend;
+package backend.naive;
 
 import IR.IRVisitor;
 import IR.inst.*;
@@ -53,7 +53,6 @@ public class NaiveASMBuilder implements IRVisitor {
         addSw("ra", "sp", node.stackSize_ - 4, "t6");
         isFirstBlock_ = true;
         for (var block : node.body_) {
-            block.insertMoveInst();
             block.accept(this);
             isFirstBlock_ = false;
         }

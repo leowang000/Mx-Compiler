@@ -24,12 +24,8 @@ public class IRMoveInst extends IRInst {
     }
 
     @Override
-    public void getUse() {
+    public void getUseAndDef() {
         addUseVar(src_);
-    }
-
-    @Override
-    public void getDef() {
         def_.add(dest_);
     }
 }

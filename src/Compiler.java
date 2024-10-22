@@ -1,3 +1,4 @@
+import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -16,6 +17,8 @@ import util.scope.GlobalScope;
 
 public class Compiler {
     public static void main(String[] args) throws Exception {
+        boolean llvm = args.length > 0 && args[0].equals("-emit-llvm");
+        boolean oj = (args.length > 0 && args[0].equals("-output-builtin"));
         CharStream input = CharStreams.fromStream(System.in);
         try {
             // Mx* -> AST
@@ -34,11 +37,16 @@ public class Compiler {
                 // AST -> llvm IR
                 IRProgram irProgram = new IRProgram();
                 new IRBuilder(globalScope, irProgram).visit(ast);
-                new UnusedFunctionRemover().visit(irProgram);
-                new CFGBuilder().visit(irProgram);
-                new DominatorTreeBuilder().visit(irProgram);
                 new AllocaEliminator().visit(irProgram);
-                if (args.length > 0 && args[0].equals("-emit-llvm")) {
+                new DCEOptimizer().visit(irProgram);
+                new UnusedFunctionRemover().visit(irProgram);
+                if (!oj) {
+                    try (FileOutputStream log = new FileOutputStream("test/log.txt", true)) {
+                        log.write(irProgram.toString().getBytes());
+                        log.write(System.lineSeparator().getBytes());
+                    }
+                }
+                if (llvm) {
                     System.out.print(irProgram);
                     return;
                 }
@@ -48,10 +56,16 @@ public class Compiler {
                 ASMProgram asmProgram = new ASMProgram();
                 new ASMBuilder(asmProgram).visit(irProgram);
                 // output
-                if (args.length > 0 && args[0].equals("-output-builtin")) {
+                if (oj) {
                     System.out.println(Files.readString(Paths.get("src/builtin/builtin.s")));
                 }
                 System.out.print(asmProgram);
+                if (!oj) {
+                    try (FileOutputStream log = new FileOutputStream("test/log.txt", true)) {
+                        log.write(asmProgram.toString().getBytes());
+                        log.write(System.lineSeparator().getBytes());
+                    }
+                }
             } catch (Exception ignored) {
                 // undefined behaviour exists
             }

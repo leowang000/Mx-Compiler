@@ -19,6 +19,8 @@ public class AllocaEliminator implements IRVisitor {
 
     @Override
     public void visit(IRProgram node) {
+        new CFGBuilder().visit(node);
+        new DominatorTreeBuilder().visit(node);
         for (var funcDef : node.funcDefMap_.values()) {
             funcDef.accept(this);
         }

@@ -41,13 +41,9 @@ public class IRGetElementPtrInst extends IRInst {
     }
 
     @Override
-    public void getUse() {
+    public void getUseAndDef() {
         addUseVar(ptr_);
         addUseVar(id1_);
-    }
-
-    @Override
-    public void getDef() {
         def_.add(result_);
     }
 }

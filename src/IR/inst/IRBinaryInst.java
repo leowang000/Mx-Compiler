@@ -27,13 +27,9 @@ public class IRBinaryInst extends IRInst {
     }
 
     @Override
-    public void getUse() {
+    public void getUseAndDef() {
         addUseVar(lhs_);
         addUseVar(rhs_);
-    }
-
-    @Override
-    public void getDef() {
         def_.add(result_);
     }
 }

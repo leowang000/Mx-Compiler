@@ -24,10 +24,7 @@ public class IRRetInst extends IRInst {
     }
 
     @Override
-    public void getUse() {
+    public void getUseAndDef() {
         addUseVar(value_);
     }
-
-    @Override
-    public void getDef() {}
 }

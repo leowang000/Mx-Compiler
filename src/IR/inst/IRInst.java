@@ -17,9 +17,7 @@ public abstract class IRInst extends IRNode {
     @Override
     public abstract void accept(IRVisitor visitor);
 
-    public abstract void getUse();
-
-    public abstract void getDef();
+    public abstract void getUseAndDef();
 
     void addUseVar(IRValue value) {
         if (value instanceof IRLocalVar) {

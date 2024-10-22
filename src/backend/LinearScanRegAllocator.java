@@ -18,38 +18,32 @@ public class LinearScanRegAllocator {
     }
 
     private HashMap<IRInst, Integer> linearOrderMap_ = null;
-    private HashMap<IRInst, ArrayList<IRInst>> succMap_ = null, predMap_ = null;
     private HashMap<IRLocalVar, Interval> liveIntervalMap_ = null;
-    HashSet<IRLocalVar> spilledVarSet_ = null;
     int maxCallLiveOutCnt_ = 0;
-    public static final ArrayList<Register> regList_;
+    public static final ArrayList<Register> freeRegisters_;
 
     static {
-        regList_ = new ArrayList<>();
+        freeRegisters_ = new ArrayList<>();
         for (int i = 2; i <= 6; i++) {
-            regList_.add(new Register("t" + i));
+            freeRegisters_.add(new Register("t" + i));
         }
         for (int i = 0; i <= 11; i++) {
-            regList_.add(new Register("s" + i));
+            freeRegisters_.add(new Register("s" + i));
         }
         for (int i = 7; i >= 0; i--) {
-            regList_.add(new Register("a" + i));
+            freeRegisters_.add(new Register("a" + i));
         }
     }
 
     public void visit(IRProgram node) {
+        new LiveAnalyzer().visit(node);
         for (var funcDef : node.funcDefMap_.values()) {
             visit(funcDef);
         }
     }
 
     private void visit(IRFuncDef node) {
-        for (var block : node.body_) {
-            block.insertMoveInst();
-        }
         getLinearOrderAndMaxFuncArgCnt(node);
-        buildInstGraph(node);
-        executeLiveAnalysis(node);
         getLiveInterval(node);
         allocateRegister(node);
     }
@@ -63,87 +57,6 @@ public class LinearScanRegAllocator {
                 linearOrderMap_.put(inst, instId++);
                 if (inst instanceof IRCallInst) {
                     node.maxFuncArgCnt_ = Math.max(node.maxFuncArgCnt_, ((IRCallInst) inst).args_.size());
-                }
-            }
-        }
-    }
-
-    private void buildInstGraph(IRFuncDef node) {
-        succMap_ = new HashMap<>();
-        predMap_ = new HashMap<>();
-        for (int i = 0; i < node.body_.size(); i++) {
-            IRBasicBlock block = node.body_.get(i);
-            for (int j = 0; j < block.instList_.size(); j++) {
-                IRInst inst = block.instList_.get(j);
-                predMap_.put(inst, new ArrayList<>());
-                if (j < block.instList_.size() - 1) {
-                    succMap_.put(inst, new ArrayList<>(List.of(block.instList_.get(j + 1))));
-                    continue;
-                }
-                ArrayList<IRInst> succs = new ArrayList<>();
-                if (inst instanceof IRRetInst && i < node.body_.size() - 1) {
-                    succs.add(node.body_.get(i + 1).instList_.get(0));
-                }
-                else if (inst instanceof IRJumpInst) {
-                    succs.add(((IRJumpInst) inst).destBlock_.instList_.get(0));
-                }
-                else if (inst instanceof IRBrInst) {
-                    succs.add(((IRBrInst) inst).trueBlock_.instList_.get(0));
-                    succs.add(((IRBrInst) inst).falseBlock_.instList_.get(0));
-                }
-                succMap_.put(inst, succs);
-            }
-        }
-        for (var entry : succMap_.entrySet()) {
-            for (var succ : entry.getValue()) {
-                predMap_.get(succ).add(entry.getKey());
-            }
-        }
-    }
-
-    private void executeLiveAnalysis(IRFuncDef node) {
-        ArrayList<IRRetInst> exitList = new ArrayList<>();
-        executeLiveAnalysisInitialization(node, exitList);
-        HashSet<IRLocalVar> args = new HashSet<>(node.args_);
-        while (true) {
-            boolean changed = false;
-            ArrayDeque<IRInst> queue = new ArrayDeque<>(exitList);
-            HashSet<IRInst> visited = new HashSet<>(exitList);
-            while (!queue.isEmpty()) {
-                IRInst inst = queue.poll();
-                for (var pred : predMap_.get(inst)) {
-                    if (!visited.contains(pred)) {
-                        visited.add(pred);
-                        queue.offer(pred);
-                    }
-                }
-                HashSet<IRLocalVar> tmpOut = new HashSet<>();
-                for (var succ : succMap_.get(inst)) {
-                    tmpOut.addAll(succ.in_);
-                }
-                HashSet<IRLocalVar> tmpIn = new HashSet<>(tmpOut);
-                tmpIn.removeAll(inst.def_);
-                tmpIn.addAll(inst.use_);
-                tmpIn.removeAll(args); // live in and live out do not contain function arguments
-                if (tmpIn.size() != inst.in_.size() || tmpOut.size() != inst.out_.size()) {
-                    changed = true;
-                }
-                inst.in_ = tmpIn;
-                inst.out_ = tmpOut;
-            }
-            if (!changed) {
-                break;
-            }
-        }
-    }
-
-    private void executeLiveAnalysisInitialization(IRFuncDef node, ArrayList<IRRetInst> exitList) {
-        for (var block : node.body_) {
-            for (var inst : block.instList_) {
-                inst.getUse();
-                inst.getDef();
-                if (inst instanceof IRRetInst) {
-                    exitList.add((IRRetInst) inst);
                 }
             }
         }
@@ -176,7 +89,7 @@ public class LinearScanRegAllocator {
     }
 
     private void allocateRegister(IRFuncDef node) {
-        spilledVarSet_ = new HashSet<>();
+        HashSet<IRLocalVar> spilledVarSet = new HashSet<>();
         PriorityQueue<Map.Entry<IRLocalVar, Interval>> liveIntervals = new PriorityQueue<>((lhs, rhs) -> {
             int compareStart = Integer.compare(lhs.getValue().start_, rhs.getValue().start_);
             if (compareStart != 0) {
@@ -191,7 +104,7 @@ public class LinearScanRegAllocator {
         int regCnt = 17 + Math.max(8 - node.args_.size(), 0);
         HashSet<Register> free = new HashSet<>();
         for (int i = 0; i < regCnt; i++) {
-            free.add(regList_.get(i));
+            free.add(freeRegisters_.get(i));
         }
         HashSet<Register> usedSRegisters = new HashSet<>();
         while (!liveIntervals.isEmpty()) {
@@ -218,14 +131,14 @@ public class LinearScanRegAllocator {
             if (last.getValue().end_ <= cur.getValue().end_) {
                 cur.getKey().stackOffset_ = node.stackSize_;
                 node.stackSize_ += 4;
-                spilledVarSet_.add(cur.getKey());
+                spilledVarSet.add(cur.getKey());
             }
             else {
                 cur.getKey().register_ = last.getKey().register_;
                 last.getKey().register_ = null;
                 last.getKey().stackOffset_ = node.stackSize_;
                 node.stackSize_ += 4;
-                spilledVarSet_.add(last.getKey());
+                spilledVarSet.add(last.getKey());
                 active.add(cur);
                 active.remove(last);
             }
@@ -248,12 +161,12 @@ public class LinearScanRegAllocator {
         node.callLiveOutBegin_ =
             4 * (Math.max(node.maxFuncArgCnt_ - 8, 0) + Math.min(node.args_.size(), 8) + usedSRegisters.size());
         node.stackSize_ = (node.callLiveOutBegin_ + 4 * maxCallLiveOutCnt_ + node.stackSize_ + 4 + 15) / 16 * 16;
-        for (var spilledVar : spilledVarSet_) {
+        for (var spilledVar : spilledVarSet) {
             spilledVar.stackOffset_ += node.callLiveOutBegin_ + 4 * maxCallLiveOutCnt_;
         }
         for (int i = 0; i < node.args_.size(); i++) {
             if (i < 8) {
-                node.args_.get(i).register_ = regList_.get(24 - i);
+                node.args_.get(i).register_ = freeRegisters_.get(24 - i);
             }
             else {
                 node.args_.get(i).stackOffset_ = node.stackSize_ + 4 * (i - 8);

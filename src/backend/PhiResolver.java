@@ -32,6 +32,9 @@ public class PhiResolver {
             newBody.addAll(splitBlockMap_.get(block));
         }
         node.body_ = newBody;
+        for (var block : node.body_) {
+            block.insertMoveInst();
+        }
     }
 
     private void visit(IRBasicBlock node) {

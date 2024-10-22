@@ -23,10 +23,7 @@ public class IRAllocaInst extends IRInst {
     }
 
     @Override
-    public void getUse() {}
-
-    @Override
-    public void getDef() {
+    public void getUseAndDef() {
         def_.add(result_);
     }
 }

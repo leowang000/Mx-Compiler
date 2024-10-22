@@ -25,7 +25,7 @@ public class ASMBuilder implements IRVisitor {
 
     static {
         for (int i = 0; i <= 7; i++) {
-            aRegisterList_.add(LinearScanRegAllocator.regList_.get(24 - i));
+            aRegisterList_.add(LinearScanRegAllocator.freeRegisters_.get(24 - i));
         }
     }
 
