@@ -18,9 +18,9 @@ public class Main {
             FileOutputStream irOutput = new FileOutputStream("test/output.ll");
             FileOutputStream irOptimizedOutput = new FileOutputStream("test/output-optimized.ll");
             FileOutputStream irNoPhiOutput = new FileOutputStream("test/output-no-phi.ll");
-            FileOutputStream asmOutput = new FileOutputStream("test/output.s");
+            FileOutputStream asmOutput = new FileOutputStream("test/output.s")
         ) {
-            String input_file_name = "testcases/sema/scope-package/scope-2.mx";
+            String input_file_name = "test/test.mx";
             CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
             // Mx* -> AST
             MxLexer lexer = new MxLexer(input);

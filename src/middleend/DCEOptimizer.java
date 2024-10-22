@@ -15,7 +15,7 @@ public class DCEOptimizer {
         }
     }
 
-    public void visit(IRFuncDef node) {
+    private void visit(IRFuncDef node) {
         HashSet<IRLocalVar> workList = new HashSet<>();
         HashMap<IRLocalVar, IRInst> defMap = new HashMap<>();
         HashMap<IRLocalVar, HashSet<IRInst>> useMap = new HashMap<>();

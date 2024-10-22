@@ -15,7 +15,7 @@ public class LiveAnalyzer {
         }
     }
 
-    public void visit(IRFuncDef node) {
+    private void visit(IRFuncDef node) {
         buildInstGraph(node);
         executeLiveAnalysis(node);
     }

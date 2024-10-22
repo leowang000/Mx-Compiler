@@ -11,7 +11,7 @@ public class DominatorTreeBuilder {
         }
     }
 
-    public void visit(IRFuncDef node) {
+    private void visit(IRFuncDef node) {
         ArrayList<IRBasicBlock> rpo = node.getRPO();
         ArrayList<BitSet> doms = new ArrayList<>();
         for (int i = 0; i < node.body_.size(); i++) {

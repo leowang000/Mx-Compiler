@@ -15,7 +15,7 @@ public class AllocaEliminator implements IRVisitor {
     private final Stack<HashMap<IRLocalVar, Integer>> defCntMap_ = new Stack<>();
     private HashMap<IRLocalVar, IRValue> valueMap_ = null;
     private ArrayList<IRInst> newInstList_ = null;
-    private int phi_cnt_ = 0;
+    private int phiCnt_ = 0;
 
     @Override
     public void visit(IRProgram node) {
@@ -71,7 +71,7 @@ public class AllocaEliminator implements IRVisitor {
     private void insertPhi(IRBasicBlock block, IRLocalVar localVar) {
         for (var frontier : block.domFrontiers_) {
             if (!frontier.phiMap_.containsKey(localVar)) {
-                IRLocalVar phiResult = new IRLocalVar(String.format("phi.%s.%d", localVar.name_, phi_cnt_++),
+                IRLocalVar phiResult = new IRLocalVar(String.format("phi.%s.%d", localVar.name_, phiCnt_++),
                                                       ((IRPtrType) localVar.type_).getDereferenceType());
                 frontier.phiMap_.put(localVar, new IRPhiInst(phiResult, frontier));
                 insertPhi(frontier, localVar);

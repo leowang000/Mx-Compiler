@@ -14,6 +14,10 @@ public class IRPhiInst extends IRInst {
     public IRLocalVar result_;
     public HashMap<IRBasicBlock, IRValue> info_ = new HashMap<>();
 
+    public IRPhiInst(IRLocalVar result) {
+        result_ = result;
+    }
+
     public IRPhiInst(IRLocalVar result, IRBasicBlock belong) {
         result_ = result;
         for (var block : belong.preds_) {
