@@ -104,9 +104,14 @@ public class IRBuilder implements ASTVisitor {
         IRType type = new IRPtrType(new IRStructType(node.name_));
         IRLocalVar localVar = new IRLocalVar("this", type);
         funcDef.args_.add(localVar);
+        endBlock_ = false;
         for (var stmt : node.stmtList_) {
             stmt.accept(this);
+            if (endBlock_) {
+                break;
+            }
         }
+        endBlock_ = false;
         irProgram_.funcDefMap_.put(funcName, funcDef);
         scope_ = scope_.parent_;
     }

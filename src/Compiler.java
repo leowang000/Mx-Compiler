@@ -17,7 +17,7 @@ import util.scope.GlobalScope;
 
 public class Compiler {
     public static void main(String[] args) throws Exception {
-        boolean llvm = args.length > 0 && args[0].equals("-emit-llvm");
+        boolean llvm = (args.length > 0 && args[0].equals("-emit-llvm"));
         boolean oj = (args.length > 0 && args[0].equals("-output-builtin"));
         CharStream input = CharStreams.fromStream(System.in);
         try {
