@@ -45,6 +45,7 @@ public class Main {
             new InlineOptimizer(35).visit(irProgram);
             irInlineOnceOutput.write(irProgram.toString().getBytes());
             new InlineOptimizer(25).visit(irProgram);
+            new InlineOptimizer(25).visit(irProgram);
             irInlineOutput.write(irProgram.toString().getBytes());
             new DCEOptimizer().visit(irProgram);
             new UnusedFunctionRemover().visit(irProgram);
