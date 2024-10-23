@@ -12,7 +12,7 @@ public class InlineOptimizer {
     private IRProgram irProgram_ = null;
     private final HashSet<String> shouldInline_ = new HashSet<>();
     private final HashMap<IRCallInst, InlineInfo> inlineInfoMap_ = new HashMap<>();
-    private int inlineCnt = 0;
+    private static int inlineCnt = 0;
 
     public InlineOptimizer(int maxInlineLineCount) {
         kMaxInlineLineCount = maxInlineLineCount;
@@ -23,6 +23,14 @@ public class InlineOptimizer {
         for (var funcDef : node.funcDefMap_.values()) {
             if (getLineCount(funcDef) < kMaxInlineLineCount) {
                 shouldInline_.add(funcDef.name_);
+            }
+            for (var block : funcDef.body_) {
+                for (var inst : block.phiMap_.values()) {
+                    inst.getUseAndDef();
+                }
+                for (var inst : block.instList_) {
+                    inst.getUseAndDef();
+                }
             }
         }
         for (var funcDef : node.funcDefMap_.values()) {
