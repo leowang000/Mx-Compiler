@@ -16,11 +16,13 @@ public class Main {
     public static void main(String[] args) throws Exception {
         try (
             FileOutputStream irOutput = new FileOutputStream("test/output.ll");
+            FileOutputStream irBeforeInlineOutput = new FileOutputStream("test/output-before-inline.ll");
+            FileOutputStream irInlineOutput = new FileOutputStream("test/output-inline.ll");
             FileOutputStream irOptimizedOutput = new FileOutputStream("test/output-optimized.ll");
             FileOutputStream irNoPhiOutput = new FileOutputStream("test/output-no-phi.ll");
             FileOutputStream asmOutput = new FileOutputStream("test/output.s")
         ) {
-            String input_file_name = "test/test.mx";
+            String input_file_name = "testcases/optim-new/efficiency.mx";
             CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
             // Mx* -> AST
             MxLexer lexer = new MxLexer(input);
@@ -39,6 +41,10 @@ public class Main {
             new IRBuilder(globalScope, irProgram).visit(ast);
             irOutput.write(irProgram.toString().getBytes());
             new AllocaEliminator().visit(irProgram);
+            new DCEOptimizer().visit(irProgram);
+            irBeforeInlineOutput.write(irProgram.toString().getBytes());
+            new InlineOptimizer(35).visit(irProgram);
+            irInlineOutput.write(irProgram.toString().getBytes());
             new DCEOptimizer().visit(irProgram);
             new UnusedFunctionRemover().visit(irProgram);
             irOptimizedOutput.write(irProgram.toString().getBytes());

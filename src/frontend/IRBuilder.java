@@ -60,6 +60,21 @@ public class IRBuilder implements ASTVisitor {
         initBlock_.instList_.add(new IRRetInst(null));
         initFunc.body_.add(initBlock_);
         irProgram_.funcDefMap_.put("builtin.init", initFunc);
+        for (var funcDef : irProgram_.funcDefMap_.values()) {
+            for (var block : funcDef.body_) {
+                for (var inst : block.instList_) {
+                    if (inst instanceof IRCallInst) {
+                        IRCallInst callInst = (IRCallInst) inst;
+                        for (int i = 0; i < callInst.args_.size(); i++) {
+                            IRValue arg = callInst.args_.get(i);
+                            if (arg instanceof IRNullConst) {
+                                arg.type_ = irProgram_.funcDefMap_.get(callInst.funcName_).args_.get(i).type_;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -125,7 +140,7 @@ public class IRBuilder implements ASTVisitor {
                 (isMemberFunction ? String.format("struct.%s.%s", scope_.getClassName(), node.name_) : node.name_);
         IRFuncDef funcDef = new IRFuncDef(funcName, returnType);
         currentBlock_ = new IRBasicBlock(funcName + "_entry", funcDef);
-        if (node.name_.equals("main")) {
+        if (scope_.parent_ == gScope_ && node.name_.equals("main")) {
             currentBlock_.instList_.add(new IRCallInst(null, "builtin.init"));
         }
         if (isMemberFunction) {

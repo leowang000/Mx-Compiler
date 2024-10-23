@@ -39,6 +39,8 @@ public class Compiler {
                 new IRBuilder(globalScope, irProgram).visit(ast);
                 new AllocaEliminator().visit(irProgram);
                 new DCEOptimizer().visit(irProgram);
+                new InlineOptimizer(35).visit(irProgram);
+                new DCEOptimizer().visit(irProgram);
                 new UnusedFunctionRemover().visit(irProgram);
                 if (!oj) {
                     try (FileOutputStream log = new FileOutputStream("test/log.txt", true)) {

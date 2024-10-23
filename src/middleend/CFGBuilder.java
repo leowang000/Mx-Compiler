@@ -20,6 +20,10 @@ public class CFGBuilder implements IRVisitor {
     @Override
     public void visit(IRFuncDef node) {
         for (var block : node.body_) {
+            block.preds_.clear();
+            block.succs_.clear();
+        }
+        for (var block : node.body_) {
             block.accept(this);
         }
     }

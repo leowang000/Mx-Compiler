@@ -62,8 +62,9 @@ judge_one_testcase() {
         print_red_msg "Fail to pass testcase: '$1'."
         return 1
     else
+        TOTAL_CYCLES=$(grep 'Total cycles:' "$TESTDIR/reimu_output.txt" | awk '{print $3}')
         rm -rf $TESTDIR
-        print_green_msg "Pass testcases: '$1'."
+        print_green_msg "Pass testcases: '$1'. Total cycles: $TOTAL_CYCLES."
         return 0
     fi
 }
