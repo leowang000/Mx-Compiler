@@ -1,5 +1,6 @@
 package IR.module;
 
+import java.io.FileOutputStream;
 import java.util.*;
 
 import IR.IRNode;

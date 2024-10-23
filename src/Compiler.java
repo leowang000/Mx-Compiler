@@ -41,7 +41,6 @@ public class Compiler {
                 new DCEOptimizer().visit(irProgram);
                 new InlineOptimizer(35).visit(irProgram);
                 new InlineOptimizer(25).visit(irProgram);
-                new InlineOptimizer(25).visit(irProgram);
                 new DCEOptimizer().visit(irProgram);
                 new UnusedFunctionRemover().visit(irProgram);
                 if (!oj) {
