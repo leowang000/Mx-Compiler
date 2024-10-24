@@ -3,8 +3,7 @@ package middleend;
 import java.util.*;
 
 import IR.inst.*;
-import IR.module.IRFuncDef;
-import IR.module.IRProgram;
+import IR.module.*;
 import IR.type.IRPtrType;
 import IR.value.IRValue;
 import IR.value.var.IRGlobalVar;
@@ -14,8 +13,10 @@ public class GlobalToLocalOptimizer {
     private IRProgram irProgram_;
     private final HashMap<IRFuncDef, Node> funcNodeMap_ = new HashMap<>();
     private final HashMap<ShrunkNode, HashSet<IRGlobalVar>> changedVarMap_ = new HashMap<>();
-    private final HashMap<IRFuncDef, HashSet<IRGlobalVar>> usedVarMap_ = new HashMap<>();
-    private static int globalConstantCnt_ = 0;
+    private final HashMap<ShrunkNode, HashSet<IRGlobalVar>> appearingVarMap_ = new HashMap<>();
+    private final HashMap<IRFuncDef, HashSet<IRGlobalVar>> loadedVarMap_ = new HashMap<>();
+    private ArrayList<ShrunkNode> topo_ = null;
+    private static int globalConstantCnt_ = 0, globalVarCnt_ = 0, tmpVarCnt_ = 0;
 
     private static class Node {
         public IRFuncDef funcDef_;
@@ -37,11 +38,15 @@ public class GlobalToLocalOptimizer {
         buildCallGraph();
         kosaraju();
         for (var funcDef : node.funcDefMap_.values()) {
-            getUsedGlobalVars(funcDef);
+            getLoadedGlobalVars(funcDef);
         }
-        getChangedGlobalVars();
+        getTopo();
+        getChangedAndAppearingGlobalVars();
         for (var funcDef : node.funcDefMap_.values()) {
             globalConstantOptimize(funcDef);
+        }
+        for (var funcDef : node.funcDefMap_.values()) {
+            globalVariableOptimize(funcDef);
         }
     }
 
@@ -111,23 +116,23 @@ public class GlobalToLocalOptimizer {
         }
     }
 
-    private void getUsedGlobalVars(IRFuncDef funcDef) {
-        HashSet<IRGlobalVar> usedGlobalVarSet = new HashSet<>();
+    private void getLoadedGlobalVars(IRFuncDef funcDef) {
+        HashSet<IRGlobalVar> loadedGlobalVarSet = new HashSet<>();
         for (var block : funcDef.body_) {
             for (var inst : block.instList_) {
                 if (inst instanceof IRLoadInst) {
                     IRLoadInst loadInst = (IRLoadInst) inst;
                     if (loadInst.pointer_ instanceof IRGlobalVar) {
-                        usedGlobalVarSet.add((IRGlobalVar) loadInst.pointer_);
+                        loadedGlobalVarSet.add((IRGlobalVar) loadInst.pointer_);
                     }
                 }
             }
         }
-        usedVarMap_.put(funcDef, usedGlobalVarSet);
+        loadedVarMap_.put(funcDef, loadedGlobalVarSet);
     }
 
-    private void getChangedGlobalVars() {
-        ArrayList<ShrunkNode> topo = new ArrayList<>();
+    private void getTopo() {
+        topo_ = new ArrayList<>();
         HashMap<ShrunkNode, Integer> in = new HashMap<>();
         HashSet<ShrunkNode> srcSet = new HashSet<>();
         for (var funcDef : irProgram_.funcDefMap_.values()) {
@@ -140,7 +145,7 @@ public class GlobalToLocalOptimizer {
         while (!srcSet.isEmpty()) {
             ShrunkNode shrunkNode = srcSet.iterator().next();
             srcSet.remove(shrunkNode);
-            topo.add(shrunkNode);
+            topo_.add(shrunkNode);
             for (var succ : shrunkNode.succSet_) {
                 in.put(succ, in.get(succ) - 1);
                 if (in.get(succ) == 0) {
@@ -148,13 +153,16 @@ public class GlobalToLocalOptimizer {
                 }
             }
         }
-        for (int i = topo.size() - 1; i >= 0; i--) {
-            ShrunkNode shrunkNode = topo.get(i);
+    }
+
+    private void getChangedAndAppearingGlobalVars() {
+        for (int i = topo_.size() - 1; i >= 0; i--) {
+            ShrunkNode shrunkNode = topo_.get(i);
             HashSet<IRGlobalVar> changedGlobalVarSet = new HashSet<>();
+            HashSet<IRGlobalVar> appearingGlobalVarSet = new HashSet<>();
             for (var succ : shrunkNode.succSet_) {
-                if (succ != shrunkNode) {
-                    changedGlobalVarSet.addAll(changedVarMap_.get(succ));
-                }
+                changedGlobalVarSet.addAll(changedVarMap_.get(succ));
+                appearingGlobalVarSet.addAll(appearingVarMap_.get(succ));
             }
             for (var node : shrunkNode.nodeSet_) {
                 for (var block : node.funcDef_.body_) {
@@ -163,12 +171,20 @@ public class GlobalToLocalOptimizer {
                             IRStoreInst storeInst = (IRStoreInst) inst;
                             if (storeInst.pointer_ instanceof IRGlobalVar) {
                                 changedGlobalVarSet.add((IRGlobalVar) storeInst.pointer_);
+                                appearingGlobalVarSet.add((IRGlobalVar) storeInst.pointer_);
+                            }
+                        }
+                        if (inst instanceof IRLoadInst) {
+                            IRLoadInst loadInst = (IRLoadInst) inst;
+                            if (loadInst.pointer_ instanceof IRGlobalVar) {
+                                appearingGlobalVarSet.add((IRGlobalVar) loadInst.pointer_);
                             }
                         }
                     }
                 }
             }
             changedVarMap_.put(shrunkNode, changedGlobalVarSet);
+            appearingVarMap_.put(shrunkNode, appearingGlobalVarSet);
         }
     }
 
@@ -177,15 +193,15 @@ public class GlobalToLocalOptimizer {
         ArrayList<IRLoadInst> loadConstantInstList = new ArrayList<>();
         HashMap<IRGlobalVar, IRLocalVar> globalVarValueMap = new HashMap<>();
         HashMap<IRLocalVar, IRLocalVar> substitutionMap = new HashMap<>();
-        for (var usedGlobalVar : usedVarMap_.get(funcDef)) {
-            if (changedGlobalVarSet.contains(usedGlobalVar)) {
+        for (var loadedGlobalVar : loadedVarMap_.get(funcDef)) {
+            if (changedGlobalVarSet.contains(loadedGlobalVar)) {
                 continue;
             }
             IRLocalVar localVar =
-                new IRLocalVar(String.format("global_constant.%s.%d", usedGlobalVar.name_, globalConstantCnt_++),
-                               ((IRPtrType) usedGlobalVar.type_).getDereferenceType());
-            loadConstantInstList.add(new IRLoadInst(localVar, usedGlobalVar));
-            globalVarValueMap.put(usedGlobalVar, localVar);
+                new IRLocalVar(String.format("global_constant.%s.%d", loadedGlobalVar.name_, globalConstantCnt_++),
+                               ((IRPtrType) loadedGlobalVar.type_).getDereferenceType());
+            loadConstantInstList.add(new IRLoadInst(localVar, loadedGlobalVar));
+            globalVarValueMap.put(loadedGlobalVar, localVar);
         }
         for (var block : funcDef.body_) {
             ArrayList<IRInst> newInstList = new ArrayList<>();
@@ -273,5 +289,76 @@ public class GlobalToLocalOptimizer {
             }
         }
         return value;
+    }
+
+    public void globalVariableOptimize(IRFuncDef funcDef) {
+        if (funcNodeMap_.get(funcDef).belong_.nodeSet_.size() > 1) {
+            return;
+        }
+        HashSet<IRGlobalVar> storedGlobalVarSet = new HashSet<>();
+        for (var block : funcDef.body_) {
+            for (var inst : block.instList_) {
+                if (inst instanceof IRStoreInst) {
+                    IRStoreInst storeInst = (IRStoreInst) inst;
+                    if (storeInst.pointer_ instanceof IRGlobalVar) {
+                        storedGlobalVarSet.add((IRGlobalVar) storeInst.pointer_);
+                    }
+                }
+            }
+        }
+        for (var succ : funcNodeMap_.get(funcDef).belong_.succSet_) {
+            storedGlobalVarSet.removeAll(appearingVarMap_.get(succ));
+        }
+        storedGlobalVarSet.removeIf(globalVar -> !loadedVarMap_.get(funcDef).contains(globalVar));
+        HashMap<IRBasicBlock, ArrayList<IRInst>> returnBLockMap = new HashMap<>();
+        for (var block : funcDef.body_) {
+            if (block.instList_.get(block.instList_.size() - 1) instanceof IRRetInst) {
+                returnBLockMap.put(block, new ArrayList<>());
+            }
+        }
+        ArrayList<IRInst> entryTmpInstList = new ArrayList<>();
+        HashMap<IRGlobalVar, IRLocalVar> substitutionMap = new HashMap<>();
+        for (var globalVar : storedGlobalVarSet) {
+            IRLocalVar newVar =
+                new IRLocalVar(String.format("global.%s.%d", globalVar.name_, globalVarCnt_++), globalVar.type_);
+            IRLocalVar entryTmpVar =
+                new IRLocalVar(String.format("global_tmp.%s.%d", globalVar.name_, tmpVarCnt_++), globalVar.type_);
+            entryTmpInstList.add(new IRAllocaInst(newVar));
+            entryTmpInstList.add(new IRLoadInst(entryTmpVar, globalVar));
+            entryTmpInstList.add(new IRStoreInst(entryTmpVar, newVar));
+            for (var returnTmpInstList : returnBLockMap.values()) {
+                IRLocalVar returnTmpVar =
+                    new IRLocalVar(String.format("global_tmp.%s.%d", globalVar.name_, tmpVarCnt_++), globalVar.type_);
+                returnTmpInstList.add(new IRLoadInst(returnTmpVar, newVar));
+                returnTmpInstList.add(new IRStoreInst(returnTmpVar, globalVar));
+            }
+            substitutionMap.put(globalVar, newVar);
+        }
+        for (var block : funcDef.body_) {
+            for (var inst : block.instList_) {
+                if (inst instanceof IRStoreInst) {
+                    IRStoreInst storeInst = (IRStoreInst) inst;
+                    if (storeInst.pointer_ instanceof IRGlobalVar) {
+                        IRGlobalVar globalVar = (IRGlobalVar) storeInst.pointer_;
+                        if (substitutionMap.containsKey(globalVar)) {
+                            storeInst.pointer_ = substitutionMap.get(globalVar);
+                        }
+                    }
+                }
+                if (inst instanceof IRLoadInst) {
+                    IRLoadInst loadInst = (IRLoadInst) inst;
+                    if (loadInst.pointer_ instanceof IRGlobalVar) {
+                        IRGlobalVar globalVar = (IRGlobalVar) loadInst.pointer_;
+                        if (substitutionMap.containsKey(globalVar)) {
+                            loadInst.pointer_ = substitutionMap.get(globalVar);
+                        }
+                    }
+                }
+            }
+        }
+        funcDef.body_.get(0).instList_.addAll(0, entryTmpInstList);
+        for (var entry : returnBLockMap.entrySet()) {
+            entry.getKey().instList_.addAll(entry.getKey().instList_.size() - 1, entry.getValue());
+        }
     }
 }
