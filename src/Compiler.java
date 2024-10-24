@@ -37,6 +37,7 @@ public class Compiler {
                 // AST -> llvm IR
                 IRProgram irProgram = new IRProgram();
                 new IRBuilder(globalScope, irProgram).visit(ast);
+                new GlobalToLocalOptimizer().visit(irProgram);
                 new AllocaEliminator().visit(irProgram);
                 new DCEOptimizer().visit(irProgram);
                 new InlineOptimizer(35).visit(irProgram);

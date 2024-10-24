@@ -16,6 +16,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
         try (
             FileOutputStream irOutput = new FileOutputStream("test/output.ll");
+            FileOutputStream irGlobalToLocalOutput = new FileOutputStream("test/output-global-to-local.ll");
             FileOutputStream irOptimizedOutput = new FileOutputStream("test/output-optimized.ll");
             FileOutputStream irNoPhiOutput = new FileOutputStream("test/output-no-phi.ll");
             FileOutputStream asmOutput = new FileOutputStream("test/output.s")
@@ -38,10 +39,12 @@ public class Main {
             IRProgram irProgram = new IRProgram();
             new IRBuilder(globalScope, irProgram).visit(ast);
             irOutput.write(irProgram.toString().getBytes());
+            new GlobalToLocalOptimizer().visit(irProgram);
+            irGlobalToLocalOutput.write(irProgram.toString().getBytes());
             new AllocaEliminator().visit(irProgram);
             new DCEOptimizer().visit(irProgram);
             new InlineOptimizer(35).visit(irProgram);
-            new InlineOptimizer(25).visit(irProgram);
+            new InlineOptimizer(35).visit(irProgram);
             new DCEOptimizer().visit(irProgram);
             new UnusedFunctionRemover().visit(irProgram);
             irOptimizedOutput.write(irProgram.toString().getBytes());
