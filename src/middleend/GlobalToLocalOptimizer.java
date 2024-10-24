@@ -29,8 +29,7 @@ public class GlobalToLocalOptimizer {
 
     private static class ShrunkNode {
         public HashSet<Node> nodeSet_ = new HashSet<>();
-        public ShrunkNode pred_ = null;
-        public HashSet<ShrunkNode> succSet_ = new HashSet<>();
+        public HashSet<ShrunkNode> succSet_ = new HashSet<>(), predSet_ = new HashSet<>();
     }
 
     public void visit(IRProgram node) {
@@ -40,7 +39,7 @@ public class GlobalToLocalOptimizer {
         for (var funcDef : node.funcDefMap_.values()) {
             getUsedGlobalVars(funcDef);
         }
-        getChangedGlobalVars(funcNodeMap_.get(irProgram_.funcDefMap_.get("main")).belong_);
+        getChangedGlobalVars();
         for (var funcDef : node.funcDefMap_.values()) {
             globalConstantOptimize(funcDef);
         }
@@ -83,7 +82,7 @@ public class GlobalToLocalOptimizer {
             for (var succ : node.succSet_) {
                 if (node.belong_ != succ.belong_) {
                     node.belong_.succSet_.add(succ.belong_);
-                    succ.belong_.pred_ = node.belong_;
+                    succ.belong_.predSet_.add(node.belong_);
                 }
             }
         }
@@ -127,25 +126,50 @@ public class GlobalToLocalOptimizer {
         usedVarMap_.put(funcDef, usedGlobalVarSet);
     }
 
-    private HashSet<IRGlobalVar> getChangedGlobalVars(ShrunkNode shrunkNode) {
-        HashSet<IRGlobalVar> changedGlobalVarSet = new HashSet<>();
-        for (var succ : shrunkNode.succSet_) {
-            changedGlobalVarSet.addAll(getChangedGlobalVars(succ));
+    private void getChangedGlobalVars() {
+        ArrayList<ShrunkNode> topo = new ArrayList<>();
+        HashMap<ShrunkNode, Integer> in = new HashMap<>();
+        HashSet<ShrunkNode> srcSet = new HashSet<>();
+        for (var funcDef : irProgram_.funcDefMap_.values()) {
+            ShrunkNode shrunkNode = funcNodeMap_.get(funcDef).belong_;
+            in.put(shrunkNode, shrunkNode.predSet_.size());
+            if (shrunkNode.predSet_.isEmpty()) {
+                srcSet.add(shrunkNode);
+            }
         }
-        for (var node : shrunkNode.nodeSet_) {
-            for (var block : node.funcDef_.body_) {
-                for (var inst : block.instList_) {
-                    if (inst instanceof IRStoreInst) {
-                        IRStoreInst storeInst = (IRStoreInst) inst;
-                        if (storeInst.pointer_ instanceof IRGlobalVar) {
-                            changedGlobalVarSet.add((IRGlobalVar) storeInst.pointer_);
+        while (!srcSet.isEmpty()) {
+            ShrunkNode shrunkNode = srcSet.iterator().next();
+            srcSet.remove(shrunkNode);
+            topo.add(shrunkNode);
+            for (var succ : shrunkNode.succSet_) {
+                in.put(succ, in.get(succ) - 1);
+                if (in.get(succ) == 0) {
+                    srcSet.add(succ);
+                }
+            }
+        }
+        for (int i = topo.size() - 1; i >= 0; i--) {
+            ShrunkNode shrunkNode = topo.get(i);
+            HashSet<IRGlobalVar> changedGlobalVarSet = new HashSet<>();
+            for (var succ : shrunkNode.succSet_) {
+                if (succ != shrunkNode) {
+                    changedGlobalVarSet.addAll(changedVarMap_.get(succ));
+                }
+            }
+            for (var node : shrunkNode.nodeSet_) {
+                for (var block : node.funcDef_.body_) {
+                    for (var inst : block.instList_) {
+                        if (inst instanceof IRStoreInst) {
+                            IRStoreInst storeInst = (IRStoreInst) inst;
+                            if (storeInst.pointer_ instanceof IRGlobalVar) {
+                                changedGlobalVarSet.add((IRGlobalVar) storeInst.pointer_);
+                            }
                         }
                     }
                 }
             }
+            changedVarMap_.put(shrunkNode, changedGlobalVarSet);
         }
-        changedVarMap_.put(shrunkNode, changedGlobalVarSet);
-        return changedGlobalVarSet;
     }
 
     private void globalConstantOptimize(IRFuncDef funcDef) {
