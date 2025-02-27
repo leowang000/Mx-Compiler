@@ -44,6 +44,8 @@ public class IRCallInst extends IRInst {
 
     @Override
     public void getUseAndDef() {
+        use_ = new HashSet<>();
+        def_ = new HashSet<>();
         for (var arg : args_) {
             addUseVar(arg);
         }

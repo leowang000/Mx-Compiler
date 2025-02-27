@@ -17,11 +17,13 @@ public class Main {
         try (
             FileOutputStream irOutput = new FileOutputStream("test/output.ll");
             FileOutputStream irGlobalToLocalOutput = new FileOutputStream("test/output-global-to-local.ll");
+            FileOutputStream irNoAllocaOutput = new FileOutputStream("test/output-no-alloca.ll");
+            FileOutputStream irADCEOutput = new FileOutputStream("test/output-ADCE.ll");
             FileOutputStream irOptimizedOutput = new FileOutputStream("test/output-optimized.ll");
             FileOutputStream irNoPhiOutput = new FileOutputStream("test/output-no-phi.ll");
             FileOutputStream asmOutput = new FileOutputStream("test/output.s")
         ) {
-            String input_file_name = "testcases/codegen/e7.mx";
+            String input_file_name = "testcases/codegen/e1.mx";
             CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
             // Mx* -> AST
             MxLexer lexer = new MxLexer(input);
@@ -42,7 +44,9 @@ public class Main {
             new GlobalToLocalOptimizer().visit(irProgram);
             irGlobalToLocalOutput.write(irProgram.toString().getBytes());
             new AllocaEliminator().visit(irProgram);
-            new DCEOptimizer().visit(irProgram);
+            irNoAllocaOutput.write(irProgram.toString().getBytes());
+            new ADCEOptimizer().visit(irProgram);
+            irADCEOutput.write(irProgram.toString().getBytes());
             new InlineOptimizer(35).visit(irProgram);
             new InlineOptimizer(35).visit(irProgram);
             new DCEOptimizer().visit(irProgram);

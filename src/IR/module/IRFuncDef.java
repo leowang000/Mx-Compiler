@@ -63,14 +63,10 @@ public class IRFuncDef extends IRNode {
         po.add(node);
     }
 
-    public ArrayList<IRBasicBlock> getAntiRPO() {
+    public ArrayList<IRBasicBlock> getAntiRPO(IRBasicBlock sink) {
         ArrayList<IRBasicBlock> res = new ArrayList<>();
         HashSet<IRBasicBlock> visited = new HashSet<>();
-        for (var block : body_) {
-            if (block.instList_.get(block.instList_.size() - 1) instanceof IRRetInst) {
-                getAntiPostOrder(block, res, visited);
-            }
-        }
+        getAntiPostOrder(sink, res, visited);
         Collections.reverse(res);
         return res;
     }

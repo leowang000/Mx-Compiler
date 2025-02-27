@@ -1,5 +1,7 @@
 package IR.inst;
 
+import java.util.HashSet;
+
 import IR.IRVisitor;
 import IR.type.IRPtrType;
 import IR.value.IRValue;
@@ -42,6 +44,8 @@ public class IRGetElementPtrInst extends IRInst {
 
     @Override
     public void getUseAndDef() {
+        use_ = new HashSet<>();
+        def_ = new HashSet<>();
         addUseVar(ptr_);
         addUseVar(id1_);
         def_.add(result_);

@@ -1,5 +1,7 @@
 package IR.inst;
 
+import java.util.HashSet;
+
 import IR.IRVisitor;
 import IR.module.IRBasicBlock;
 import IR.value.IRValue;
@@ -26,6 +28,8 @@ public class IRBrInst extends IRInst {
 
     @Override
     public void getUseAndDef() {
+        use_ = new HashSet<>();
+        def_ = new HashSet<>();
         addUseVar(cond_);
     }
 }
