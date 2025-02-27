@@ -321,14 +321,15 @@ public class GlobalToLocalOptimizer {
         for (var globalVar : storedGlobalVarSet) {
             IRLocalVar newVar =
                 new IRLocalVar(String.format("global.%s.%d", globalVar.name_, globalVarCnt_++), globalVar.type_);
-            IRLocalVar entryTmpVar =
-                new IRLocalVar(String.format("global_tmp.%s.%d", globalVar.name_, tmpVarCnt_++), globalVar.type_);
+            IRLocalVar entryTmpVar = new IRLocalVar(String.format("global_tmp.%s.%d", globalVar.name_, tmpVarCnt_++),
+                                                    ((IRPtrType) globalVar.type_).getDereferenceType());
             entryTmpInstList.add(new IRAllocaInst(newVar));
             entryTmpInstList.add(new IRLoadInst(entryTmpVar, globalVar));
             entryTmpInstList.add(new IRStoreInst(entryTmpVar, newVar));
             for (var returnTmpInstList : returnBLockMap.values()) {
                 IRLocalVar returnTmpVar =
-                    new IRLocalVar(String.format("global_tmp.%s.%d", globalVar.name_, tmpVarCnt_++), globalVar.type_);
+                    new IRLocalVar(String.format("global_tmp.%s.%d", globalVar.name_, tmpVarCnt_++),
+                                   ((IRPtrType) globalVar.type_).getDereferenceType());
                 returnTmpInstList.add(new IRLoadInst(returnTmpVar, newVar));
                 returnTmpInstList.add(new IRStoreInst(returnTmpVar, globalVar));
             }

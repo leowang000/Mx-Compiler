@@ -5,33 +5,51 @@ import java.util.*;
 import IR.module.*;
 
 public class DominatorTreeBuilder {
-    public void visit(IRProgram node) {
+    public void visit(IRProgram node, boolean antiDom) {
         for (var funcDef : node.funcDefMap_.values()) {
-            visit(funcDef);
+            for (var block : funcDef.body_) {
+                block.idom_ = null;
+                block.domChildren_.clear();
+                block.domFrontiers_.clear();
+            }
+        }
+        new CFGBuilder().visit(node);
+        for (var funcDef : node.funcDefMap_.values()) {
+            visit(funcDef, antiDom);
         }
     }
 
-    private void visit(IRFuncDef node) {
-        ArrayList<IRBasicBlock> rpo = node.getRPO();
+    private void visit(IRFuncDef node, boolean antiDom) {
+        ArrayList<IRBasicBlock> rpo = (antiDom ? node.getAntiRPO() : node.getRPO());
         ArrayList<BitSet> doms = new ArrayList<>();
-        for (int i = 0; i < node.body_.size(); i++) {
-            BitSet tmp = new BitSet(node.body_.size());
-            tmp.set(0, node.body_.size());
+        for (int i = 0; i < rpo.size(); i++) {
+            BitSet tmp = new BitSet(rpo.size());
+            tmp.set(0, rpo.size());
             doms.add(tmp);
         }
         HashMap<IRBasicBlock, Integer> blockIdMap = new HashMap<>();
-        for (int i = 0; i < node.body_.size(); i++) {
-            blockIdMap.put(node.body_.get(i), i);
+        for (int i = 0; i < rpo.size(); i++) {
+            blockIdMap.put(rpo.get(i), i);
         }
         while (true) {
             boolean changed = false;
-            for (var block : rpo) {
-                int blockId = blockIdMap.get(block);
-                BitSet intersect = new BitSet(node.body_.size());
-                if (!block.preds_.isEmpty()) {
-                    intersect.set(0, node.body_.size());
-                    for (var pred : block.preds_) {
-                        intersect.and(doms.get(blockIdMap.get(pred)));
+            for (var blockId = 0; blockId < rpo.size(); blockId++) {
+                IRBasicBlock block = rpo.get(blockId);
+                BitSet intersect = new BitSet(rpo.size());
+                if (antiDom) {
+                    if (!block.succs_.isEmpty()) {
+                        intersect.set(0, rpo.size());
+                        for (var succ : block.succs_) {
+                            intersect.and(doms.get(blockIdMap.get(succ)));
+                        }
+                    }
+                }
+                else {
+                    if (!block.preds_.isEmpty()) {
+                        intersect.set(0, rpo.size());
+                        for (var pred : block.preds_) {
+                            intersect.and(doms.get(blockIdMap.get(pred)));
+                        }
                     }
                 }
                 intersect.set(blockId);
@@ -44,26 +62,26 @@ public class DominatorTreeBuilder {
                 break;
             }
         }
-        for (int i = 0; i < node.body_.size(); i++) {
-            IRBasicBlock block = node.body_.get(i);
+        for (int i = 0; i < rpo.size(); i++) {
+            IRBasicBlock block = rpo.get(i);
             for (int j = doms.get(i).nextSetBit(0); j >= 0; j = doms.get(i).nextSetBit(j + 1)) {
-                BitSet tmp = new BitSet(node.body_.size());
+                BitSet tmp = new BitSet(rpo.size());
                 tmp.or(doms.get(i));
                 tmp.xor(doms.get(j));
                 if (tmp.cardinality() == 1) {
-                    block.idom_ = node.body_.get(j);
-                    node.body_.get(j).domChildren_.add(block);
+                    block.idom_ = rpo.get(j);
+                    rpo.get(j).domChildren_.add(block);
                     break;
                 }
             }
-            BitSet union = new BitSet(node.body_.size());
+            BitSet union = new BitSet(rpo.size());
             for (var pred : block.preds_) {
                 union.or(doms.get(blockIdMap.get(pred)));
             }
             union.set(i);
             union.xor(doms.get(i));
             for (int j = union.nextSetBit(0); j >= 0; j = union.nextSetBit(j + 1)) {
-                node.body_.get(j).domFrontiers_.add(block);
+                rpo.get(j).domFrontiers_.add(block);
             }
         }
     }

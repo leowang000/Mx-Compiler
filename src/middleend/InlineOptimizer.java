@@ -8,7 +8,7 @@ import IR.value.IRValue;
 import IR.value.var.IRLocalVar;
 
 public class InlineOptimizer {
-    private int kMaxInlineLineCount = 35;
+    private final int kMaxInlineLineCount;
     private IRProgram irProgram_ = null;
     private final HashSet<String> shouldInline_ = new HashSet<>();
     private final HashMap<IRCallInst, InlineInfo> inlineInfoMap_ = new HashMap<>();

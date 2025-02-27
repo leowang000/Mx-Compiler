@@ -4,6 +4,7 @@ import java.util.*;
 
 import IR.IRNode;
 import IR.IRVisitor;
+import IR.inst.IRRetInst;
 import IR.type.IRType;
 import IR.value.var.IRLocalVar;
 import asm.util.Register;
@@ -57,6 +58,28 @@ public class IRFuncDef extends IRNode {
         for (var succ : node.succs_) {
             if (!visited.contains(succ)) {
                 getPostOrder(succ, po, visited);
+            }
+        }
+        po.add(node);
+    }
+
+    public ArrayList<IRBasicBlock> getAntiRPO() {
+        ArrayList<IRBasicBlock> res = new ArrayList<>();
+        HashSet<IRBasicBlock> visited = new HashSet<>();
+        for (var block : body_) {
+            if (block.instList_.get(block.instList_.size() - 1) instanceof IRRetInst) {
+                getAntiPostOrder(block, res, visited);
+            }
+        }
+        Collections.reverse(res);
+        return res;
+    }
+
+    public static void getAntiPostOrder(IRBasicBlock node, ArrayList<IRBasicBlock> po, HashSet<IRBasicBlock> visited) {
+        visited.add(node);
+        for (var pred : node.preds_) {
+            if (!visited.contains(pred)) {
+                getAntiPostOrder(pred, po, visited);
             }
         }
         po.add(node);
