@@ -36,6 +36,7 @@ public class LinearScanRegAllocator {
     }
 
     public void visit(IRProgram node) {
+        node.reset();
         new LiveAnalyzer().visit(node);
         for (var funcDef : node.funcDefMap_.values()) {
             visit(funcDef);

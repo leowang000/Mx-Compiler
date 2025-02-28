@@ -13,6 +13,7 @@ import asm.inst.*;
 import asm.module.ASMBlock;
 import asm.module.ASMProgram;
 import asm.util.Register;
+import middleend.CFGBuilder;
 import util.Pair;
 
 public class ASMBuilder implements IRVisitor {
@@ -35,6 +36,10 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(IRProgram node) {
+        node.reset();
+        new CFGBuilder().visit(node);
+        new PhiResolver().visit(node);
+        new LinearScanRegAllocator().visit(node);
         for (var globalVarDef : node.globalVarList_) {
             globalVarDef.accept(this);
         }

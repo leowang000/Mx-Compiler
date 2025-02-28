@@ -96,4 +96,28 @@ public class IRProgram extends IRNode {
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
     }
+
+    public void reset() {
+        for (var funcDef : funcDefMap_.values()) {
+            for (var block : funcDef.body_) {
+                block.preds_.clear();
+                block.succs_.clear();
+                block.idom_ = null;
+                block.domChildren_.clear();
+                block.domFrontiers_.clear();
+                for (var inst : block.phiMap_.values()) {
+                    inst.use_.clear();
+                    inst.def_.clear();
+                    inst.in_.clear();
+                    inst.out_.clear();
+                }
+                for (var inst : block.instList_) {
+                    inst.use_.clear();
+                    inst.def_.clear();
+                    inst.in_.clear();
+                    inst.out_.clear();
+                }
+            }
+        }
+    }
 }

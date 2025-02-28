@@ -7,13 +7,7 @@ import IR.module.*;
 
 public class DominatorTreeBuilder {
     public void visit(IRProgram node, boolean antiDom) {
-        for (var funcDef : node.funcDefMap_.values()) {
-            for (var block : funcDef.body_) {
-                block.idom_ = null;
-                block.domChildren_.clear();
-                block.domFrontiers_.clear();
-            }
-        }
+        node.reset();
         new CFGBuilder().visit(node);
         if (antiDom) {
             for (var funcDef : node.funcDefMap_.values()) {

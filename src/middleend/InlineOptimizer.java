@@ -19,6 +19,8 @@ public class InlineOptimizer {
     }
 
     public void visit(IRProgram node) {
+        node.reset();
+        new CFGBuilder().visit(node);
         irProgram_ = node;
         for (var funcDef : node.funcDefMap_.values()) {
             if (getLineCount(funcDef) < kMaxInlineLineCount) {

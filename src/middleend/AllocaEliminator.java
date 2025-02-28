@@ -19,6 +19,7 @@ public class AllocaEliminator implements IRVisitor {
 
     @Override
     public void visit(IRProgram node) {
+        node.reset();
         new DominatorTreeBuilder().visit(node, false);
         for (var funcDef : node.funcDefMap_.values()) {
             funcDef.accept(this);

@@ -13,6 +13,8 @@ public class UnusedFunctionRemover implements IRVisitor {
 
     @Override
     public void visit(IRProgram node) {
+        node.reset();
+        new CFGBuilder().visit(node);
         funcDefMap_ = node.funcDefMap_;
         funcDefMap_.get("main").accept(this);
         funcDefMap_.entrySet().removeIf(entry -> !usedFuncSet_.contains(entry.getKey()));

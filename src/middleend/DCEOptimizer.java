@@ -10,6 +10,8 @@ import IR.value.var.IRLocalVar;
 
 public class DCEOptimizer {
     public void visit(IRProgram node) {
+        node.reset();
+        new CFGBuilder().visit(node);
         for (var funcDef : node.funcDefMap_.values()) {
             visit(funcDef);
         }
@@ -17,16 +19,16 @@ public class DCEOptimizer {
 
     private void visit(IRFuncDef node) {
         HashSet<IRLocalVar> workList = new HashSet<>();
-        HashMap<IRLocalVar, IRInst> defMap = new HashMap<>();
+        HashMap<IRLocalVar, IRInst> defInstMap = new HashMap<>();
         HashMap<IRLocalVar, HashSet<IRInst>> useMap = new HashMap<>();
         HashMap<IRInst, Boolean> shouldRemove = new HashMap<>();
         HashSet<IRLocalVar> funcArgs = new HashSet<>(node.args_);
         for (var block : node.body_) {
             for (var inst : block.phiMap_.values()) {
-                initializeInst(inst, workList, defMap, useMap, shouldRemove, funcArgs);
+                initialize(inst, workList, defInstMap, useMap, shouldRemove, funcArgs);
             }
             for (var inst : block.instList_) {
-                initializeInst(inst, workList, defMap, useMap, shouldRemove, funcArgs);
+                initialize(inst, workList, defInstMap, useMap, shouldRemove, funcArgs);
             }
         }
         while (!workList.isEmpty()) {
@@ -36,14 +38,14 @@ public class DCEOptimizer {
             if (useMap.containsKey(localVar) && !useMap.get(localVar).isEmpty()) {
                 continue;
             }
-            IRInst def = defMap.get(localVar);
-            if (def instanceof IRCallInst) {
+            IRInst defInst = defInstMap.get(localVar);
+            if (defInst instanceof IRCallInst) {
                 continue;
             }
-            shouldRemove.put(def, true);
-            for (var usedVar : def.use_) {
+            shouldRemove.put(defInst, true);
+            for (var usedVar : defInst.use_) {
                 if (!funcArgs.contains(usedVar)) {
-                    useMap.get(usedVar).remove(def);
+                    useMap.get(usedVar).remove(defInst);
                 }
             }
         }
@@ -53,9 +55,9 @@ public class DCEOptimizer {
         }
     }
 
-    private void initializeInst(IRInst inst, HashSet<IRLocalVar> workList, HashMap<IRLocalVar, IRInst> defMap,
-                                HashMap<IRLocalVar, HashSet<IRInst>> useMap, HashMap<IRInst, Boolean> shouldRemove,
-                                HashSet<IRLocalVar> funcArgs) {
+    private void initialize(IRInst inst, HashSet<IRLocalVar> workList, HashMap<IRLocalVar, IRInst> defMap,
+                            HashMap<IRLocalVar, HashSet<IRInst>> useMap, HashMap<IRInst, Boolean> shouldRemove,
+                            HashSet<IRLocalVar> funcArgs) {
         inst.getUseAndDef();
         workList.addAll(inst.def_);
         for (var localVar : inst.def_) {

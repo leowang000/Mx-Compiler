@@ -5,11 +5,15 @@ import java.util.*;
 import IR.inst.*;
 import IR.module.*;
 import IR.value.var.IRLocalVar;
+import middleend.CFGBuilder;
 
+// When LiveAnalyzer is used, phi instructions must have been resolved.
 public class LiveAnalyzer {
     private HashMap<IRInst, ArrayList<IRInst>> succMap_ = null, predMap_ = null;
 
     public void visit(IRProgram node) {
+        node.reset();
+        new CFGBuilder().visit(node);
         for (var funcDef : node.funcDefMap_.values()) {
             visit(funcDef);
         }

@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import IR.inst.*;
 import IR.module.*;
+import middleend.CFGBuilder;
 
 public class PhiResolver {
     private IRFuncDef curFuncDef_ = null;
@@ -12,6 +13,8 @@ public class PhiResolver {
     private int splitBlockCnt_ = 0;
 
     public void visit(IRProgram node) {
+        node.reset();
+        new CFGBuilder().visit(node);
         for (var funcDef : node.funcDefMap_.values()) {
             visit(funcDef);
         }

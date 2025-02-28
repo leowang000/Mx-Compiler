@@ -34,6 +34,8 @@ public class GlobalToLocalOptimizer {
     }
 
     public void visit(IRProgram node) {
+        node.reset();
+        new CFGBuilder().visit(node);
         irProgram_ = node;
         buildCallGraph();
         kosaraju();

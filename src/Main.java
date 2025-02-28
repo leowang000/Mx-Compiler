@@ -20,7 +20,6 @@ public class Main {
             FileOutputStream irNoAllocaOutput = new FileOutputStream("test/output-no-alloca.ll");
             FileOutputStream irADCEOutput = new FileOutputStream("test/output-ADCE.ll");
             FileOutputStream irOptimizedOutput = new FileOutputStream("test/output-optimized.ll");
-            FileOutputStream irNoPhiOutput = new FileOutputStream("test/output-no-phi.ll");
             FileOutputStream asmOutput = new FileOutputStream("test/output.s")
         ) {
             String input_file_name = "testcases/codegen/e1.mx";
@@ -53,9 +52,6 @@ public class Main {
             new UnusedFunctionRemover().visit(irProgram);
             irOptimizedOutput.write(irProgram.toString().getBytes());
             // llvm IR -> riscv32 asm
-            new PhiResolver().visit(irProgram);
-            irNoPhiOutput.write(irProgram.toString().getBytes());
-            new LinearScanRegAllocator().visit(irProgram);
             ASMProgram asmProgram = new ASMProgram();
             new ASMBuilder(asmProgram).visit(irProgram);
             asmOutput.write(asmProgram.toString().getBytes());

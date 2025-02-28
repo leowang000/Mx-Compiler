@@ -8,6 +8,7 @@ import IR.value.var.IRLocalVar;
 
 public class ADCEOptimizer {
     public void visit(IRProgram node) {
+        node.reset();
         new DominatorTreeBuilder().visit(node, true);
         for (var funcDef : node.funcDefMap_.values()) {
             visit(funcDef);
