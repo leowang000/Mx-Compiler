@@ -15,14 +15,17 @@ import util.scope.GlobalScope;
 public class Main {
     public static void main(String[] args) throws Exception {
         try (
-            FileOutputStream irOutput = new FileOutputStream("test/output.ll");
-            FileOutputStream irGlobalToLocalOutput = new FileOutputStream("test/output-global-to-local.ll");
-            FileOutputStream irNoAllocaOutput = new FileOutputStream("test/output-no-alloca.ll");
-            FileOutputStream irADCEOutput = new FileOutputStream("test/output-ADCE.ll");
-            FileOutputStream irOptimizedOutput = new FileOutputStream("test/output-optimized.ll");
+            FileOutputStream irNoOptimizationOutput = new FileOutputStream("test/output-00-no-optimization.ll");
+            FileOutputStream irGlobalToLocalOutput = new FileOutputStream("test/output-01-global-to-local.ll");
+            FileOutputStream irNoAllocaOutput = new FileOutputStream("test/output-02-no-alloca.ll");
+            FileOutputStream irSCCPOutput = new FileOutputStream("test/output-03-sccp.ll");
+            FileOutputStream irADCEOutput = new FileOutputStream("test/output-04-adce.ll");
+            FileOutputStream irInlineOutput = new FileOutputStream("test/output-05-inline.ll");
+            FileOutputStream irSecondSCCPOutput = new FileOutputStream("test/output-06-second-sccp.ll");
+            FileOutputStream irSecondADCEOutput = new FileOutputStream("test/output-07-second-adce.ll");
             FileOutputStream asmOutput = new FileOutputStream("test/output.s")
         ) {
-            String input_file_name = "testcases/codegen/e1.mx";
+            String input_file_name = "testcases/codegen/t69.mx";
             CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
             // Mx* -> AST
             MxLexer lexer = new MxLexer(input);
@@ -39,18 +42,25 @@ public class Main {
             // AST -> llvm IR
             IRProgram irProgram = new IRProgram();
             new IRBuilder(globalScope, irProgram).visit(ast);
-            irOutput.write(irProgram.toString().getBytes());
+            irNoOptimizationOutput.write(irProgram.toString().getBytes());
+            new UnusedFunctionRemover().visit(irProgram);
             new GlobalToLocalOptimizer().visit(irProgram);
             irGlobalToLocalOutput.write(irProgram.toString().getBytes());
             new AllocaEliminator().visit(irProgram);
             irNoAllocaOutput.write(irProgram.toString().getBytes());
+            new SCCPOptimizer().visit(irProgram);
+            irSCCPOutput.write(irProgram.toString().getBytes());
             new ADCEOptimizer().visit(irProgram);
             irADCEOutput.write(irProgram.toString().getBytes());
             new InlineOptimizer(35).visit(irProgram);
             new InlineOptimizer(35).visit(irProgram);
-            new DCEOptimizer().visit(irProgram);
             new UnusedFunctionRemover().visit(irProgram);
-            irOptimizedOutput.write(irProgram.toString().getBytes());
+            irInlineOutput.write(irProgram.toString().getBytes());
+            new SCCPOptimizer().visit(irProgram);
+            irSecondSCCPOutput.write(irProgram.toString().getBytes());
+            new ADCEOptimizer().visit(irProgram);
+            new UnusedFunctionRemover().visit(irProgram);
+            irSecondADCEOutput.write(irProgram.toString().getBytes());
             // llvm IR -> riscv32 asm
             ASMProgram asmProgram = new ASMProgram();
             new ASMBuilder(asmProgram).visit(irProgram);

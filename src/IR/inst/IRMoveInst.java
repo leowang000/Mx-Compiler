@@ -6,6 +6,7 @@ import IR.IRVisitor;
 import IR.value.IRValue;
 import IR.value.var.IRLocalVar;
 
+// IRMoveInst does not apper in LLVM IR. It is only used for transforming IRPhiInst to assembly.
 public class IRMoveInst extends IRInst {
     public IRLocalVar dest_;
     public IRValue src_;

@@ -37,12 +37,16 @@ public class Compiler {
                 // AST -> llvm IR
                 IRProgram irProgram = new IRProgram();
                 new IRBuilder(globalScope, irProgram).visit(ast);
+                new UnusedFunctionRemover().visit(irProgram);
                 new GlobalToLocalOptimizer().visit(irProgram);
                 new AllocaEliminator().visit(irProgram);
+                new SCCPOptimizer().visit(irProgram);
                 new ADCEOptimizer().visit(irProgram);
                 new InlineOptimizer(35).visit(irProgram);
                 new InlineOptimizer(35).visit(irProgram);
-                new DCEOptimizer().visit(irProgram);
+                new UnusedFunctionRemover().visit(irProgram);
+                new SCCPOptimizer().visit(irProgram);
+                new ADCEOptimizer().visit(irProgram);
                 new UnusedFunctionRemover().visit(irProgram);
                 if (!oj) {
                     try (FileOutputStream log = new FileOutputStream("test/log.txt", true)) {

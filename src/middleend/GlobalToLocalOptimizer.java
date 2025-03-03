@@ -263,9 +263,6 @@ public class GlobalToLocalOptimizer {
             loadInst.pointer_ = getSubstitution(loadInst.pointer_, substitutionMap);
             return inst;
         }
-        if (inst instanceof IRMoveInst) {
-            return inst;
-        }
         if (inst instanceof IRPhiInst) {
             return inst;
         }
