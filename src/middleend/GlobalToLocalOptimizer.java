@@ -9,6 +9,7 @@ import IR.value.IRValue;
 import IR.value.var.IRGlobalVar;
 import IR.value.var.IRLocalVar;
 
+// After this pass is used, AllocaEliminator must be run immediately to eliminate alloca inst.
 public class GlobalToLocalOptimizer {
     private IRProgram irProgram_;
     private final HashMap<IRFuncDef, Node> funcNodeMap_ = new HashMap<>();
@@ -220,6 +221,9 @@ public class GlobalToLocalOptimizer {
             }
             block.instList_ = newInstList;
         }
+        for (var block : funcDef.body_) {
+            block.phiMap_.replaceAll((localVar, phiInst) -> (IRPhiInst) getSubstitution(phiInst, substitutionMap));
+        }
         funcDef.body_.get(0).instList_.addAll(0, loadConstantInstList);
     }
 
@@ -264,6 +268,8 @@ public class GlobalToLocalOptimizer {
             return inst;
         }
         if (inst instanceof IRPhiInst) {
+            IRPhiInst phiInst = (IRPhiInst) inst;
+            phiInst.info_.replaceAll((block, value) -> getSubstitution(value, substitutionMap));
             return inst;
         }
         if (inst instanceof IRRetInst) {

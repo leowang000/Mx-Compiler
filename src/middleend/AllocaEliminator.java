@@ -93,14 +93,18 @@ public class AllocaEliminator implements IRVisitor {
         defCntMap_.push(new HashMap<>());
         newInstList_ = new ArrayList<>();
         for (var entry : node.phiMap_.entrySet()) {
-            updateAllocaValue(entry.getKey(), entry.getValue().result_);
+            if (allocaValueMap_.containsKey(entry.getKey())) {
+                updateAllocaValue(entry.getKey(), entry.getValue().result_);
+            }
+            else {
+                visit(entry.getValue());
+            }
         }
         for (var inst : node.instList_) {
             inst.accept(this);
         }
         node.instList_ = newInstList_;
         for (var succ : node.succs_) {
-            succ.phiMap_.entrySet().removeIf(entry -> !allocaValueMap_.containsKey(entry.getKey()));
             for (var entry : succ.phiMap_.entrySet()) {
                 IRValue curValue = getCurrentValue(entry.getKey());
                 if (curValue != null) {
@@ -181,7 +185,9 @@ public class AllocaEliminator implements IRVisitor {
     public void visit(IRMoveInst node) {}
 
     @Override
-    public void visit(IRPhiInst node) {}
+    public void visit(IRPhiInst node) {
+        node.info_.replaceAll((block, value) -> getSubstitution(value));
+    }
 
     @Override
     public void visit(IRRetInst node) {
@@ -201,7 +207,7 @@ public class AllocaEliminator implements IRVisitor {
     }
 
     private boolean isAllocaResult(IRValue value) {
-        return value instanceof IRLocalVar && ((IRLocalVar) value).isAllocaResult_;
+        return (value instanceof IRLocalVar) && ((IRLocalVar) value).isAllocaResult_;
     }
 
     private IRValue getCurrentValue(IRValue value) {

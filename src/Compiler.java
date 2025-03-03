@@ -45,6 +45,8 @@ public class Compiler {
                 new InlineOptimizer(35).visit(irProgram);
                 new InlineOptimizer(35).visit(irProgram);
                 new UnusedFunctionRemover().visit(irProgram);
+                new GlobalToLocalOptimizer().visit(irProgram);
+                new AllocaEliminator().visit(irProgram);
                 new SCCPOptimizer().visit(irProgram);
                 new ADCEOptimizer().visit(irProgram);
                 new UnusedFunctionRemover().visit(irProgram);
