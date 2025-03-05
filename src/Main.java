@@ -20,15 +20,16 @@ public class Main {
             FileOutputStream irNoAllocaOutput = new FileOutputStream("test/output-02-no-alloca.ll");
             FileOutputStream irSCCPOutput = new FileOutputStream("test/output-03-sccp.ll");
             FileOutputStream irADCEOutput = new FileOutputStream("test/output-04-adce.ll");
-            FileOutputStream irInlineOutput = new FileOutputStream("test/output-05-inline.ll");
+            FileOutputStream irGCMOutput = new FileOutputStream("test/output-05-gcm-output.ll");
+            FileOutputStream irInlineOutput = new FileOutputStream("test/output-06-inline.ll");
             FileOutputStream irSecondGlobalToLocalOutput = new FileOutputStream(
-                "test/output-06-second-global-to-local.ll");
-            FileOutputStream irSecondNoAllocaOutput = new FileOutputStream("test/output-07-second-no-alloca.ll");
-            FileOutputStream irSecondSCCPOutput = new FileOutputStream("test/output-08-second-sccp.ll");
-            FileOutputStream irSecondADCEOutput = new FileOutputStream("test/output-09-second-adce.ll");
+                "test/output-07-second-global-to-local.ll");
+            FileOutputStream irSecondNoAllocaOutput = new FileOutputStream("test/output-08-second-no-alloca.ll");
+            FileOutputStream irSecondSCCPOutput = new FileOutputStream("test/output-09-second-sccp.ll");
+            FileOutputStream irSecondADCEOutput = new FileOutputStream("test/output-10-second-adce.ll");
             FileOutputStream asmOutput = new FileOutputStream("test/output.s")
         ) {
-            String input_file_name = "testcases/codegen/t27.mx";
+            String input_file_name = "test/test.mx";
             CharStream input = CharStreams.fromStream(new FileInputStream(input_file_name));
             // Mx* -> AST
             MxLexer lexer = new MxLexer(input);
@@ -55,6 +56,8 @@ public class Main {
             irSCCPOutput.write(irProgram.toString().getBytes());
             new ADCEOptimizer().visit(irProgram);
             irADCEOutput.write(irProgram.toString().getBytes());
+            new GCMOptimizer().visit(irProgram);
+            irGCMOutput.write(irProgram.toString().getBytes());
             new InlineOptimizer(35).visit(irProgram);
             new InlineOptimizer(35).visit(irProgram);
             new UnusedFunctionRemover().visit(irProgram);

@@ -105,6 +105,7 @@ public class IRProgram extends IRNode {
                 block.idom_ = null;
                 block.domChildren_.clear();
                 block.domFrontiers_.clear();
+                block.domAncestors_.clear();
                 for (var inst : block.phiMap_.values()) {
                     inst.use_.clear();
                     inst.def_.clear();

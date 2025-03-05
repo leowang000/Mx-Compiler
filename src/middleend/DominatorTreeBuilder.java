@@ -6,22 +6,22 @@ import IR.inst.IRRetInst;
 import IR.module.*;
 
 public class DominatorTreeBuilder {
-    public void visit(IRProgram node, boolean antiDom) {
+    public void visit(IRProgram node, boolean antiDom, boolean getAncestors, boolean getEdgesAndDomFrontiers) {
         node.reset();
         new CFGBuilder().visit(node);
         if (antiDom) {
             for (var funcDef : node.funcDefMap_.values()) {
-                buildAntiDom(funcDef);
+                buildAntiDom(funcDef, getAncestors, getEdgesAndDomFrontiers);
             }
         }
         else {
             for (var funcDef : node.funcDefMap_.values()) {
-                buildDom(funcDef);
+                buildDom(funcDef, getAncestors, getEdgesAndDomFrontiers);
             }
         }
     }
 
-    private void buildDom(IRFuncDef node) {
+    private void buildDom(IRFuncDef node, boolean getAncestors, boolean getEdgesAndDomFrontiers) {
         ArrayList<IRBasicBlock> rpo = node.getRPO();
         ArrayList<BitSet> doms = new ArrayList<>();
         for (int i = 0; i < rpo.size(); i++) {
@@ -54,31 +54,40 @@ public class DominatorTreeBuilder {
                 break;
             }
         }
-        for (int i = 0; i < rpo.size(); i++) {
-            IRBasicBlock block = rpo.get(i);
-            for (int j = doms.get(i).nextSetBit(0); j >= 0; j = doms.get(i).nextSetBit(j + 1)) {
-                BitSet tmp = new BitSet(rpo.size());
-                tmp.or(doms.get(i));
-                tmp.xor(doms.get(j));
-                if (tmp.cardinality() == 1) {
-                    block.idom_ = rpo.get(j);
-                    rpo.get(j).domChildren_.add(block);
-                    break;
+        if (getAncestors) {
+            for (int i = 0; i < rpo.size(); i++) {
+                for (int j = doms.get(i).nextSetBit(0); j >= 0; j = doms.get(i).nextSetBit(j + 1)) {
+                    rpo.get(i).domAncestors_.add(rpo.get(j));
                 }
             }
-            BitSet union = new BitSet(rpo.size());
-            for (var pred : block.preds_) {
-                union.or(doms.get(blockIdMap.get(pred)));
-            }
-            union.set(i);
-            union.xor(doms.get(i));
-            for (int j = union.nextSetBit(0); j >= 0; j = union.nextSetBit(j + 1)) {
-                rpo.get(j).domFrontiers_.add(block);
+        }
+        if (getEdgesAndDomFrontiers) {
+            for (int i = 0; i < rpo.size(); i++) {
+                IRBasicBlock block = rpo.get(i);
+                for (int j = doms.get(i).nextSetBit(0); j >= 0; j = doms.get(i).nextSetBit(j + 1)) {
+                    BitSet tmp = new BitSet(rpo.size());
+                    tmp.or(doms.get(i));
+                    tmp.xor(doms.get(j));
+                    if (tmp.cardinality() == 1) {
+                        block.idom_ = rpo.get(j);
+                        rpo.get(j).domChildren_.add(block);
+                        break;
+                    }
+                }
+                BitSet union = new BitSet(rpo.size());
+                for (var pred : block.preds_) {
+                    union.or(doms.get(blockIdMap.get(pred)));
+                }
+                union.set(i);
+                union.xor(doms.get(i));
+                for (int j = union.nextSetBit(0); j >= 0; j = union.nextSetBit(j + 1)) {
+                    rpo.get(j).domFrontiers_.add(block);
+                }
             }
         }
     }
 
-    private void buildAntiDom(IRFuncDef node) {
+    private void buildAntiDom(IRFuncDef node, boolean getAncestors, boolean getEdgesAndDomFrontiers) {
         IRBasicBlock sink = new IRBasicBlock("", null);
         for (var block : node.body_) {
             if (block.instList_.get(block.instList_.size() - 1) instanceof IRRetInst) {
@@ -118,26 +127,35 @@ public class DominatorTreeBuilder {
                 break;
             }
         }
-        for (int i = 0; i < rpo.size(); i++) {
-            IRBasicBlock block = rpo.get(i);
-            for (int j = doms.get(i).nextSetBit(0); j >= 0; j = doms.get(i).nextSetBit(j + 1)) {
-                BitSet tmp = new BitSet(rpo.size());
-                tmp.or(doms.get(i));
-                tmp.xor(doms.get(j));
-                if (tmp.cardinality() == 1) {
-                    block.idom_ = rpo.get(j);
-                    rpo.get(j).domChildren_.add(block);
-                    break;
+        if (getAncestors) {
+            for (int i = 0; i < rpo.size(); i++) {
+                for (int j = doms.get(i).nextSetBit(0); j >= 0; j = doms.get(i).nextSetBit(j + 1)) {
+                    rpo.get(i).domAncestors_.add(rpo.get(j));
                 }
             }
-            BitSet union = new BitSet(rpo.size());
-            for (var succ : block.succs_) {
-                union.or(doms.get(blockIdMap.get(succ)));
-            }
-            union.set(i);
-            union.xor(doms.get(i));
-            for (int j = union.nextSetBit(0); j >= 0; j = union.nextSetBit(j + 1)) {
-                rpo.get(j).domFrontiers_.add(block);
+        }
+        if (getEdgesAndDomFrontiers) {
+            for (int i = 0; i < rpo.size(); i++) {
+                IRBasicBlock block = rpo.get(i);
+                for (int j = doms.get(i).nextSetBit(0); j >= 0; j = doms.get(i).nextSetBit(j + 1)) {
+                    BitSet tmp = new BitSet(rpo.size());
+                    tmp.or(doms.get(i));
+                    tmp.xor(doms.get(j));
+                    if (tmp.cardinality() == 1) {
+                        block.idom_ = rpo.get(j);
+                        rpo.get(j).domChildren_.add(block);
+                        break;
+                    }
+                }
+                BitSet union = new BitSet(rpo.size());
+                for (var succ : block.succs_) {
+                    union.or(doms.get(blockIdMap.get(succ)));
+                }
+                union.set(i);
+                union.xor(doms.get(i));
+                for (int j = union.nextSetBit(0); j >= 0; j = union.nextSetBit(j + 1)) {
+                    rpo.get(j).domFrontiers_.add(block);
+                }
             }
         }
         for (var block : node.body_) {

@@ -18,6 +18,7 @@ public class IRBasicBlock extends IRNode {
     public HashSet<IRBasicBlock> succs_ = new HashSet<>(); // CFG
     public IRBasicBlock idom_ = null; // domTree
     public ArrayList<IRBasicBlock> domChildren_ = new ArrayList<>(), domFrontiers_ = new ArrayList<>(); // domTree
+    public HashSet<IRBasicBlock> domAncestors_ = new HashSet<>();
     static private int tmpCnt_ = 0;
 
     public IRBasicBlock(String label, IRFuncDef belong) {
